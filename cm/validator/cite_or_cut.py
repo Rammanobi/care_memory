@@ -11,7 +11,12 @@ import re
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 
-CITE = re.compile(r"\[([EBCRGD]-[0-9A-Za-z_]+)\]")
+_ID = r"[EBCRGD]-[0-9A-Za-z_]+"
+CITE = re.compile(rf"\[({_ID})\]")  # single-ref form, kept for callers that import it
+# Tolerant group form: [E-a, E-b] or [E-a; E-b]. A group starts with a ref-shaped id; every other item in it
+# is returned as written, so a non-id item (e.g. "[E-a, see note]") fails the lookup and the sentence is cut.
+CITE_GROUP = re.compile(rf"\[\s*({_ID}(?:\s*[,;]\s*[^\[\],;]+?)*)\s*\]")
+_SPLIT = re.compile(r"\s*[,;]\s*")
 _NUM = re.compile(r"(?<![\w-])\d+(?:\.\d+)?(?![\w-])")
 
 
@@ -41,12 +46,13 @@ class CutResult:
 
 
 def refs_of(sentence: str) -> list[str]:
-    return CITE.findall(sentence)
+    """Every cited ref, in order. ``[E-a][E-b]`` and ``[E-a, E-b]`` both give ``["E-a", "E-b"]``."""
+    return [r.strip() for g in CITE_GROUP.findall(sentence) for r in _SPLIT.split(g) if r.strip()]
 
 
 def numbers_of(sentence: str) -> list[float]:
     """Numbers outside citation markers."""
-    return [float(n) for n in _NUM.findall(CITE.sub("", sentence))]
+    return [float(n) for n in _NUM.findall(CITE_GROUP.sub("", sentence))]
 
 
 def check_sentence(sentence: str, evidence: Evidence) -> str | None:

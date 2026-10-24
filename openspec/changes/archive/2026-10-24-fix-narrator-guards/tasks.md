@@ -1,0 +1,3 @@
+- [x] cm/core/banned_lexicon.py; wire cm/router/banned.py and cm/validator/banned_terms.py (tests/evals nar-banned-*)
+- [x] cm/validator/content_guard.py; use in cm/agents/narrator.py (nar-dosing-advice, nar-diagnosis, nar-blaming-tone, nar-te-dosing-advice)
+- [x] Remove xfail tags in fixtures/ai_evals/narrator.json

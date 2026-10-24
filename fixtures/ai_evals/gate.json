@@ -1,0 +1,17 @@
+{
+  "_about": "Patient-facing strings for the outbound guards (cm/router/router.route and cm/review/decide._validate). banned = true means BOTH guards must block it. Mock text only.",
+  "patient_facing": [
+    {"id": "pf-clean-en", "lang": "en", "banned": false, "text": "Good morning. Please tap Taken after your medicine today."},
+    {"id": "pf-clean-te", "lang": "te", "banned": false, "text": "శుభోదయం. ఈ రోజు మందు తీసుకున్న తర్వాత తీసుకున్నాను నొక్కండి."},
+    {"id": "pf-tb-upper", "lang": "en", "banned": true, "text": "Your TB check-in is due today."},
+    {"id": "pf-tb-lower", "lang": "en", "banned": true, "text": "Your tb check-in is due today."},
+    {"id": "pf-tb-dotted", "lang": "en", "banned": true, "text": "Your T.B. visit is on Monday."},
+    {"id": "pf-tuberculosis", "lang": "en", "banned": true, "text": "Tuberculosis care visit on Monday."},
+    {"id": "pf-drug-first-line", "lang": "en", "banned": true, "text": "Remember your Rifampicin tablet."},
+    {"id": "pf-drug-second-line", "lang": "en", "banned": true, "text": "Remember your moxifloxacin tablet."},
+    {"id": "pf-dots", "lang": "en", "banned": true, "text": "Come to the DOTS centre on Monday."},
+    {"id": "pf-te-kshaya", "lang": "te", "banned": true, "text": "మీ క్షయ మందు ఈ రోజు తీసుకోండి."},
+    {"id": "pf-te-tibi", "lang": "te", "banned": true, "text": "మీ టీబీ పరీక్ష సోమవారం."},
+    {"id": "pf-hi-tibi", "lang": "hi", "banned": true, "text": "आपकी टीबी की दवा आज लें।"}
+  ]
+}

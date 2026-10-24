@@ -18,6 +18,7 @@ from cm.core.retry import ProviderCallFailed
 from cm.core.tokenize import PIILeak, tokenize
 from cm.memory.features import PatientFeatures
 from cm.validator.banned_terms import find_banned_terms
+from cm.validator.content_guard import content_violation
 from cm.validator.cite_or_cut import Evidence, cite_or_cut
 
 MAX_SENTENCES = 5
@@ -109,6 +110,11 @@ def write_card(f: PatientFeatures, model: Any, *, task_id: str = "adhoc", patien
     res = cite_or_cut(out.sentences[:MAX_SENTENCES], ev)
     kept = [s for s in res.kept if not find_banned_terms(s, "en")]
     res.cut += [(s, "banned_term") for s in res.kept if s not in kept]
+    scoped: list[str] = []
+    for s in kept:
+        why = content_violation(s)
+        (res.cut.append((s, why)) if why else scoped.append(s))
+    kept = scoped
     if not kept:
         c = template_card(f, "all_cut")
         c.cut = res.cut

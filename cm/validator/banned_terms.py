@@ -1,19 +1,15 @@
-"""Banned-term scan for patient- and Supporter-facing text (CLAUDE.md non-negotiable 5).
+"""Banned-term scan for the narrator and other text guards (CLAUDE.md non-negotiable 5).
 
-Same term list as scripts/banned_terms.py (kept in sync by tests/unit/ai/test_validator.py).
+Thin wrapper over the shared lexicon ``cm/core/banned_lexicon.py``, the same source ``cm/router/banned.py``
+uses, so the two guards cannot drift. Default audience is patient-strict (the narrator card may be forwarded);
+pass ``audience="doctor"`` to allow disease words (drug names stay banned).
 """
 
-import re
+from __future__ import annotations
 
-DRUG_NAMES = ("isoniazid", "rifampicin", "rifampin", "pyrazinamide", "ethambutol", "streptomycin",
-              "rifapentine", "bedaquiline", "linezolid")
-_CI = re.compile(r"\b(tuberculosis|" + "|".join(DRUG_NAMES) + r")\b", re.IGNORECASE)
-_UPPER = re.compile(r"\b(TB|DOTS)\b")
-_NON_LATIN = ("टीबी", "क्षय", "క్షయ", "టీబీ")
+from cm.core.banned_lexicon import DRUG_NAMES, find_banned  # noqa: F401  (DRUG_NAMES re-exported)
 
 
-def find_banned_terms(text: str, lang: str = "en") -> list[str]:
-    """Return every banned term found (empty list means clean). ``lang`` is accepted for the contract."""
-    hits = [m.group(0) for m in _CI.finditer(text)] + [m.group(0) for m in _UPPER.finditer(text)]
-    hits += [t for t in _NON_LATIN if t in text]
-    return hits
+def find_banned_terms(text: str, lang: str = "en", audience: str = "patient") -> list[str]:
+    """Every banned term found (empty list means clean). ``lang`` is accepted for the contract."""
+    return find_banned(text, audience)

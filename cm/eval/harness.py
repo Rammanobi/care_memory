@@ -58,11 +58,18 @@ def _last_week(p: SimPatient, d: int) -> float:
     return min(0.99, max(0.01, sum(1 for r in rs if not r) / len(rs) + 0.05))
 
 
-def evaluate_day(pats: list[SimPatient], d: int, predictor: Predictor, train_rate: float) -> dict[str, Any]:
+def evaluate_day(
+    pats: list[SimPatient], d: int, predictor: Predictor, train_rate: float
+) -> dict[str, Any]:
     clock.pin(instant_for(d))
     try:
         y = [label_miss7(p, d) for p in pats]
-        out: dict[str, Any] = {"day": d, "n": len(y), "n_pos": sum(y), "as_of": clock.now().isoformat()}
+        out: dict[str, Any] = {
+            "day": d,
+            "n": len(y),
+            "n_pos": sum(y),
+            "as_of": clock.now().isoformat(),
+        }
         for name, ps in (
             ("model", [predictor(p, d) for p in pats]),
             ("pop_avg", [train_rate] * len(pats)),
@@ -106,7 +113,9 @@ def run_eval(
         out.mkdir(parents=True, exist_ok=True)
         plot = plot_calibration(report, out / f"eval_seed{seed}.png")
         report["plot"] = plot
-        (out / f"eval_seed{seed}.json").write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
+        (out / f"eval_seed{seed}.json").write_text(
+            json.dumps(report, indent=2, sort_keys=True), encoding="utf-8"
+        )
     return report
 
 
@@ -123,7 +132,9 @@ def plot_calibration(report: dict[str, Any], path: Path) -> str | None:
     ax.plot([0, 1], [0, 1], "k--", lw=1, label="perfect")
     for d, c in (("3", "tab:red"), ("60", "tab:green")):
         bs = [b for b in report["eval_days"][d]["calibration"] if b["n"]]
-        ax.plot([b["mean_pred"] for b in bs], [b["observed"] for b in bs], "o-", c=c, label=f"Day {d}")
+        ax.plot(
+            [b["mean_pred"] for b in bs], [b["observed"] for b in bs], "o-", c=c, label=f"Day {d}"
+        )
     ax.set_xlabel("predicted P(miss7)")
     ax.set_ylabel("observed")
     ax.legend(fontsize=7)

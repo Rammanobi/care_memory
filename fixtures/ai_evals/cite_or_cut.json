@@ -1,0 +1,40 @@
+{
+  "_about": "Golden cases for cm.validator.cite_or_cut. Mock ids and numbers only. expect = 'keep' or the cut reason.",
+  "evidence": {
+    "ids": ["E-1a2b3c4d", "E-5e6f7a8b", "E-9c0d1e2f", "B-missed_7d", "B-refill_gap_days", "D-doc00001", "G-tbg00012"],
+    "numbers": [2, 3, 7, 11]
+  },
+  "other_patient_ids": ["E-77aa88bb", "B-quiet_days_other"],
+  "cases": [
+    {"id": "cc-valid-single", "lang": "en", "sentence": "Missed 2 doses in the last 7 days [E-1a2b3c4d].", "expect": "keep"},
+    {"id": "cc-valid-multi-adjacent", "lang": "en", "sentence": "Missed 2 doses in the last 7 days [E-1a2b3c4d][B-missed_7d].", "expect": "keep"},
+    {"id": "cc-valid-belief", "lang": "en", "sentence": "Supply ran out 11 days ago [B-refill_gap_days].", "expect": "keep"},
+    {"id": "cc-valid-doc-ref", "lang": "en", "sentence": "The discharge note mentions a follow-up visit [D-doc00001].", "expect": "keep"},
+    {"id": "cc-comma-in-bracket", "lang": "en", "sentence": "Missed 2 doses in the last 7 days [E-1a2b3c4d, E-5e6f7a8b].", "expect": "keep"},
+    {"id": "cc-comma-no-space", "lang": "en", "sentence": "Missed 3 doses this fortnight [E-1a2b3c4d,E-5e6f7a8b,E-9c0d1e2f].", "expect": "keep"},
+    {"id": "cc-semicolon-in-bracket", "lang": "en", "sentence": "Supply ran out 11 days ago [B-refill_gap_days; E-9c0d1e2f].", "expect": "keep"},
+    {"id": "cc-comma-with-fabricated", "lang": "en", "sentence": "Missed 2 doses [E-1a2b3c4d, E-deadbeef].", "expect": "unknown_ref"},
+    {"id": "cc-comma-with-prose", "lang": "en", "sentence": "Missed 2 doses [E-1a2b3c4d, see note].", "expect": "unknown_ref"},
+    {"id": "cc-no-ref", "lang": "en", "sentence": "Adherence looks worse lately.", "expect": "no_ref"},
+    {"id": "cc-numeric-marker-not-a-ref", "lang": "en", "sentence": "Missed 2 doses [1].", "expect": "no_ref"},
+    {"id": "cc-fabricated-id", "lang": "en", "sentence": "Missed 2 doses [E-deadbeef].", "expect": "unknown_ref"},
+    {"id": "cc-unknown-prefix-shape", "lang": "en", "sentence": "Missed 2 doses [X-1a2b3c4d].", "expect": "no_ref"},
+    {"id": "cc-other-patient-event", "lang": "en", "sentence": "Missed 2 doses in the last 7 days [E-77aa88bb].", "expect": "unknown_ref"},
+    {"id": "cc-other-patient-mixed", "lang": "en", "sentence": "Missed 2 doses [E-1a2b3c4d][E-77aa88bb].", "expect": "unknown_ref"},
+    {"id": "cc-number-not-in-features", "lang": "en", "sentence": "Missed 9 doses in the last 7 days [E-1a2b3c4d].", "expect": "number_mismatch"},
+    {"id": "cc-decimal-not-in-features", "lang": "en", "sentence": "Adherence is 2.5 times lower [E-1a2b3c4d].", "expect": "number_mismatch"},
+    {"id": "cc-percent-not-in-features", "lang": "en", "sentence": "Adherence fell to 64% [B-missed_7d].", "expect": "number_mismatch"},
+    {"id": "cc-number-inside-ref-ignored", "lang": "en", "sentence": "Missed doses were recorded [E-9c0d1e2f].", "expect": "keep"},
+    {"id": "cc-guideline-ref", "lang": "en", "sentence": "Follow-up is due within 7 days [G-tbg00012].", "expect": "keep"},
+    {"id": "cc-te-valid", "lang": "te", "sentence": "గత 7 రోజుల్లో 2 మోతాదులు తప్పాయి [E-1a2b3c4d].", "expect": "keep"},
+    {"id": "cc-te-comma-refs", "lang": "te", "sentence": "గత 7 రోజుల్లో 2 మోతాదులు తప్పాయి [E-1a2b3c4d, B-missed_7d].", "expect": "keep"},
+    {"id": "cc-te-no-ref", "lang": "te", "sentence": "రోగి పరిస్థితి బాగోలేదు.", "expect": "no_ref"},
+    {"id": "cc-te-number-mismatch", "lang": "te", "sentence": "గత 7 రోజుల్లో 5 మోతాదులు తప్పాయి [E-1a2b3c4d].", "expect": "number_mismatch"},
+    {"id": "cc-te-other-patient", "lang": "te", "sentence": "గత 7 రోజుల్లో 2 మోతాదులు తప్పాయి [E-77aa88bb].", "expect": "unknown_ref"}
+  ],
+  "drafts": [
+    {"id": "cc-draft-split", "lang": "en",
+     "text": "Missed 2 doses in the last 7 days [E-1a2b3c4d]. Looks worse lately. Supply ran out 11 days ago [B-refill_gap_days]! Missed 9 doses [E-5e6f7a8b]?",
+     "expect_kept": 2, "expect_reasons": ["no_ref", "number_mismatch"]}
+  ]
+}

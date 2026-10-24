@@ -11,6 +11,8 @@ client_secret*.json
 gcloud-key*.json
 application_default_credentials.json
 token.json
+gmail_refresh_token*.txt
+*refresh_token*
 token*.pickle
 secrets/
 credentials/

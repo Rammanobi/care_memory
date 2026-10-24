@@ -1,0 +1,6 @@
+- [x] cm/channels/adapters_pg.py, cm/store/channels_repo.py, outbox_repo methods (tests/integration/test_telegram_pg.py)
+- [x] cm/channels/tg_http.py error mapping (test_http_client_*)
+- [x] webhooks.py, tasks.py, ops.py routes, main.py wiring, core/tasks.py local queue
+- [x] cm/jobs/outbox_drainer.py, reminders.py, make_invite.py, tg_set_webhook.py
+- [x] cm/core/budget_pg.py and .env.example names (test_pg_usage_store_feeds_governor)
+- [x] NOTES_integration.md

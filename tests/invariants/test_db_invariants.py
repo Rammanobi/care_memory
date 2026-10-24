@@ -179,7 +179,9 @@ def test_reads_for_patient_a_never_return_b(raw: psycopg.Connection) -> None:
         inbox = outbox_repo.inbox_for(p["person_id"], far, include_requests=True, conn=raw)
         assert all(o["recipient_id"] == p["person_id"] for o in inbox)
     total = sum(len(events_repo.query(p["patient_id"], far, conn=raw)) for p in pts)
-    assert total == _one(raw, "SELECT count(*) AS n FROM cm.events")["n"]
+    # every event belongs to a patient; reads skip superseded/tombstoned events, so visible <= stored
+    assert total <= _one(raw, "SELECT count(*) AS n FROM cm.events")["n"]
+    assert _one(raw, "SELECT count(*) AS n FROM cm.events e LEFT JOIN cm.patients p USING (patient_id) WHERE p.patient_id IS NULL")["n"] == 0
 
 
 def test_missed_days_counts_only_that_patient(raw: psycopg.Connection) -> None:

@@ -5,6 +5,22 @@
 *.pem
 *.key
 client_secret*.json
+*credentials*.json
+*service-account*.json
+*service_account*.json
+gcloud-key*.json
+application_default_credentials.json
+token.json
+token*.pickle
+secrets/
+credentials/
+*.p12
+*.pfx
+*.jks
+id_rsa*
+*.tfvars
+.env.local
+tg_offset.json
 
 # python
 .venv/

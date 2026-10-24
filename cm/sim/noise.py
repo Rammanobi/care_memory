@@ -1,11 +1,17 @@
-"""Lane B (Sim + seed) — see feature_specs/04_platform_eval_deploy.md F1.
+"""Lane B: reporting noise applied between true behaviour and what the system observes."""
 
-Skeleton only. Business logic is not implemented yet.
-"""
+from __future__ import annotations
 
-from typing import Any
+import random
 
 
-def apply_noise(events: Any, seed: int) -> Any:
-    """Add reporting noise."""
-    raise NotImplementedError
+def observe(rng: random.Random, taken: bool, over_reporter: bool, report_rate: float = 0.92) -> bool | None:
+    """What the patient reports for one day: True/False, or None when nothing is reported.
+
+    Over-reporters claim a dose on most missed days; everyone forgets to tap sometimes.
+    """
+    if rng.random() > report_rate:
+        return None
+    if taken:
+        return True
+    return True if (over_reporter and rng.random() < 0.7) else False

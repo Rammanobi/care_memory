@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cloud Scheduler (time zone Asia/Kolkata). Red escalation is a cm-sweeper duty, not a scheduler task.
+# Cloud Scheduler (time zone Asia/Kolkata). Only targets routes that exist today.
 # In demo mode pause the wall-clock ones on stage: gcloud scheduler jobs pause sched-checkins --location=$REGION
 # Usage: bash infra/70_scheduler.sh  (after 60_deploy.sh)
 set -euo pipefail
@@ -25,16 +25,12 @@ TASK() { # name cron path [json-body]
     "${OIDC[@]}" --attempt-deadline=900s
 }
 
-RUNJOB sched-nightly      "0 1 * * *"     cm-nightly
-RUNJOB sched-sweeper      "*/5 * * * *"   cm-sweeper
-# Check-in slots (I8). Slot names are an assumption: align with cm/router (CheckinSlot) before demo. UNVERIFIED
-TASK   sched-checkins     "30 7 * * *"    /tasks/checkins '{"slot":"morning"}'
-TASK   sched-checkins-eve "30 18 * * *"   /tasks/checkins '{"slot":"evening"}'
-TASK   sched-checkins-sup "0 19 * * *"    /tasks/checkins '{"slot":"supporter_proxy"}'
-TASK   sched-portal-sync  "30 0 * * *"    /tasks/portal-sync
-TASK   sched-digest       "0 12 * * *"    /tasks/digest
-TASK   sched-visit-lists  "0 17 * * *"    /tasks/visit-lists
-TASK   sched-gmail-renew  "0 6 * * *"     /tasks/gmail-watch-renew
-TASK   sched-gmail-sweep  "*/30 * * * *"  /tasks/gmail-sweep
-# P1 (not created): /tasks/calendar-sync after nightly; monthly /tasks/district-report
-echo "70_scheduler: done."
+# Routes that exist in cm/api/routers/tasks.py: /tasks/drain-outbox, /tasks/checkins (+ /tasks/run, not scheduled).
+TASK   sched-drain-outbox "* * * * *"   /tasks/drain-outbox
+TASK   sched-checkins     "30 7 * * *"  /tasks/checkins
+# OPTIONAL: nightly belief refresh. Needs the cm-nightly job (commented out in 60_deploy.sh; it takes
+# `--patient`, so it is not useful as a bare schedule yet). Enable with OPTIONAL_NIGHTLY=1 once deployed.
+if [ "${OPTIONAL_NIGHTLY:-0}" = "1" ]; then RUNJOB sched-nightly "0 1 * * *" cm-nightly; fi
+# REMOVED (target routes/code do not exist yet): sweeper (stub), checkins-eve/-sup, portal-sync, digest,
+# visit-lists, gmail-watch-renew, gmail-sweep, calendar-sync, district-report.
+echo "70_scheduler: done. Demo night: DEMO_IGNORE_QUIET_HOURS=1 on cm-api AND cm-worker (CM_ENV=demo)."

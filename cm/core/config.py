@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from functools import lru_cache
+from collections.abc import Mapping
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -30,6 +31,24 @@ def _flag(name: str, default: str = "0") -> bool:
     return os.environ.get(name, default).strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _q(v: str) -> str:
+    """Quote a libpq conninfo value only when needed (spaces, quotes, backslashes, empty)."""
+    if v and not any(c in v for c in " '\\"):
+        return v
+    return "'" + v.replace("\\", "\\\\").replace("'", "\\'") + "'"
+
+
+def resolve_db_host(env: Mapping[str, str]) -> str:
+    """DB_HOST wins. Else CLOUD_SQL_INSTANCE -> /cloudsql/<instance>."""
+    host = env.get("DB_HOST", "").strip()
+    if host:
+        return host
+    inst = env.get("CLOUD_SQL_INSTANCE", "").strip()
+    if inst:
+        return inst if inst.startswith("/") else f"/cloudsql/{inst}"
+    return "localhost"
+
+
 @dataclass(frozen=True)
 class Settings:
     db_host: str
@@ -44,12 +63,14 @@ class Settings:
     pool_max: int = 5
     cors_origins: tuple[str, ...] = field(default=("http://localhost:5173",))
     cookie_secure: bool = False
+    cookie_domain: str | None = None
 
     @property
     def dsn(self) -> str:
+        """libpq key/value DSN. A host starting with "/" is a unix-socket directory (Cloud SQL)."""
         return (
-            f"host={self.db_host} port={self.db_port} dbname={self.db_name} "
-            f"user={self.db_user} password={self.db_password}"
+            f"host={_q(self.db_host)} port={self.db_port} dbname={_q(self.db_name)} "
+            f"user={_q(self.db_user)} password={_q(self.db_password)}"
         )
 
 
@@ -59,7 +80,7 @@ def load_settings() -> Settings:
     load_dotenv()
     env = os.environ
     return Settings(
-        db_host=env.get("DB_HOST", "localhost"),
+        db_host=resolve_db_host(env),
         db_port=int(env.get("DB_PORT", "5432")),
         db_name=env.get("DB_NAME", "caremem"),
         db_user=env.get("DB_USER", "postgres"),
@@ -74,5 +95,6 @@ def load_settings() -> Settings:
             for o in env.get("CORS_ORIGINS", "http://localhost:5173").split(",")
             if o.strip()
         ),
-        cookie_secure=_flag("COOKIE_SECURE"),
+        cookie_secure=_flag("COOKIE_SECURE") or env.get("CM_ENV", "").strip().lower() == "prod",
+        cookie_domain=env.get("CM_COOKIE_DOMAIN", "").strip() or None,
     )

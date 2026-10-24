@@ -42,6 +42,7 @@ web/dist/
 
 # generated output
 out/
+.cache/
 *.pdf
 fixtures/snapshots/*.dump
 

@@ -81,6 +81,7 @@ def login(body: LoginIn, request: Request, response: Response) -> TokenOut:
         httponly=True,
         samesite="strict",
         secure=s.cookie_secure,
+        domain=s.cookie_domain,
         max_age=s.jwt_ttl_min * 60,
         path="/",
     )
@@ -106,5 +107,5 @@ def me(user: User = Depends(current_user)) -> Me:
 @router.post("/logout", status_code=204)
 def logout(_: User = Depends(current_user)) -> Response:
     resp = Response(status_code=204)
-    resp.delete_cookie(COOKIE, path="/")
+    resp.delete_cookie(COOKIE, path="/", domain=load_settings().cookie_domain)
     return resp

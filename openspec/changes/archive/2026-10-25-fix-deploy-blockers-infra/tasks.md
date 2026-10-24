@@ -1,0 +1,5 @@
+- [x] 1 `cm/__main__.py` subcommands; tests/unit/core/test_main_entry.py
+- [x] 2 `cm/core/config.py` socket DSN and CLOUD_SQL_INSTANCE; same test file
+- [x] 3 quiet-hours gate accepts demo; same test file
+- [x] 4 env YAMLs, 00/30/60/70/80 scripts, vars.sh DRY_RUN
+- [x] 5 85_lb.sh, 90_telegram_webhook.sh, infra/README.md

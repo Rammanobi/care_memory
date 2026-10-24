@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+import psycopg
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,6 +30,7 @@ from cm.api.routers import (
     templates,
     webhooks,
 )
+from cm.api.web import AllowedHostsMiddleware, mount_spa, parse_hosts
 from cm.contracts.api import HealthOut
 from cm.core import budget_pg, clock, db
 from cm.core import tasks as core_tasks
@@ -59,6 +62,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 def create_app() -> FastAPI:
     settings = load_settings()
     app = FastAPI(title="CareMemory", lifespan=lifespan)
+    hosts = parse_hosts(os.environ.get("CM_ALLOWED_HOSTS"))
+    if hosts:
+        app.add_middleware(AllowedHostsMiddleware, allowed=hosts)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(settings.cors_origins),
@@ -79,6 +85,14 @@ def create_app() -> FastAPI:
     async def _invalid(_: Request, exc: RequestValidationError) -> JSONResponse:
         fields = ", ".join(".".join(str(x) for x in e["loc"][1:]) for e in exc.errors())
         return problem_response(422, "Invalid request", "validation_error", fields)
+
+    @app.exception_handler(psycopg.DataError)
+    async def _bad_data(_: Request, exc: psycopg.DataError) -> JSONResponse:
+        # e.g. a NUL byte in text, or a number outside the database range: the client's fault, not a 500.
+        log.warning("rejected value the database cannot store", error=type(exc).__name__)
+        return problem_response(
+            422, "Invalid request", "invalid_value", "a value is not acceptable"
+        )
 
     @app.get("/healthz", response_model=HealthOut, response_model_exclude_none=True)
     def healthz() -> HealthOut:
@@ -108,6 +122,7 @@ def create_app() -> FastAPI:
         tasks,
     ):
         app.include_router(r.router)
+    mount_spa(app)  # last: the SPA catch-all must not shadow API routes
     return app
 
 

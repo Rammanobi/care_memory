@@ -6,6 +6,7 @@ Usage: python -m cm.jobs.migrate
 from __future__ import annotations
 
 import hashlib
+import sys
 from pathlib import Path
 
 from cm.core.db import connect_direct
@@ -45,6 +46,16 @@ def run_migrations() -> list[str]:
     return applied_now
 
 
-if __name__ == "__main__":
-    names = run_migrations()
+def main() -> int:
+    """Cloud Run job entry: 0 when up to date or applied, 1 on any failure (never prints the DSN)."""
+    try:
+        names = run_migrations()
+    except Exception as exc:  # noqa: BLE001
+        print(f"migrate FAILED: {type(exc).__name__}", file=sys.stderr)
+        return 1
     print(f"applied {len(names)} migration(s): {', '.join(names) or 'none (up to date)'}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

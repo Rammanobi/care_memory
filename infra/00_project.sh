@@ -5,7 +5,7 @@ set -euo pipefail
 source "$(dirname "$0")/vars.sh"
 
 gcloud config set project "$PROJECT"
-gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com \
+gcloud services enable compute.googleapis.com run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com \
   sqladmin.googleapis.com secretmanager.googleapis.com cloudscheduler.googleapis.com cloudtasks.googleapis.com \
   pubsub.googleapis.com gmail.googleapis.com calendar-json.googleapis.com iam.googleapis.com \
   iamcredentials.googleapis.com logging.googleapis.com monitoring.googleapis.com storage.googleapis.com

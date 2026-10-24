@@ -1,17 +1,38 @@
+# Keep secrets, local state and dev-only trees out of the build context (and so out of the image).
 .git
+.gitignore
+.gitattributes
 .venv
 venv
 node_modules
-web/node_modules
+**/node_modules
 web/dist
 out
+.cache
+.hypothesis
 __pycache__
+**/__pycache__
 *.pyc
 .pytest_cache
 .ruff_cache
+# secrets: never baked in; config is read from env at run time
 .env
 .env.*
+**/.env
+**/.env.*
 !.env.example
+!web/.env.example
+*.pem
+*.key
+# data dumps and snapshots
+*.dump
+*.sql.gz
+*.sqlite
+*.db
+fixtures/snapshots
+fixtures/ai_evals
+fixtures/rag_evals
+# dev / tooling
 openspec
 .claude
 package.json
@@ -22,4 +43,10 @@ infra
 scripts
 *.md
 *.pdf
-fixtures/snapshots
+CLAUDE.md
+Dockerfile
+MEMORY.md
+Makefile
+README.md
+TRACKER.md
+docker-compose.yml

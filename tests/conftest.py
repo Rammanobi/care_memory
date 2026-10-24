@@ -16,6 +16,9 @@ from cm.core.config import load_dotenv, load_settings  # noqa: E402
 
 load_dotenv()
 # Never touch the dev database: tests always use their own.
+os.environ["DEMO_IGNORE_QUIET_HOURS"] = "0"  # dev .env demo switch must not change test behaviour
+os.environ.setdefault("CM_WEB_DIR", os.path.join(os.path.dirname(__file__), "_no_web_dist"))  # API tests never serve a built web/dist
+os.environ["CM_ENV"] = "test"  # load_settings() reloads .env; setdefault semantics keep these
 os.environ["DB_NAME"] = os.environ.get("CM_TEST_DB_NAME", "caremem_test")
 os.environ.setdefault("JWT_SIGNING_KEY", "test-" + secrets.token_hex(24))
 os.environ.setdefault("DB_PASSWORD", "postgres")  # local compose default; tests only

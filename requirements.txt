@@ -37,12 +37,12 @@ alembic==1.20.1                           # UNVERIFIED
 sqlalchemy==2.1.6                         # UNVERIFIED (alembic only, not used at runtime)
 
 # --- Google Cloud ---
-google-cloud-tasks==2.26.0                # UNVERIFIED
+google-cloud-tasks==2.26.0                # verified with pip index versions 25 Oct 2026 (Cloud Tasks enqueue; lazy import)
 google-cloud-secret-manager==2.31.0       # UNVERIFIED (infra scripts / local fallback; Cloud Run mounts secrets as env)
 google-cloud-storage==3.17.1              # UNVERIFIED (raw document store, RAG)
-google-api-python-client==2.201.0         # UNVERIFIED (Gmail + Calendar API)
-google-auth==2.62.0                       # UNVERIFIED (OIDC id_token verification, AuthorizedSession for jobs:run)
-google-auth-oauthlib==1.5.0               # UNVERIFIED (infra/gmail_auth.py one-off refresh token)
+google-api-python-client==2.201.0         # verified on PyPI 24 Oct 2026 (Gmail + Calendar API)
+google-auth==2.62.0                        # verified on PyPI 24 Oct 2026 (OIDC verification, refresh-token credentials)
+google-auth-oauthlib==1.5.0                # verified on PyPI 24 Oct 2026 (scripts/gmail_auth.py one-off consent)
 
 # --- data / statistics ---
 numpy==2.4.6                              # UNVERIFIED
@@ -69,3 +69,4 @@ tenacity>=8.2.3,<9.2.0                    # deepagents 0.7.30 -> langchain-googl
 #   Use:     /opsx:propose "idea"  ->  /opsx:apply  ->  /opsx:archive
 # Project context for agents is in openspec/config.yaml. Runtime memory is separate: see
 # CAREMEMORY_ARCHITECTURE.md section 4 (event log + PostgresStore); LangMem is intentionally not used.
+tiktoken>=0.7

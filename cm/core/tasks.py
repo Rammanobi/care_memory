@@ -1,18 +1,28 @@
-"""Lane A: task enqueue. ``TASKS_MODE=local`` runs an in-process queue (dev only); ``cloud`` is a stub.
+"""Lane A: task enqueue. ``TASKS_MODE=local`` runs an in-process queue (dev only); ``cloud`` creates
+Cloud Tasks HTTP tasks.
 
-A task is identified by ``name`` (colon-free). Enqueueing the same name twice is a no-op, which mirrors
-Cloud Tasks task-name dedup. The local worker thread is started by the API at startup, only in dev.
+A task is identified by ``name`` = task_id (colon-free). Enqueueing the same name twice is a no-op, which
+mirrors Cloud Tasks task-name dedup (ALREADY_EXISTS is treated as success). The local worker thread is
+started by the API at startup, only in dev.
+
+Cloud mode env (names only): CM_TASKS_BASE_URL (target and OIDC audience), CM_TASKS_SA (OIDC service
+account), CM_TASKS_QUEUE_AGENT_RUNS / _RESUMES / _OUTBOUND (queue names; fall back to TASKS_QUEUE_*),
+GCP_PROJECT, GCP_REGION. The google-cloud-tasks client is imported lazily and can be injected.
 """
 
 from __future__ import annotations
 
+import json
 import os
 import queue as _q
+import re
 import threading
 from collections import OrderedDict
 from collections.abc import Callable
-from typing import Any
+from datetime import timedelta
+from typing import Any, Protocol
 
+from cm.core import clock
 from cm.core.logging import get_logger
 
 log = get_logger()
@@ -32,12 +42,102 @@ def mode() -> str:
     return os.environ.get("TASKS_MODE", "local").strip().lower()
 
 
-def enqueue(queue: str, name: str, payload: Any) -> None:
-    """Enqueue a named task. Repeating a name is a no-op."""
+class TasksConfigError(RuntimeError):
+    """Cloud mode is selected but a required env var is missing (message names the variable only)."""
+
+
+class CloudTasksClient(Protocol):
+    """The slice of ``google.cloud.tasks_v2.CloudTasksClient`` we use."""
+
+    def create_task(self, request: dict[str, Any]) -> Any: ...
+
+
+_cloud_client: CloudTasksClient | None = None
+_TASK_ID = re.compile(r"^[A-Za-z0-9_-]{1,500}$")
+_QUEUE_ENV = {
+    "agent-runs": ("CM_TASKS_QUEUE_AGENT_RUNS", "TASKS_QUEUE_AGENT_RUNS"),
+    "resumes": ("CM_TASKS_QUEUE_RESUMES", "TASKS_QUEUE_RESUMES"),
+    "outbound": ("CM_TASKS_QUEUE_OUTBOUND", "TASKS_QUEUE_OUTBOUND"),
+}
+
+
+def set_cloud_client(client: CloudTasksClient | None) -> None:
+    """Inject a client (tests). ``None`` goes back to the lazily built real client."""
+    global _cloud_client
+    _cloud_client = client
+
+
+def _env(*names: str) -> str:
+    for n in names:
+        v = os.environ.get(n, "").strip()
+        if v:
+            return v
+    raise TasksConfigError(f"{names[0]} is not set")
+
+
+def tasks_base_url() -> str:
+    return _env("CM_TASKS_BASE_URL").rstrip("/")
+
+
+def tasks_service_account() -> str:
+    return _env("CM_TASKS_SA", "TASKS_INVOKER_SA")
+
+
+def _get_client() -> CloudTasksClient:
+    global _cloud_client
+    if _cloud_client is None:
+        try:
+            from google.cloud import tasks_v2  # lazy: only cloud mode needs the package
+        except ImportError as exc:
+            raise TasksConfigError("google-cloud-tasks is not installed") from exc
+        _cloud_client = tasks_v2.CloudTasksClient()
+    return _cloud_client
+
+
+def _is_already_exists(exc: Exception) -> bool:
+    return type(exc).__name__ == "AlreadyExists" or getattr(exc, "code", None) in (
+        409,
+        "ALREADY_EXISTS",
+    )
+
+
+def _queue_path(queue: str) -> str:
+    envs = _QUEUE_ENV.get(queue)
+    qname = _env(*envs) if envs and any(os.environ.get(e) for e in envs) else queue
+    return f"projects/{_env('GCP_PROJECT')}/locations/{_env('GCP_REGION')}/queues/{qname}"
+
+
+def _enqueue_cloud(queue: str, name: str, payload: Any, delay_s: float) -> None:
+    if not _TASK_ID.match(name):
+        raise ValueError("task_id must be 1-500 chars of letters, digits, hyphen or underscore")
+    base, sa = tasks_base_url(), tasks_service_account()
+    parent = _queue_path(queue)
+    body = json.dumps({"queue": queue, "task_id": name, "payload": payload}, default=str).encode()
+    task: dict[str, Any] = {
+        "name": f"{parent}/tasks/{name}",
+        "http_request": {
+            "http_method": "POST",
+            "url": f"{base}/tasks/run",
+            "headers": {"Content-Type": "application/json"},
+            "body": body,
+            "oidc_token": {"service_account_email": sa, "audience": base},
+        },
+    }
+    if delay_s > 0:
+        task["schedule_time"] = clock.now() + timedelta(seconds=delay_s)
+    try:
+        _get_client().create_task(request={"parent": parent, "task": task})
+    except Exception as exc:  # noqa: BLE001
+        if _is_already_exists(exc):
+            return  # same task_id already queued or recently ran: idempotent success
+        raise
+
+
+def enqueue(queue: str, name: str, payload: Any, *, delay_s: float = 0) -> None:
+    """Enqueue a named task. Repeating a name is a no-op. ``delay_s`` schedules it later (cloud mode)."""
     if mode() == "cloud":
-        raise NotImplementedError(
-            "TASKS_MODE=cloud: Cloud Tasks enqueue is not wired in this build; set TASKS_MODE=local"
-        )
+        _enqueue_cloud(queue, name, payload, delay_s)
+        return
     with _lock:
         if name in _seen:
             return

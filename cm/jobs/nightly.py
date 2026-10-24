@@ -21,8 +21,12 @@ from cm.core import clock, llm
 from cm.core.budget_pg import install_governor
 from cm.core.config import load_dotenv, load_settings
 from cm.core.db import transaction
+from cm.core.logging import get_logger
 from cm.memory.features import compute_features
+from cm.memory.pipeline import run_patient as run_memory
 from cm.store import ai_repo, events_repo
+
+log = get_logger(__name__)
 
 
 @contextmanager
@@ -47,6 +51,14 @@ def checkpointer() -> Any:
         saver_cm.__exit__(None, None, None)
 
 
+def _memory_summary(mem: Any) -> dict[str, Any] | None:
+    if mem is None:
+        return None
+    return {"as_of": mem.as_of.isoformat(), "beliefs": len(mem.beliefs),
+            "risk_p": round(mem.risk.p, 4) if mem.risk else None,
+            "conflicts": len(mem.conflicts), "engine_conflicts": [c.cref for c in mem.engine_conflicts]}
+
+
 def run_patient(code: str, *, live: bool = False, force: bool = False) -> dict[str, Any]:
     load_dotenv()
     with transaction() as conn:
@@ -55,6 +67,13 @@ def run_patient(code: str, *, live: bool = False, force: bool = False) -> dict[s
         day0, sim_day = ai_repo.sim_day0(conn=conn)
     gov = install_governor()
     as_of = clock.now()
+    mem = run_memory(pid, as_of, day0=day0)  # persist features, beliefs, risk, conflicts first
+    try:  # keep the patient's retrieval index current (idempotent); real embeddings only on live runs
+        from cm.jobs.rag_index import index_patient
+
+        index_patient(code, as_of, embed=live)
+    except Exception as e:  # noqa: BLE001  retrieval index is best-effort, never blocks the card
+        log.warning("rag_index_failed", patient=token, reason=type(e).__name__)
     events = events_repo.query(pid, as_of)
     feats = compute_features(events, as_of, day0)
     task_id = f"nightly-{token}-d{sim_day}"
@@ -75,7 +94,7 @@ def run_patient(code: str, *, live: bool = False, force: bool = False) -> dict[s
         out = run(agent, ctx, resume="approve") if first["status"] == "interrupted" else first
     tot = ai_repo.task_run_totals(task_id)
     card = ctx.cards["card-1"]["card"] if ctx.cards else None
-    return {"status": out["status"], "patient": token, "checkpointer": kind, "task_id": task_id,
+    return {"status": out["status"], "patient": token, "memory": _memory_summary(mem), "checkpointer": kind, "task_id": task_id,
             "budget_state": gov.state().value, "approvals": out["approvals"], "tier": ai_repo.approval_tier(out["approvals"]),
             "tool_calls": out["tool_calls"], "todos": [t.get("content") for t in out["todos"]],
             "card_source": card.source if card else None, "card_reason": card.reason if card else None,

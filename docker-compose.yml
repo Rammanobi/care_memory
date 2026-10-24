@@ -1,0 +1,42 @@
+# Local stack. `docker compose up -d db` is enough for most work; add --profile stack for api + worker.
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: caremem
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres   # local only
+    ports: ["${DB_PORT:-5432}:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/local/init.sql:/docker-entrypoint-initdb.d/00_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d caremem"]
+      interval: 3s
+      retries: 20
+
+  dev:
+    build: {context: ., dockerfile: infra/local/Dockerfile.dev}
+    volumes: [".:/app"]
+    working_dir: /app
+    profiles: [tools]
+    depends_on: {db: {condition: service_healthy}}
+
+  api:
+    build: .
+    env_file: .env
+    environment: {CM_ROLE: api, DB_CONNECT_MODE: tcp, DB_HOST: db, WORKER_URL: "http://worker:8080", TASKS_MODE: local}
+    ports: ["8080:8080"]
+    profiles: [stack]
+    depends_on: {db: {condition: service_healthy}}
+
+  worker:
+    build: .
+    env_file: .env
+    environment: {CM_ROLE: worker, DB_CONNECT_MODE: tcp, DB_HOST: db, TASKS_MODE: local}
+    ports: ["8081:8080"]
+    profiles: [stack]
+    depends_on: {db: {condition: service_healthy}}
+
+volumes:
+  pgdata: {}

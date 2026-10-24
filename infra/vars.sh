@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Shared variables. Every infra script does: set -euo pipefail; source "$(dirname "$0")/vars.sh"
+# Override PROJECT/REGION in the environment before running if needed.
+export PROJECT="${PROJECT:-caremem-hack}"
+export REGION="${REGION:-asia-south1}"
+export PN="$(gcloud projects describe "$PROJECT" --format='value(projectNumber)' 2>/dev/null || true)"
+export AR="$REGION-docker.pkg.dev/$PROJECT/cm"
+export INSTANCE="$PROJECT:$REGION:cm-pg"
+export SA_API="cm-api@$PROJECT.iam.gserviceaccount.com"
+export SA_WORKER="cm-worker@$PROJECT.iam.gserviceaccount.com"
+export SA_JOBS="cm-jobs@$PROJECT.iam.gserviceaccount.com"
+export SA_INVOKER="cm-tasks-invoker@$PROJECT.iam.gserviceaccount.com"
+export SA_PUSH="cm-pubsub-push@$PROJECT.iam.gserviceaccount.com"
+export SA_DEPLOY="cm-deployer@$PROJECT.iam.gserviceaccount.com"
+export BUCKET="$PROJECT-cm-docs"
+export PUBSUB_AGENT="service-$PN@gcp-sa-pubsub.iam.gserviceaccount.com"

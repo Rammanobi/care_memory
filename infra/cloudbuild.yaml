@@ -1,0 +1,43 @@
+# CI/CD: test -> docker build -> push -> migrate (cm-migrate job, --wait) -> deploy (infra/60_deploy.sh).
+# Trigger (needs the GitHub app connection, console):
+#   gcloud builds triggers create github --name=cm-main --repo-owner=$GH_OWNER --repo-name=caremem \
+#     --branch-pattern='^main$' --build-config=infra/cloudbuild.yaml \
+#     --service-account=projects/$PROJECT/serviceAccounts/cm-deployer@$PROJECT.iam.gserviceaccount.com --region=$REGION
+# Manual: make deploy
+steps:
+- id: test
+  name: python:3.12-slim
+  entrypoint: bash
+  args:
+  - -c
+  - >-
+    pip install -q uv &&
+    uv pip install --system -r requirements.txt pytest==9.1.1 pytest-asyncio==1.4.0 respx==0.23.1
+    freezegun==1.5.5 hypothesis==6.170.8 import-linter==2.15 &&
+    pytest -m 'not live and not slow and not docs and not db' -q && lint-imports
+- id: build
+  name: gcr.io/cloud-builders/docker
+  args: ["build", "-t", "${_AR}/cm:$SHORT_SHA", "-t", "${_AR}/cm:latest", "."]
+- id: push
+  name: gcr.io/cloud-builders/docker
+  args: ["push", "--all-tags", "${_AR}/cm"]
+- id: migrate
+  name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+  entrypoint: bash
+  args:
+  - -c
+  - >-
+    gcloud run jobs update cm-migrate --region=${_REGION} --image=${_AR}/cm:$SHORT_SHA &&
+    gcloud run jobs execute cm-migrate --region=${_REGION} --wait
+- id: deploy
+  name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+  entrypoint: bash
+  args: ["-c", "IMAGE=${_AR}/cm:$SHORT_SHA PROJECT=${_PROJECT} REGION=${_REGION} bash infra/60_deploy.sh"]
+substitutions:
+  _REGION: asia-south1
+  _PROJECT: caremem-hack
+  _AR: asia-south1-docker.pkg.dev/caremem-hack/cm
+options:
+  logging: CLOUD_LOGGING_ONLY
+serviceAccount: projects/caremem-hack/serviceAccounts/cm-deployer@caremem-hack.iam.gserviceaccount.com
+timeout: 1800s

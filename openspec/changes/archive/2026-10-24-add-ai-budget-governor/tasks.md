@@ -1,0 +1,3 @@
+- [x] cm/core/budget.py, retry.py, llm.py, tokenize.py, lifecycle.py
+- [x] tests/unit/core_ai/test_ai.py (36 tests)
+- [x] WORK_BREAKDOWN section, NOTES_ai.md

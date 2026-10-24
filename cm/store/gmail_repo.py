@@ -162,3 +162,68 @@ def approval_tier(approval_id: UUID, *, conn: Any = None) -> str | None:
             return approval_tier(approval_id, conn=c)
     r = conn.execute("SELECT tier FROM cm.approvals WHERE approval_id=%s", (approval_id,)).fetchone()
     return r["tier"] if r else None
+
+
+# ---------------------------------------------------------------- doctor question email throttle (audit_log backed)
+NOTIFY_ACTION = "doctor_email_notify"
+NOTIFY_RELEASE_ACTION = "doctor_email_notify_release"  # audit_log is append-only: a failed send appends this
+NOTIFY_NORMAL_GAP = timedelta(minutes=10)
+NOTIFY_URGENT_WINDOW = timedelta(hours=1)
+NOTIFY_URGENT_MAX = 3
+# live claims = claim rows with no later release row for the same approval
+_LIVE = (
+    "action=%s AND NOT EXISTS (SELECT 1 FROM cm.audit_log r WHERE r.action=%s "
+    "AND r.result_ids[1] = cm.audit_log.result_ids[1] AND r.at >= cm.audit_log.at)"
+)
+
+
+def doctor_notify_claim(approval_id: str, patient_code: str, urgent: bool, now: datetime,
+                        *, conn: Any = None) -> str:
+    """Atomically claim the right to email the doctor about one approval.
+
+    Returns ``ok`` (row written), ``duplicate`` (this approval was already claimed) or ``throttled``.
+    Normal/high: at most one email per patient per 10 minutes. Urgent: at most 3 per patient per hour.
+    State lives in cm.audit_log (action ``doctor_email_notify``, result_ids = [approval_id, patient_code,
+    urgent|normal]); no patient text is stored.
+    """
+    if conn is None:
+        with transaction() as c:
+            return doctor_notify_claim(approval_id, patient_code, urgent, now, conn=c)
+    live = (NOTIFY_ACTION, NOTIFY_RELEASE_ACTION)
+    conn.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (f"doctor_notify:{patient_code}",))
+    if conn.execute(
+        f"SELECT 1 FROM cm.audit_log WHERE {_LIVE} AND result_ids[1] = %s LIMIT 1", (*live, approval_id)
+    ).fetchone():
+        return "duplicate"
+    if urgent:
+        n = conn.execute(
+            f"SELECT count(*) AS n FROM cm.audit_log WHERE {_LIVE} AND at > %s "
+            "AND result_ids[2] = %s AND result_ids[3] = 'urgent'",
+            (*live, now - NOTIFY_URGENT_WINDOW, patient_code),
+        ).fetchone()
+        if int(n["n"]) >= NOTIFY_URGENT_MAX:
+            return "throttled"
+    elif conn.execute(
+        f"SELECT 1 FROM cm.audit_log WHERE {_LIVE} AND at > %s AND result_ids[2] = %s LIMIT 1",
+        (*live, now - NOTIFY_NORMAL_GAP, patient_code),
+    ).fetchone():
+        return "throttled"
+    conn.execute(
+        "INSERT INTO cm.audit_log (at, actor, role, action, tool, args_hash, result_ids) "
+        "VALUES (%s,'system','system',%s,'doctor_notify',%s,%s)",
+        (now, NOTIFY_ACTION, hashlib.sha256(approval_id.encode()).hexdigest(),
+         [approval_id, patient_code, "urgent" if urgent else "normal"]),
+    )
+    return "ok"
+
+
+def doctor_notify_release(approval_id: str, now: datetime, *, conn: Any = None) -> None:
+    """Undo a claim when the send failed (append a release row) so a retry of the approval can try again."""
+    if conn is None:
+        with transaction() as c:
+            return doctor_notify_release(approval_id, now, conn=c)
+    conn.execute(
+        "INSERT INTO cm.audit_log (at, actor, role, action, tool, args_hash, result_ids) "
+        "VALUES (%s,'system','system',%s,'doctor_notify',%s,%s)",
+        (now, NOTIFY_RELEASE_ACTION, hashlib.sha256(approval_id.encode()).hexdigest(), [approval_id]),
+    )

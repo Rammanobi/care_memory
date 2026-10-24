@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Any, Literal
 
 from fastapi import APIRouter, Depends
@@ -228,7 +229,7 @@ def audit_list(
     limit: int = 100,
     _: User = Depends(console),
 ) -> Page[AuditRowOut]:
-    at = now()
+    at = max(now(), datetime.now(UTC))  # login rows carry real time; the sim clock may be pinned earlier
     limit = max(1, min(limit, 500))
     offset = int(cursor) if cursor and cursor.isdigit() else 0
     where, args = ["a.at <= %s"], [at]

@@ -6,6 +6,7 @@ from __future__ import annotations
 import os
 import time
 from collections import defaultdict, deque
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, Request, Response
 
@@ -57,9 +58,11 @@ def login(body: LoginIn, request: Request, response: Response) -> TokenOut:
             "UPDATE cm.auth_credentials SET last_login_at=%s WHERE person_id=%s",
             (at, row["person_id"]),
         )
-        conn.execute(
-            "INSERT INTO cm.audit_log (at, actor, role, action) VALUES (%s,%s,%s,'login')",
-            (at, row["token"], row["role"]),
+        real = datetime.now(UTC)  # real time: the sim clock is pinned, so `at` would never move
+        conn.execute(  # one row per sign-in: a double submit within 5 s is the same event
+            "INSERT INTO cm.audit_log (at, actor, role, action) SELECT %s,%s,%s,'login' WHERE NOT EXISTS "
+            "(SELECT 1 FROM cm.audit_log WHERE actor=%s AND action='login' AND at > %s)",
+            (real, row["token"], row["role"], row["token"], real - timedelta(seconds=5)),
         )
     token = auth.create_access_token(
         {

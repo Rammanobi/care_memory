@@ -210,6 +210,28 @@ class UsageOut(CMModel):
     provider_pct: int
 
 
+class ChannelStateOut(CMModel):
+    name: str
+    connected: bool
+    detail: str
+    bot_username: str | None = None
+    active_bindings: int = 0
+    last_seen_at: datetime | None = None
+    recently_seen: bool = False
+
+
+class NightlyRunIn(CMModel):
+    patient: str
+    live: bool = False
+
+
+class NightlyRunOut(CMModel):
+    status: str
+    task_id: str
+    patient: str
+    live: bool
+
+
 class UsageModeIn(CMModel):
     mode: Literal["GREEN", "AMBER", "RED"]
 

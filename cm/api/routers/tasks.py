@@ -30,6 +30,10 @@ def dispatch(queue: str, name: str, payload: Any) -> None:
         from cm.jobs.reminders import produce
 
         produce()
+    elif kind == "nightly":
+        from cm.jobs.nightly import run_patient
+
+        run_patient(str(payload["patient"]), live=bool(payload.get("live", False)))
     else:
         log.info("task has no handler yet", queue=queue, kind=kind)
 

@@ -24,6 +24,9 @@ from tests.integration.test_telegram_pg import (  # noqa: F401
     sent_reminder,
     tap,
 )
+from tests.integration.test_telegram_pg import (
+    TOKEN as PATIENT_TOKEN,
+)
 
 TOKEN = "123:fake-test-token"
 SECRET_TEXT = "my private words"
@@ -190,7 +193,7 @@ def test_trusted_path_not_reachable_from_route() -> None:
 
 @pytest.mark.db
 def test_update_becomes_event_row_via_poller(env: dict[str, Any]) -> None:  # noqa: F811
-    code = make_invite.make("PT-0142")
+    code = make_invite.make(PATIENT_TOKEN)
     fake = Fake(
         {
             "getUpdates": [

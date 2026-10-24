@@ -53,9 +53,10 @@ def _related(conn: Any, as_of: datetime) -> dict[UUID, list[dict[str, Any]]]:
         is_req = r["subkind"] == "patient_request"
         if is_req and r["archived"]:
             continue
-        if not is_req and r["tier"] == "green":
+        green = not is_req and r["tier"] == "green"
+        if green and r["status"] != "pending":
             continue
-        out.setdefault(r["patient_id"], []).append({**r, "is_req": is_req})
+        out.setdefault(r["patient_id"], []).append({**r, "is_req": is_req, "green": green})
     return out
 
 
@@ -63,15 +64,16 @@ def _level(
     base: str, tag: str, next_step: str, items: list[dict[str, Any]]
 ) -> tuple[str, str, str, bool, bool]:
     """Port of web/src/api/derive.ts buildRow."""
-    pending = [x for x in items if x["status"] == "pending"]
+    pending = [x for x in items if x["status"] == "pending" and not x.get("green")]
+    still_open = any(x["status"] == "pending" for x in items)  # includes green drafts awaiting release
     needs = bool(pending)
     has_req = any(x["is_req"] and x["status"] == "pending" for x in items)
     level, tg, nxt = base, tag, next_step
     if needs and base == "grn":
         level, tg = "blu", "ASKED"
-    elif not needs and base != "grn" and items:
+    elif not needs and not still_open and base != "grn" and items:
         level, tg = "grn", "HANDLED"
-    if not needs and items:
+    if not needs and items and not still_open:
         if any(x["status"] in ("approved", "edited") for x in items):
             nxt = "Approved and sent"
         elif items[-1]["status"] == "rejected":
@@ -114,7 +116,7 @@ def ui_patients(conn: Any, as_of: datetime) -> list[UiPatient]:
                 level_tag=ltag,
                 needs_me=needs,
                 has_request=has_req,
-                open_reviews=sum(1 for x in items if x["status"] == "pending"),
+                open_reviews=sum(1 for x in items if x["status"] == "pending" and not x.get("green")),
             ).model_copy(update={"next_step": nxt})
         )
     return out

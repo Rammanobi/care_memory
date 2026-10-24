@@ -34,11 +34,44 @@ pytestmark = pytest.mark.db
 SECRET = "test-secret-not-real"
 CHAT = "424242"
 BASE = datetime(2026, 3, 2, 12, 0, tzinfo=clock.IST)
+TOKEN = "P-9901"  # throwaway patient owned by this file; never the live demo patient P-0142
 
 
 def q(sql: str, *args: Any) -> list[dict[str, Any]]:
     with transaction() as conn:
         return conn.execute(sql, args).fetchall()
+
+
+def _throwaway_patient() -> dict[str, Any]:
+    """Own person + patient (cloned from the seeded demo patient's clinic and vault) in the test database."""
+    with transaction() as conn:
+        row = conn.execute(
+            "SELECT p.person_id, pt.patient_id FROM cm.persons p JOIN cm.patients pt USING (person_id) "
+            "WHERE p.token=%s",
+            (TOKEN,),
+        ).fetchone()
+        if row:
+            return row
+        src = conn.execute(
+            "SELECT p.person_id, p.clinic_id, p.district_id, pt.treatment_start, pt.regimen "
+            "FROM cm.persons p JOIN cm.patients pt USING (person_id) WHERE p.token='P-0142'"
+        ).fetchone()
+        pid = conn.execute(
+            "INSERT INTO cm.persons (role, token, clinic_id, district_id) VALUES ('patient',%s,%s,%s) "
+            "RETURNING person_id",
+            (TOKEN, src["clinic_id"], src["district_id"]),
+        ).fetchone()["person_id"]
+        patient = conn.execute(
+            "INSERT INTO cm.patients (person_id, clinic_id, treatment_start, regimen) VALUES (%s,%s,%s,%s) "
+            "RETURNING patient_id",
+            (pid, src["clinic_id"], src["treatment_start"], src["regimen"]),
+        ).fetchone()["patient_id"]
+        conn.execute(
+            "INSERT INTO cm.identity_vault (person_id, enc_name, dek_wrapped, lang) "
+            "SELECT %s, enc_name, dek_wrapped, lang FROM cm.identity_vault WHERE person_id=%s",
+            (pid, src["person_id"]),
+        )
+    return {"person_id": pid, "patient_id": patient}
 
 
 @pytest.fixture()
@@ -47,7 +80,8 @@ def env(pinned_clock: None, monkeypatch: pytest.MonkeyPatch) -> Iterator[dict[st
     clock.pin(BASE)
     tasks.reset_for_tests()
     adapters_pg._limiter = None  # fresh rate-limit buckets per test
-    who = q("SELECT p.person_id, pt.patient_id FROM cm.persons p JOIN cm.patients pt USING (person_id) WHERE p.token='P-0142'")[0]
+    monkeypatch.setenv("DEMO_IGNORE_QUIET_HOURS", "0")  # a developer .env may set 1; quiet hours must apply here
+    who = _throwaway_patient()
     pid = who["person_id"]
     with transaction() as conn:
         conn.execute("DELETE FROM cm.outbox WHERE recipient_id=%s", (pid,))
@@ -82,7 +116,7 @@ def tap(data: str, uid: int) -> dict[str, Any]:
 
 
 def bind(env: dict[str, Any]) -> None:
-    code = make_invite.make("PT-0142")
+    code = make_invite.make(TOKEN)
     assert code
     st, body = post(env, msg(f"/start {code}"))
     assert st == 200 and body["method"] == "sendMessage" and "connected" in body["text"]
@@ -98,7 +132,7 @@ def sent_reminder(env: dict[str, Any]) -> tuple[UUID, FakeTelegramClient]:
 
 
 def test_bind_is_single_use_and_bad_secret_refused(env: dict[str, Any]) -> None:
-    code = make_invite.make("PT-0142")
+    code = make_invite.make(TOKEN)
     assert post(env, msg(f"/start {code}"), secret="wrong")[0] == 401
     assert post(env, msg(f"/start {code}"))[1]["text"].startswith("You are connected")
     b = PgBindings().by_chat(CHAT)

@@ -1,0 +1,6 @@
+- [x] Merge usage rows (cm/api/routers/admin.py; tests/unit/api/test_usage_merge.py)
+- [x] GET /admin/channels (tests/integration/test_admin_backend.py)
+- [x] nightly handler + POST /admin/demo/run-nightly (tests/integration/test_admin_backend.py)
+- [x] Next step with pending drafts (cm/api/readmodels.py; tests/unit/api/test_next_step_pending.py)
+- [x] Login audit real time, no double row (cm/api/routers/auth.py, patients.py)
+- [x] Telegram tests isolated (tests/integration/test_telegram_pg.py, test_tg_poll.py)

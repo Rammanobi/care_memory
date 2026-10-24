@@ -120,3 +120,11 @@
  .doc .tbl{font-size:13px}
 }
 
+
+/* record-answer citations, abstain, scope pill (add-web-rag-citations) */
+.doc .scope{display:inline-flex;align-items:center;gap:8px;background:var(--tealbg);color:var(--teal);border:1px solid #b9dcd7;border-radius:999px;padding:2px 4px 2px 12px;font-weight:700;font-size:13px;flex:0 0 100%;width:fit-content}
+.doc .scope button{min-height:40px;min-width:40px;border:0;background:none;color:var(--teal);font:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
+.doc button.ev.rc{margin:0 3px;vertical-align:baseline}
+.doc button.ev.rc.unk{background:#fff;color:var(--mute);border-style:dashed}
+.doc .abstain{background:#F3F5F6;border:1px solid var(--line);border-left:4px solid var(--mute);border-radius:10px;padding:12px 14px;margin:8px 0;display:grid;gap:2px;color:var(--ink)}
+@media (max-width:720px){.doc button.ev.rc{min-height:40px;padding:0 10px}}

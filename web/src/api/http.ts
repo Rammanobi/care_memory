@@ -1,5 +1,6 @@
 import { status } from "./status";
 
+/** VITE_API_BASE="" (production image) = same origin, so one build works on any hostname. Unset = local API. */
 export const API_BASE = ((import.meta.env.VITE_API_BASE as string | undefined) ?? "http://localhost:8080").replace(/\/$/, "");
 
 /** api.Problem (RFC 7807 style) as thrown by the adapter. */
@@ -26,7 +27,7 @@ export function problemFrom(httpStatus: number, body: unknown): ApiError {
 }
 
 export function buildUrl(path: string, query?: Opts["query"]): string {
-  const u = new URL(API_BASE + path);
+  const u = new URL(API_BASE + path, location.origin);
   for (const [k, v] of Object.entries(query ?? {})) if (v !== undefined) u.searchParams.set(k, String(v));
   return u.toString();
 }

@@ -120,13 +120,13 @@ export interface Usage {
 }
 export interface Settings { notifyRed: boolean; notifyRequests: boolean; digest: boolean; quiet: boolean; sound: boolean }
 
-/** Patient or Supporter data read from /portal/*. Absent in mock mode (the screens then use the sample data). */
+/** Patient or Supporter data read from /portal/*. Absent in mock mode (the screens then use the mock data, see pages/PatientApp/mockView.ts). */
 export interface PortalAppt { id: string; kind: "visit" | "lab"; title: string; when: string; place: string; note?: string }
 export interface PortalMsg { id: string; title: string; text: string; at: string; read: boolean; forSupporter: boolean }
 export interface PortalDoc { id: string; title: string; kind: string; date: string; summary: string }
 export interface PortalMed { id: string; label: string; when: string; note: string | null }
 export interface PortalSlice {
-  me?: { code: string; name: string; clinic: string; day: number; supporter: { name: string; relation: string } | null; reminder: string; pendingReminder: string | null };
+  me?: { code: string; name: string; clinic: string; day: number; supporter: { name: string; relation: string | null } | null; reminder: string | null; pendingReminder: string | null };
   consents: { telegram: boolean; gmail: boolean; calendar: boolean };
   streak: number;
   nextVisit: string | null;
@@ -136,7 +136,7 @@ export interface PortalSlice {
   inbox: PortalMsg[];
   documents?: PortalDoc[];
   medicines?: PortalMed[];
-  supporter?: { patientCode: string; patientName: string; supporterName: string; relation: string; allowed: boolean; week: string };
+  supporter?: { patientCode: string; patientName: string; supporterName: string; relation: string | null; allowed: boolean; week: string };
 }
 
 /** Server-side rule thresholds (GET /admin/settings) with their optimistic-lock version. */

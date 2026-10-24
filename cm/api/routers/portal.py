@@ -45,7 +45,6 @@ router = APIRouter(prefix="/portal", tags=["portal"])
 patient_only = require_roles("patient")
 supporter_only = require_roles("supporter")
 SOURCES = ("telegram", "gmail", "calendar")
-DEFAULT_REMINDER = "8:00 am"
 
 
 # ---- helpers ------------------------------------------------------------------------------
@@ -71,6 +70,17 @@ def _assigned_patient(conn: Any, user: User, at: datetime) -> dict[str, Any]:
     if not row:
         raise ApiError(403, "No assigned patient", "forbidden_scope")
     return row
+
+
+def _relation(summary: dict[str, Any]) -> str | None:
+    """Supporter relation as recorded by the clinic; never invented, withheld if it holds a banned word."""
+    rel = summary.get("supporter_relation")
+    return rel if isinstance(rel, str) and rel.strip() and is_clean(rel) else None
+
+
+def _appt_visible(payload: dict[str, Any]) -> bool:
+    """An appointment row is shown only if none of its texts holds a banned word (withheld, never rewritten)."""
+    return all(is_clean(str(payload.get(f) or "")) for f in ("title", "when", "place", "note"))
 
 
 def _summary(conn: Any, patient_id: UUID, at: datetime) -> dict[str, Any]:
@@ -264,10 +274,8 @@ def portal_me(user: User = Depends(patient_only)) -> PortalMe:
         name=name,
         clinic=p["clinic_name"],
         day=(rm.sim_date(at) - p["treatment_start"]).days + 1,
-        supporter=SupporterRef(name=sup_name, relation=sm.get("supporter_relation", "family"))
-        if sup_name
-        else None,
-        reminder=_time_of(approved) or DEFAULT_REMINDER,
+        supporter=SupporterRef(name=sup_name, relation=_relation(sm)) if sup_name else None,
+        reminder=_time_of(approved),
         pending_reminder=_time_of(pending),
         consents={s: any(v == "granted" for v in state.get(s, {}).values()) for s in SOURCES},
     )
@@ -290,12 +298,14 @@ def portal_today(user: User = Depends(patient_only)) -> PortalToday:
     today = rm.sim_date(at)
     hist = _history(doses, today)
     ev = doses.get(today)
+    nv = sm.get("next_visit")
+    next_visit = nv if isinstance(nv, str) and nv.strip() and is_clean(nv) else None
     return PortalToday(
         today={"o": "taken", "m": "missed"}.get(hist[-1], "none"),  # type: ignore[arg-type]
         reason=(ev or {}).get("payload", {}).get("reason") if ev else None,
         marked_by=_marked_by(ev),  # type: ignore[arg-type]
         streak=_streak(hist),
-        next_visit=sm.get("next_visit"),
+        next_visit=next_visit,
         history=hist,
     )
 
@@ -399,9 +409,11 @@ def portal_record(user: User = Depends(patient_only)) -> PortalRecord:
                 reason=(ev or {}).get("payload", {}).get("reason") if ev else None,
             )
         )  # type: ignore[arg-type]
-    appts = {"upcoming": [], "past": []}
+    appts: dict[str, list[Appointment]] = {"upcoming": [], "past": []}
     for e in sorted(notes, key=lambda x: x["payload"].get("order", 0)):
         pl = e["payload"]
+        if not _appt_visible(pl) or pl.get("bucket", "past") not in appts:
+            continue
         appts[pl.get("bucket", "past")].append(
             Appointment(
                 id=str(e["event_id"]),
@@ -452,7 +464,27 @@ def _my_requests(conn: Any, user: User, at: datetime) -> list[PortalRequestOut]:
         }
         for r in rows
     ]
-    return [PortalRequestOut(**o) for o in clean_texts(out, ("text", "reply"))]
+    return [PortalRequestOut(**o) for o in clean_texts(out, ("text", "kind", "reply"))]
+
+
+RECEIVED = "Your message was sent to your care team."
+
+
+def _created(conn: Any, user: User, rid: UUID, at: datetime) -> PortalRequestOut:
+    """The row just written, as the patient may see it. Words the patient typed that we may not show
+    back (non-negotiable 5) are replaced by a plain receipt; the doctor still reads the original."""
+    hit = next((r for r in _my_requests(conn, user, at) if r.id == rid), None)
+    if hit:
+        return hit
+    raw = next(r for r in rm.request_rows(conn, at, code=display_code(user.token)) if r.id == rid)
+    return PortalRequestOut(
+        id=raw.id,
+        text=RECEIVED,
+        kind=raw.kind if is_clean(raw.kind) else "Other",
+        when=raw.when,
+        status=raw.status,
+        reply=None,
+    )
 
 
 @router.get("/requests", response_model=list[PortalRequestOut])
@@ -477,8 +509,8 @@ def portal_new_request(
             {},
             at,
         )
-        mine = _my_requests(conn, user, at)
-    return next(r for r in mine if r.id == rid)
+        created = _created(conn, user, rid, at)
+    return created
 
 
 @router.post("/reminder-request", response_model=PortalRequestOut, status_code=201)
@@ -497,8 +529,8 @@ def portal_reminder_request(
             {"reminder_time": body.time},
             at,
         )
-        mine = _my_requests(conn, user, at)
-    return next(r for r in mine if r.id == rid)
+        created = _created(conn, user, rid, at)
+    return created
 
 
 def _switches(conn: Any, person_id: UUID, at: datetime) -> ConsentSwitches:
@@ -570,7 +602,7 @@ def supporter_view(user: User = Depends(supporter_only)) -> SupporterView:
         patient_code=display_code(ptoken),
         patient_name=pname,
         supporter_name=sname,
-        relation=sm.get("supporter_relation", "family"),
+        relation=_relation(sm),
         allowed=allowed,
         today={"o": "taken", "m": "missed"}.get(hist[-1], "none"),  # type: ignore[arg-type]
         marked_by=_marked_by(ev),

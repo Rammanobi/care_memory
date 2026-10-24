@@ -7,9 +7,10 @@ import { buildRow, clinicName, missedLabel, stripCells } from "../../api/derive"
 import type { EvKind } from "../../api";
 import { EvChip, EvChips } from "../../components/doctorKit";
 import { Icon, Skeleton } from "../../components/ui";
+import { AskPanel } from "../Ask";
 import { Changes, Drafts, Snapshot } from "./PatientDetail";
 
-const TABS = ["Overview", "Timeline", "Messages", "Notes", "Audit trail"] as const;
+const TABS = ["Overview", "Timeline", "Messages", "Ask", "Notes", "Audit trail"] as const;
 type Tab = (typeof TABS)[number];
 const KINDS: ("all" | EvKind)[] = ["all", "dose", "refill", "visit", "message", "supporter", "lab", "system"];
 
@@ -118,6 +119,8 @@ export default function PatientPage() {
           ))}
         </section>
       )}
+
+      {tab === "Ask" && <section className="sec"><AskPanel scope={p.code} /></section>}
 
       {tab === "Notes" && (
         <section className="sec">

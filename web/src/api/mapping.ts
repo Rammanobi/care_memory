@@ -1,5 +1,6 @@
 // Pure functions: backend wire shapes (cm/api/portal_models.py, cm/contracts) -> the UI shapes in types.ts.
 import type { District, Approval, AuditEntry, Decision, Evidence, EvKind, LensSnap, Message, Patient, PatientRequest, PortalAppt, PortalMsg, PortalSlice, ServerSettings, Template, Usage } from "./types";
+import { isAbstain, snippetsFrom, type CiteSnippet } from "./citations";
 
 export interface WireReviewItem {
   approval_id: string;
@@ -152,8 +153,8 @@ export function decisionBody(decision: "approved" | "declined", text?: string) {
 
 // ---- patient / Supporter portal (cm/api/portal_models.py) ----
 export interface WirePortalMe {
-  patient_code: string; name: string; clinic: string; day: number; supporter?: { name: string; relation: string } | null;
-  reminder: string; pending_reminder?: string | null; consents: Record<string, boolean>;
+  patient_code: string; name: string; clinic: string; day: number; supporter?: { name: string; relation?: string | null } | null;
+  reminder?: string | null; pending_reminder?: string | null; consents: Record<string, boolean>;
 }
 export interface WireToday { today: "none" | "taken" | "missed"; reason?: string | null; marked_by?: "self" | "supporter" | null; streak: number; next_visit?: string | null; history: string }
 export interface WireRecord {
@@ -162,7 +163,7 @@ export interface WireRecord {
 }
 export interface WirePortalMsg { id: string; title: string; text: string; created_at: string; read: boolean; for_supporter?: boolean }
 export interface WireSupporterView {
-  patient_code: string; patient_name: string; supporter_name: string; relation: string; allowed: boolean;
+  patient_code: string; patient_name: string; supporter_name: string; relation?: string | null; allowed: boolean;
   today: "none" | "taken" | "missed"; marked_by?: "self" | "supporter" | null; week: string; messages: WirePortalMsg[];
 }
 export interface WirePortalRequest { id: string; text: string; kind: string; when: string; status: Decision; reply?: string | null }
@@ -177,8 +178,9 @@ export const mapRecord = (r: WireRecord): NonNullable<PortalSlice["record"]> => 
 });
 
 export const mapPortalMe = (m: WirePortalMe): NonNullable<PortalSlice["me"]> => ({
-  code: m.patient_code, name: m.name, clinic: m.clinic, day: m.day, supporter: m.supporter ?? null,
-  reminder: m.reminder, pendingReminder: m.pending_reminder ?? null,
+  code: m.patient_code, name: m.name, clinic: m.clinic, day: m.day,
+  supporter: m.supporter ? { name: m.supporter.name, relation: m.supporter.relation || null } : null,
+  reminder: m.reminder || null, pendingReminder: m.pending_reminder ?? null,
 });
 
 export const mapConsents = (c: Record<string, boolean> | undefined): PortalSlice["consents"] => ({
@@ -186,7 +188,7 @@ export const mapConsents = (c: Record<string, boolean> | undefined): PortalSlice
 });
 
 export const mapSupporterView = (v: WireSupporterView): NonNullable<PortalSlice["supporter"]> => ({
-  patientCode: v.patient_code, patientName: v.patient_name, supporterName: v.supporter_name, relation: v.relation, allowed: v.allowed, week: v.week,
+  patientCode: v.patient_code, patientName: v.patient_name, supporterName: v.supporter_name, relation: v.relation || null, allowed: v.allowed, week: v.week,
 });
 
 /** A patient's own request (portal view): the patient code is the signed-in patient. */
@@ -215,10 +217,15 @@ export interface WireQueryAnswer {
 }
 export interface AskSentence { text: string; refs: string[] }
 export interface AskSource { n: number; label: string }
-export interface MappedAnswer { sentences: AskSentence[]; sources: AskSource[]; verified: boolean; refused: boolean }
+export interface MappedAnswer { sentences: AskSentence[]; sources: AskSource[]; verified: boolean; refused: boolean; record?: { text: string; cites: Record<string, CiteSnippet>; abstain: boolean } }
 
 /** Split "text [1] more [2]" into sentences that carry the citation numbers as refs ("1", "2"). */
 export function mapQueryAnswer(a: WireQueryAnswer): MappedAnswer {
+  // Patient-record answer: [D-xxxxxxxx] refs (or the abstain line) are shown as citation chips, not numbered sources.
+  const cites = snippetsFrom((a.tool_calls_used ?? []).flatMap((c) => c.result_preview ?? []));
+  if (isAbstain(a.answer_text) || /\[D-[0-9a-f]{8}/.test(a.answer_text)) {
+    return { sentences: [], sources: [], verified: a.numbers_verified, refused: !!a.refused, record: { text: a.answer_text.trim(), cites, abstain: isAbstain(a.answer_text) } };
+  }
   const parts = a.answer_text.split(/(?<=\.)\s+(?=[A-Z0-9])/);
   const sentences = parts.map((p) => {
     const refs = [...p.matchAll(/\[(\d+)\]/g)].map((m) => m[1]);

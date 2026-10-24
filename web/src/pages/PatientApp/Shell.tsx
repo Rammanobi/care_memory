@@ -4,6 +4,7 @@ import { Link, Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useLang, type Key } from "../../components/i18n";
 import { Icon, LiveDot, MockBadge } from "../../components/ui";
 import { useExtras } from "../../api/patientExtras";
+import { USE_MOCK } from "../../api";
 import { usePortal } from "./usePortal";
 import "../../styles/patient.css";
 import "./extra.css";
@@ -36,7 +37,7 @@ export function OfflineBanner() {
     window.addEventListener("online", on); window.addEventListener("offline", off);
     return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
   }, []);
-  if (net && !ex.offline) return null;
+  if (net && !(USE_MOCK && ex.offline)) return null; // the offline demo switch exists in mock mode only
   return <div className="banner" role="status"><b>{t("offT")}.</b> {t("offS")}</div>;
 }
 

@@ -2,10 +2,9 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { dayFromIso } from "../../api/mapping";
 import { useCare } from "../../api/CareProvider";
-import { useExtras } from "../../api/patientExtras";
 import { useLang, type Key } from "../../components/i18n";
 import { Skeleton } from "../../components/ui";
-import { TOTAL_DAYS, type Appt } from "./sampleData";
+import { TOTAL_DAYS, type Appt } from "./portalTypes";
 import { usePortal } from "./usePortal";
 import { Empty } from "./Common";
 import { Emergency } from "./parts";
@@ -89,9 +88,8 @@ function ApptRow({ a, first }: { a: Appt; first: boolean }) {
 
 function VisitsLabs() {
   const { t } = useLang();
-  const [ex] = useExtras();
   const v = usePortal();
-  if (ex.empty || (v.upcoming.length === 0 && v.past.length === 0)) return <Empty title={t("noVis")} body={t("noVisS")} />;
+  if (v.empty || (v.upcoming.length === 0 && v.past.length === 0)) return <Empty title={t("noVis")} body={t("noVisS")} />;
   return (
     <>
       <section className="card"><div className="k">{t("upc")}</div>{v.upcoming.map((a, i) => <ApptRow key={a.id} a={a} first={i === 0} />)}</section>
@@ -126,20 +124,21 @@ function Documents() {
 export default function RecordPage() {
   const { state } = useCare();
   const { t } = useLang();
-  const day = usePortal().day;
+  const pv = usePortal();
+  const day = pv.day;
   const [sp, setSp] = useSearchParams();
   const tab = sp.get("tab") ?? "med";
   const tabs: [string, Key][] = [["med", "tabMed"], ["vis", "tabVis"], ["doc", "tabDoc"]];
   return (
     <>
       <div className="row"><h1>{t("recTitle")}</h1><button type="button" className="link noprint" onClick={() => window.print()}>{t("printPg")}</button></div>
-      <div className="sub">{t("dayOf", { n: day || 60 })}</div>
+      {day > 0 && <div className="sub">{t("dayOf", { n: day })}</div>}
       <div className="tabbar" role="tablist" aria-label={t("recTitle")}>
         {tabs.map(([k, l]) => <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setSp({ tab: k }, { replace: true })}>{t(l)}</button>)}
       </div>
       {!state ? <div className="col"><Skeleton h={300} /><Skeleton h={80} /></div> : (
         <div className="col" role="tabpanel">
-          {tab === "med" && <MedCalendar />}
+          {tab === "med" && (pv.recordReady ? <MedCalendar /> : <Empty title={t("recNA")} />)}
           {tab === "vis" && <VisitsLabs />}
           {tab === "doc" && <Documents />}
           <Emergency />

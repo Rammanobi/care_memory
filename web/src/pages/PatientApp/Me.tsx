@@ -23,9 +23,9 @@ function ReminderCard() {
   return (
     <section className="card" aria-labelledby="rem-t">
       <div className="k" id="rem-t">{t("remT")}</div>
-      <div className="n">{t("remNow", { t: current })}</div>
+      <div className="n">{current ? t("remNow", { t: current }) : t("remNone")}</div>
       {pending ? (
-        <div className="wait" style={{ marginTop: 10 }} role="status"><span className="badge w">◔ {t("stWait")}</span><br />{t("remPend", { t: pending.time, c: current })}</div>
+        <div className="wait" style={{ marginTop: 10 }} role="status"><span className="badge w">◔ {t("stWait")}</span><br />{current ? t("remPend", { t: pending.time, c: current }) : t("remPend0", { t: pending.time })}</div>
       ) : (
         <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
           <label htmlFor="rem-sel" className="s">{t("remPick")}</label>
@@ -58,7 +58,7 @@ export default function Me() {
               <dt className="s">{t("nameL")}</dt><dd><b>{v.name}</b></dd>
               <dt className="s">{t("codeL")}</dt><dd><b>{v.code}</b></dd>
               <dt className="s">{t("clinic")}</dt><dd><b>{v.clinic}</b></dd>
-              <dt className="s">{t("supL")}</dt><dd><b>{v.supporter ? t("supLinked", { n: `${v.supporter.name} (${v.supporter.relation})` }) : "-"}</b></dd>
+              <dt className="s">{t("supL")}</dt><dd><b>{v.supporter ? t("supLinked", { n: v.supporter.relation ? `${v.supporter.name} (${v.supporter.relation})` : v.supporter.name }) : "-"}</b></dd>
             </dl>
           </section>
           <ReminderCard />
@@ -96,13 +96,13 @@ export default function Me() {
 
 export function Help() {
   const { t } = useLang();
-  const { clinic } = usePortal();
+  const { clinic, clinicPhone } = usePortal();
   return (
     <>
       <Link className="nl" to="/patient/me">‹ {t("me")}</Link>
       <h1>{t("helpTitle")}</h1>
       <div className="col" style={{ marginTop: 12 }}>
-        <section className="card"><div className="k">{t("clinicNo")}</div><div className="n">{clinic}</div><div className="s">{t("clinicNoV")}: 000-000-0000</div></section>
+        <section className="card"><div className="k">{t("clinicNo")}</div><div className="n">{clinic}</div><div className="s">{clinicPhone ? `${t("clinicNoV")}: ${clinicPhone}` : t("clinicNoV")}</div></section>
         <section className="warn" role="note"><b style={{ fontSize: 20 }}>{t("emerg")}: 108</b><p style={{ marginTop: 4, fontSize: 16 }}>{t("emergS")}</p></section>
         <section className="card"><p>{t("helpApp")}</p></section>
       </div>

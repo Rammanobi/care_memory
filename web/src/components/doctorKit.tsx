@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useCare } from "../api/CareProvider";
 import { USE_MOCK } from "../api";
 import { dueAtOf, findEvidence, fmtLeft, slaClass } from "../api/derive";
+import { kindLabel, type CiteSnippet } from "../api/citations";
 
 /** Re-renders every `ms` so countdowns stay live. */
 export function useNow(ms = 1000) {
@@ -27,7 +28,7 @@ export function SlaOf({ item }: { item: { dueMin?: number; createdAt?: number } 
 }
 
 // ---------- evidence drawer ----------
-const EvCtx = createContext<(id: string) => void>(() => {});
+const EvCtx = createContext<(id: string, snippet?: CiteSnippet) => void>(() => {});
 export const useEvidence = () => useContext(EvCtx);
 
 /** A citation chip (E-, B-, C-, R-). Opens the evidence drawer. */
@@ -42,7 +43,7 @@ export function EvChips({ ids }: { ids?: string[] }) {
 
 const KIND: Record<string, string> = { E: "Event", B: "Belief", C: "Conflict", R: "Risk", G: "Guideline", D: "Document" };
 
-function Drawer({ id, onClose }: { id: string; onClose: () => void }) {
+function Drawer({ id, snippet, onClose }: { id: string; snippet?: CiteSnippet; onClose: () => void }) {
   const { state } = useCare();
   const ev = state ? findEvidence(state, id) : undefined;
   const ref = useRef<HTMLButtonElement>(null);
@@ -58,10 +59,18 @@ function Drawer({ id, onClose }: { id: string; onClose: () => void }) {
         <div className="grab" aria-hidden="true" />
         <div className="dh">
           <span className="ev big">{id}</span>
-          <span className="tag t-blu">{KIND[id[0]] ?? "Source"}</span>
+          <span className="tag t-blu">{snippet ? kindLabel(snippet.kind) : KIND[id[0]] ?? "Source"}</span>
           <button ref={ref} type="button" className="x" onClick={onClose} aria-label="Close evidence">Close ✕</button>
         </div>
-        {!ev ? (
+        {snippet ? (
+          <>
+            <p className="evt">{snippet.snippet}</p>
+            <div className="kv">
+              <div><span>Date</span><b>{snippet.date}</b></div>
+              <div><span>Type</span><b>{kindLabel(snippet.kind)}</b></div>
+            </div>
+          </>
+        ) : !ev ? (
           <div className="empty"><b>Source not found</b>This record is not in the sample data.</div>
         ) : (
           <>
@@ -87,7 +96,7 @@ const ToastCtx = createContext<(msg: string, undo?: () => void) => void>(() => {
 const KEYS: [string, string][] = [["J", "Next item in the list"], ["K", "Previous item"], ["Enter", "Open the highlighted patient"], ["A", "Approve the highlighted draft"], ["E", "Edit the highlighted draft"], ["D", "Decline the highlighted draft"], ["?", "Show or hide this help"], ["Esc", "Close a panel"]];
 
 export function DoctorKit({ children }: { children: ReactNode }) {
-  const [ev, setEv] = useState<string | null>(null);
+  const [ev, setEv] = useState<{ id: string; snippet?: CiteSnippet } | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const [help, setHelp] = useState(false);
   const timer = useRef<number>();
@@ -100,12 +109,12 @@ export function DoctorKit({ children }: { children: ReactNode }) {
   const toggleHelp = useCallback(() => setHelp((h) => !h), []);
   const closeHelp = useCallback(() => setHelp(false), []);
   useShortcuts(toggleHelp, closeHelp);
-  const open = useCallback((id: string) => setEv(id), []);
+  const open = useCallback((id: string, snippet?: CiteSnippet) => setEv({ id, snippet }), []);
   return (
     <EvCtx.Provider value={open}>
       <ToastCtx.Provider value={notify}>
         {children}
-        {ev && <Drawer id={ev} onClose={() => setEv(null)} />}
+        {ev && <Drawer id={ev.id} snippet={ev.snippet} onClose={() => setEv(null)} />}
         {toast && (
           <div className="toast" role="status" key={toast.key}>
             <span>{toast.msg}</span>

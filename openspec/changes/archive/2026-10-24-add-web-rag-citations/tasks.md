@@ -1,0 +1,3 @@
+- [x] web/src/api/citations.ts parser + citations.test.ts (multiple, adjacent, unknown, none)
+- [x] mapping.ts record answers; doctorKit.tsx drawer snippet support
+- [x] pages/Ask/index.tsx AskPanel, chips, abstain, scope, mock samples; PatientPage Ask tab; doctor2.css

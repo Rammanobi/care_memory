@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLang } from "../../components/i18n";
-import { dayDate, type Msg } from "./sampleData";
+import { dayDate, type Msg } from "./portalTypes";
 import { usePortal } from "./usePortal";
 import { Empty } from "./Common";
 

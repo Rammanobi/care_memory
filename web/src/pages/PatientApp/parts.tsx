@@ -5,15 +5,16 @@ import { patientProfile } from "../../mocks/data";
 import { usePortal } from "./usePortal";
 import { useLang, type Key } from "../../components/i18n";
 import { Icon } from "../../components/ui";
-import { useExtras } from "../../api/patientExtras";
-import { type ReqState } from "./sampleData";
+import { USE_MOCK } from "../../api";
+import { type ReqState } from "./portalTypes";
 
 export const ME = patientProfile.code;
 
 export function useMyRequests() {
   const { state } = useCare();
-  const code = state?.portal?.me?.code ?? ME; // http mode: /portal/requests only returns the patient's own
-  return (state?.requests ?? []).filter((r) => r.patientCode === code);
+  // http mode: /portal/requests only returns the patient's own, stamped with the signed-in code
+  if (!USE_MOCK) return state?.requests ?? [];
+  return (state?.requests ?? []).filter((r) => r.patientCode === (state?.portal?.me?.code ?? ME));
 }
 
 export function DoseCard() {
@@ -72,6 +73,7 @@ export function History({ big }: { big?: boolean }) {
   const cells = (v.live ? v.history60.slice(-30) : patientProfile.history).split("").map((c, i, a) => (i === a.length - 1 ? (today === "taken" ? "o" : today === "missed" ? "m" : "f") : c));
   const took = cells.filter((c) => c === "o").length;
   const missed = cells.filter((c) => c === "m").length;
+  if (v.live && cells.length === 0) return <section className="card"><div className="k">{t("last30")}</div><div className="s">{t("noHist")}</div></section>;
   return (
     <section className="card">
       <div className="k">{t("last30")}</div>
@@ -99,17 +101,6 @@ export function Medicines() {
         <div key={m.key} className={`med${i === 0 ? " first" : ""}`}><div className="pl" aria-hidden="true">{i + 1}</div><div><b>{m.name}</b><span>{m.how}</span></div></div>
       ))}
       <div className="s" style={{ marginTop: 6 }}>{t("medsRead")}</div>
-    </section>
-  );
-}
-
-export function Upcoming() {
-  const { t } = useLang();
-  return (
-    <section className="card">
-      <div className="k">{t("coming")}</div>
-      <div className="med first"><div className="pl y" aria-hidden="true">●</div><div><b>{t("visit")}</b><span>{patientProfile.upcoming[0].detail}</span></div></div>
-      <div className="med"><div className="pl y" aria-hidden="true">●</div><div><b>{t("lab")}</b><span>{t("labWhen")}</span></div></div>
     </section>
   );
 }
@@ -142,10 +133,9 @@ export function StatusChip({ s }: { s: ReqState }) {
 export function RequestList({ limit }: { limit?: number }) {
   const { t } = useLang();
   const mine = useMyRequests();
-  const [ex] = useExtras();
   const v = usePortal();
   const live = mine.filter((r) => !r.archived).map((r) => ({ id: r.id, text: r.text, when: r.when, status: r.status as ReqState, reply: r.reply, live: true }));
-  const all = ex.empty ? [] : [...live, ...v.pastRequests.map((r) => ({ ...r, live: false }))];
+  const all = v.empty ? [] : [...live, ...v.pastRequests.map((r) => ({ ...r, live: false }))];
   const shown = limit ? all.slice(0, limit) : all;
   if (shown.length === 0) return <div className="empty" style={{ padding: 16 }}><b>{t("noReq")}</b></div>;
   return (
@@ -183,7 +173,7 @@ export function NewRequest() {
     const msg = text.trim() || c.en;
     dispatch({
       t: "newRequest",
-      req: { id: `rq-${Date.now()}`, patientCode: v.code || ME, kind: c.en, text: msg, when: "today, just now", draft: c.draft, status: "waiting" },
+      req: { id: `rq-${Date.now()}`, patientCode: v.code || (USE_MOCK ? ME : ""), kind: c.en, text: msg, when: "today, just now", draft: c.draft, status: "waiting" },
     });
     setText("");
     setOk(true);

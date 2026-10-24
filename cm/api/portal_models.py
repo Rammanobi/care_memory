@@ -243,7 +243,9 @@ class SimDayIn(CMModel):
 # ---- patient / Supporter portal ------------------------------------------------------------
 class SupporterRef(CMModel):
     name: str
-    relation: str
+    relation: str | None = Field(
+        default=None, description="None when the clinic has not recorded it"
+    )
 
 
 class PortalMe(CMModel):
@@ -252,7 +254,9 @@ class PortalMe(CMModel):
     clinic: str
     day: int
     supporter: SupporterRef | None = None
-    reminder: str
+    reminder: str | None = Field(
+        default=None, description="Approved reminder time; None until the clinic approves one"
+    )
     pending_reminder: str | None = None
     consents: dict[str, bool]
 
@@ -311,7 +315,8 @@ class PortalRequestIn(CMModel):
 
 
 class ReminderRequestIn(CMModel):
-    time: str = Field(pattern=r"^\d{1,2}:\d{2} (am|pm)$")
+    # a real 12-hour clock time, ASCII digits only
+    time: str = Field(pattern=r"^(0?[1-9]|1[0-2]):[0-5][0-9] (am|pm)$")
 
 
 class PortalRequestOut(CMModel):
@@ -333,7 +338,7 @@ class SupporterView(CMModel):
     patient_code: str
     patient_name: str
     supporter_name: str
-    relation: str
+    relation: str | None = None
     allowed: bool
     today: Literal["none", "taken", "missed"]
     marked_by: Literal["self", "supporter"] | None = None

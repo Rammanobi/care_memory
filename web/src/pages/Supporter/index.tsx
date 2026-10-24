@@ -9,6 +9,7 @@ import { Empty } from "../PatientApp/Common";
 import { fmtMsgDay } from "../PatientApp/Messages";
 import { LangToggle, OfflineBanner } from "../PatientApp/Shell";
 import { ME } from "../PatientApp/parts";
+import { USE_MOCK } from "../../api";
 import { usePortal } from "../PatientApp/usePortal";
 import "../../styles/patient.css";
 import "../PatientApp/extra.css";
@@ -26,13 +27,15 @@ export default function SupporterApp() {
   const msgs = v.sup.messages;
   const P = { name: v.sup.patientName, code: v.code };
   const SUPPORTER = { name: v.sup.supporterName, relation: v.sup.relation };
+  const who = SUPPORTER.relation ? `${SUPPORTER.name} (${SUPPORTER.relation})` : SUPPORTER.name;
+  const allowed = v.sup.allowed;
   const loc = lang === "te" ? "te-IN" : "en-IN";
   const dayName = (i: number) => { const d = new Date(); d.setDate(d.getDate() - (6 - i)); return d.toLocaleDateString(loc, { weekday: "short" }); };
   const mark = () => { v.markBySupporter(); dispatch({ t: "dose", value: { today: "taken" } }); };
   const ask = () => {
     const text = q.trim();
     if (!text) return;
-    dispatch({ t: "newRequest", req: { id: `sup-${Date.now()}`, patientCode: v.code || ME, kind: "Supporter question", text: `(From Supporter ${SUPPORTER.name}) ${text}`, when: "today, just now", draft: "Thank you for your message. Your care team will reply soon.", status: "waiting" } });
+    dispatch({ t: "newRequest", req: { id: `sup-${Date.now()}`, patientCode: v.code || (USE_MOCK ? ME : ""), kind: "Supporter question", text: USE_MOCK ? `(From Supporter ${SUPPORTER.name}) ${text}` : text, /* live: the server adds the "From Supporter" label itself */ when: "today, just now", draft: "Thank you for your message. Your care team will reply soon.", status: "waiting" } });
     setQ(""); setSent(true);
   };
   return (
@@ -41,20 +44,21 @@ export default function SupporterApp() {
       <main style={{ margin: "0 auto" }}>
         <OfflineBanner />
         <h1>{t("spFor", { n: P.name })}</h1>
-        <div className="sub">{P.code} · {SUPPORTER.name} ({SUPPORTER.relation})</div>
+        <div className="sub">{[P.code, who].filter(Boolean).join(" · ")}</div>
         {!state ? <div className="col"><Skeleton h={150} /><Skeleton h={90} /></div> : (
           <div className="grid">
             <div className="col">
               <section className={`card big${today === "taken" ? " done" : ""}`} aria-labelledby="sp-t">
                 <div className="t" id="sp-t">{t("spToday", { n: P.name })}</div>
-                <div className="v" aria-live="polite">{today === "none" ? t("notTaken") : today === "taken" ? `✓ ${t("taken")}` : t("missedToday")}</div>
-                {today === "none" && v.sup.allowed && <button type="button" className="btn" onClick={mark}>{t("spTaken", { n: P.name })}</button>}
+                {allowed ? <div className="v" aria-live="polite">{today === "none" ? t("notTaken") : today === "taken" ? `✓ ${t("taken")}` : t("missedToday")}</div> : <div className="s" role="status">{t("spNotAllowed", { n: P.name })}</div>}
+                {today === "none" && allowed && <button type="button" className="btn" onClick={mark}>{t("spTaken", { n: P.name })}</button>}
                 {today === "taken" && v.supporterMarked && <span className="badge a">{t("spDone")}</span>}
               </section>
               <section className="card" aria-labelledby="wk">
                 <div className="k" id="wk">{t("spWeek")}</div>
+                {(!allowed || week.length === 0) && <div className="s">{t("spNoWeek")}</div>}
                 <div className="strip">
-                  {week.map((c, i) => (
+                  {allowed && week.map((c, i) => (
                     <div key={i} className={c} role="img" aria-label={`${dayName(i)}: ${c === "o" ? t("dTaken") : c === "m" ? t("dMissed") : t("legToday")}`}>
                       {dayName(i)}<b aria-hidden="true">{c === "o" ? "✓" : c === "m" ? "✕" : "·"}</b>
                     </div>

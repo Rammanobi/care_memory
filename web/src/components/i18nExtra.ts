@@ -118,5 +118,12 @@ export const EXTRA = {
   spAsk: ["Ask the clinic", "క్లినిక్‌ను అడగండి"],
   spAskPh: ["Write your question for the clinic", "క్లినిక్‌కు మీ ప్రశ్న రాయండి"],
   spSent: ["Sent to the clinic. A doctor reads it first.", "క్లినిక్‌కు పంపబడింది. డాక్టర్ ముందుగా చదువుతారు."],
+  remPend0: ["Waiting for your doctor to approve {t}.", "{t} కు మీ డాక్టర్ ఆమోదం కోసం ఎదురుచూస్తోంది."],
+  nothingSched: ["Nothing scheduled yet", "ఇంకా ఏమీ నిర్ణయించలేదు"],
+  remNone: ["No reminder time set yet", "ఇంకా రిమైండర్ సమయం లేదు"],
+  recNA: ["Your record could not be loaded. Please try again later.", "మీ రికార్డు తెరవలేకపోయాము. దయచేసి తర్వాత ప్రయత్నించండి."],
+  noHist: ["No doses recorded yet", "ఇంకా మోతాదులు నమోదు కాలేదు"],
+  spNotAllowed: ["{n} has not allowed sharing yet.", "{n} ఇంకా పంచుకోవడానికి అనుమతించలేదు."],
+  spNoWeek: ["Nothing to show yet", "చూపడానికి ఇంకా ఏమీ లేదు"],
   spNoMsgs: ["No messages for you yet", "మీకు ఇంకా సందేశాలు లేవు"],
 } as const;

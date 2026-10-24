@@ -3,7 +3,6 @@ import { useCare } from "../../api/CareProvider";
 import { useLang } from "../../components/i18n";
 import { Skeleton } from "../../components/ui";
 import { DoseCard, Emergency, History, Medicines, NewRequest, RequestList } from "./parts";
-import { useExtras } from "../../api/patientExtras";
 import { useMessages, fmtMsgDay } from "./Messages";
 import { usePortal } from "./usePortal";
 import RecordPage from "./Record";
@@ -16,14 +15,13 @@ function Loading() {
 function Next3() {
   const { state } = useCare();
   const { t } = useLang();
-  const [ex] = useExtras();
   const v = usePortal();
   const done = state?.dose.today !== "none";
   const visit = v.upcoming.find((a) => a.kind === "visit");
   const lab = v.upcoming.find((a) => a.kind === "lab");
   const items = [
     { k: "m", icon: "1", title: t("itemMed"), sub: done ? `✓ ${t("done")}${v.supporterMarked ? " · " + t("marked") : ""}` : t("notTaken") },
-    ...(ex.empty ? [] : [
+    ...(v.empty ? [] : [
       ...(visit ? [{ k: "v", icon: "2", title: t("visit"), sub: `${visit.when} · ${visit.place}` }] : []),
       ...(lab ? [{ k: "l", icon: "3", title: t("lab"), sub: `${lab.when} · ${lab.place}` }] : []),
     ]),
@@ -60,14 +58,14 @@ export function Home() {
   return (
     <>
       <h1>{t("morning")}, {v.name}</h1>
-      <div className="sub">{t("dayOf", { n: v.day || 60 })}</div>
+      {v.day > 0 && <div className="sub">{t("dayOf", { n: v.day })}</div>}
       {!state ? <Loading /> : (
         <div className="grid">
           <div className="col">
             <DoseCard />
             <Next3 />
             <div className="two">
-              <div className="card"><div className="k">{t("nextVisit")}</div><div className="n">{v.nextVisitText}</div><div className="s">{v.clinic}</div></div>
+              <div className="card"><div className="k">{t("nextVisit")}</div><div className="n">{v.nextVisitText ?? t("nothingSched")}</div>{v.clinic && <div className="s">{v.clinic}</div>}</div>
               <div className="card"><div className="k">{t("streak")}</div><div className="n">{t("daysRow", { n: streak })}</div><div className="s">{t("inARow")}</div></div>
             </div>
             <LatestMessage />

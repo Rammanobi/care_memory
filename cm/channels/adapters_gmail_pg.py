@@ -55,6 +55,11 @@ class PgGmailState:
         gmail_repo.set_watch(self.mailbox, history_id, expiration_ms)
 
 
+def _is_red(approval_id: UUID) -> bool:
+    row = gmail_repo.approval_tier(approval_id)
+    return row == "red"
+
+
 class PgDecide:
     """DecideFn over cm.review.decide.decide. Business-rule failures become ``error_code`` results."""
 
@@ -65,6 +70,9 @@ class PgDecide:
         from cm.review import decide as dec
 
         fn = self._decide or dec.decide
+        if via == "gmail" and _is_red(approval_id):   # Red is console-only, even if a token exists
+            return ReviewDecisionOut(approval_id=approval_id, action=body.action, status="pending", via="gmail",
+                                     error_code="red_not_bulk")
         try:
             return fn(approval_id, body, via=via, actor_id=UUID(str(actor)))
         except dec.DecisionError as exc:

@@ -1,0 +1,4 @@
+- [x] gmail.py HTML fallback (R09)
+- [x] gmail_reply.py token release (R26)
+- [x] adapters_gmail_pg.py + gmail_repo.py Red guard (R21)
+- [x] tests/integration/test_gmail_sim_e2e.py and docs/design/GMAIL_SIM_REPORT.md

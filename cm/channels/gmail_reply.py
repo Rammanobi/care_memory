@@ -122,6 +122,7 @@ def _apply(out: ReplyOutcome, n: int, verb: str, text: str | None, approval_id: 
     if res.error_code == "already_decided":
         out.skipped[n] = "already decided in console"
     elif res.error_code:
+        tokens.release(th)   # nothing was decided: keep the link usable (e.g. retry with corrected text)
         out.skipped[n] = res.error_code.replace("_", " ")
     else:
         (out.edited if verb == "edit" else out.applied).append(n)

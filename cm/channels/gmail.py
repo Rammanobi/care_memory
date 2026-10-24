@@ -11,6 +11,7 @@ import base64
 import hashlib
 import html
 import json
+import re
 import secrets
 import time
 from collections.abc import Callable
@@ -93,14 +94,29 @@ def normalize_message(raw: dict[str, Any]) -> dict[str, Any]:
             "headers": headers, "text": _plain_text(payload)}
 
 
-def _plain_text(part: dict[str, Any]) -> str:
-    if part.get("mimeType") == "text/plain" and part.get("body", {}).get("data"):
-        return base64.urlsafe_b64decode(part["body"]["data"] + "==").decode("utf-8", "replace")
+def _decode(part: dict[str, Any]) -> str:
+    return base64.urlsafe_b64decode(part["body"]["data"] + "==").decode("utf-8", "replace")
+
+
+def _find(part: dict[str, Any], mime: str) -> str:
+    if part.get("mimeType") == mime and part.get("body", {}).get("data"):
+        return _decode(part)
     for sub in part.get("parts", []) or []:
-        text = _plain_text(sub)
+        text = _find(sub, mime)
         if text:
             return text
     return ""
+
+
+def _html_to_text(markup: str) -> str:
+    markup = re.sub(r"(?is)<(script|style).*?</(script|style)>", "", markup)
+    markup = re.sub(r"(?i)<br\s*/?>|</(div|p|li|tr|h\d)>", "\n", markup)
+    return html.unescape(re.sub(r"<[^>]+>", "", markup))
+
+
+def _plain_text(part: dict[str, Any]) -> str:
+    """text/plain first; an HTML-only message falls back to tag-stripped text/html."""
+    return _find(part, "text/plain") or _html_to_text(_find(part, "text/html"))
 
 
 def is_own_mail(msg: dict[str, Any], mailbox: str) -> bool:

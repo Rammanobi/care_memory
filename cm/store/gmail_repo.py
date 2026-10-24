@@ -153,3 +153,12 @@ def approved_visit_decisions(as_of: datetime, *, conn: Any = None) -> list[dict[
         "ORDER BY d.decided_at",
         (as_of,),
     ).fetchall()
+
+
+def approval_tier(approval_id: UUID, *, conn: Any = None) -> str | None:
+    """Current tier of an approval (None when unknown); used to keep Red console-only."""
+    if conn is None:
+        with transaction() as c:
+            return approval_tier(approval_id, conn=c)
+    r = conn.execute("SELECT tier FROM cm.approvals WHERE approval_id=%s", (approval_id,)).fetchone()
+    return r["tier"] if r else None

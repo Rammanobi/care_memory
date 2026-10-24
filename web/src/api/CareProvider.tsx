@@ -1,0 +1,94 @@
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { api } from "./index";
+import { applyAction } from "./reducer";
+import { status } from "./status";
+import type { Action, CareState } from "./types";
+
+interface Ctx {
+  state: CareState | null; // null while loading
+  dispatch: (a: Action) => void;
+  reset: () => void;
+}
+
+const CareCtx = createContext<Ctx | null>(null);
+
+function Banner({ onRetry }: { onRetry: () => void }) {
+  const s = useSyncExternalStore(status.subscribe, status.get);
+  useEffect(() => {
+    if (!s.toast) return;
+    const t = setTimeout(() => status.toast(null), 6000);
+    return () => clearTimeout(t);
+  }, [s.toast]);
+  return (
+    <>
+      {s.offline && (
+        <div role="alert" style={{ position: "sticky", top: 0, zIndex: 50, background: "#b3261e", color: "#fff", padding: "10px 16px", display: "flex", gap: 12, alignItems: "center" }}>
+          <span>Cannot reach the server. Showing the last data we have.</span>
+          <button onClick={onRetry} style={{ minHeight: 36, padding: "0 14px", borderRadius: 8, border: "1px solid #fff", background: "transparent", color: "#fff" }}>Retry</button>
+        </div>
+      )}
+      {s.bulk && (
+        <div className="dlg-back" onClick={() => status.bulk(null)}>
+          <div className="dlg" role="alertdialog" aria-labelledby="bulk-t" onClick={(e) => e.stopPropagation()}>
+            <h3 id="bulk-t">{s.bulk.total - s.bulk.failures.length} of {s.bulk.total} approved</h3>
+            <p className="sm">These were not approved:</p>
+            <ul style={{ margin: "8px 0 14px 18px" }}>
+              {s.bulk.failures.map((f) => <li key={f.id}><b>{f.code || f.id.slice(0, 8)}</b>: {f.message}</li>)}
+            </ul>
+            <button type="button" className="btn ap" autoFocus onClick={() => status.bulk(null)}>OK</button>
+          </div>
+        </div>
+      )}
+      {s.toast && (
+        <div role="status" style={{ position: "fixed", left: 16, right: 16, bottom: 72, zIndex: 60, background: "#1f2937", color: "#fff", padding: "12px 16px", borderRadius: 10, maxWidth: 520, margin: "0 auto" }}>
+          {s.toast}
+        </div>
+      )}
+    </>
+  );
+}
+
+export function CareProvider({ children }: { children: ReactNode }) {
+  const [state, setState] = useState<CareState | null>(null);
+
+  const refetch = useCallback(() => api.load().then(setState).catch(() => undefined), []); // offline flag is set by the http layer
+
+  useEffect(() => {
+    let alive = true;
+    const pull = () => api.load().then((s) => alive && setState(s)).catch(() => undefined);
+    pull();
+    const off = api.subscribe(pull);
+    window.addEventListener("cm-session", pull);
+    return () => {
+      alive = false;
+      off();
+      window.removeEventListener("cm-session", pull);
+    };
+  }, []);
+
+  const dispatch = useCallback((a: Action) => {
+    setState((s) => (s ? applyAction(s, a) : s)); // optimistic
+    api.dispatch(a).then(setState).catch((e: unknown) => {
+      status.toast(`Could not save that change: ${e instanceof Error ? e.message : "unknown error"}. It was rolled back.`);
+      api.load().then(setState).catch(() => undefined); // roll back to server truth
+    });
+  }, []);
+
+  const reset = useCallback(() => {
+    api.reset().then(setState).catch(() => undefined);
+  }, []);
+
+  const value = useMemo(() => ({ state, dispatch, reset }), [state, dispatch, reset]);
+  return (
+    <CareCtx.Provider value={value}>
+      <Banner onRetry={refetch} />
+      {children}
+    </CareCtx.Provider>
+  );
+}
+
+export function useCare() {
+  const c = useContext(CareCtx);
+  if (!c) throw new Error("useCare outside CareProvider");
+  return c;
+}

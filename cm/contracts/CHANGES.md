@@ -43,3 +43,7 @@ Changed shapes (additive fields):
 - `UiPatient.person_id`; `MessageOut.delivery` (`queued|sent|failed`, from the outbox row) and `delivery_error`.
 - `POST /review/bulk-decision` returns `list[BulkItemResult]` = `ReviewDecisionOut` + `ok`, `message`; `error_code` is open (any decision code). HTTP 200 on partial success.
 Migration `0008`: trigger function `cm.notify_event()` publishes ids (no text) on Postgres channel `cm_events`.
+
+## RFC-Q1 (lane G, Ask box + patient RAG): optional patient code in `QueryIn`
+Why: the doctor on a patient page should be able to ask "when did she miss doses?" without typing the code. `QueryIn` has `extra="forbid"` and no patient field, so today only a `PT-xxxx` written in the question targets one patient.
+Proposal (additive): `QueryIn.patient_code: str | None = Field(default=None, pattern=r"^PT-\d{4}$")`. The server uses it only to choose which patient's record to search; it is checked against the doctor's patient list and never forwarded to a model (the patient token is injected server-side). No change to `QueryAnswer`: citations already travel in `tool_calls_used[].result_preview` as `{ref, date, kind, snippet}` rows of the `search_patient_memory` call. Status: not implemented; the router change is a three-line follow-up once L0 approves.

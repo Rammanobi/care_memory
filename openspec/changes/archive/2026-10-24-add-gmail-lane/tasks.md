@@ -1,0 +1,5 @@
+- [x] 1 Ports and fakes (cm/channels/ports_gmail.py, fakes_gmail.py)
+- [x] 2 Push, fetch, retry, digest, send, watch (cm/channels/gmail.py; tests/unit/gmail)
+- [x] 3 Parser and reply verifier (gmail_parse.py, gmail_reply.py)
+- [x] 4 Calendar, consent, degrade (calendar.py, consent_flows.py, router/degrade.py)
+- [x] 5 NOTES_gmail.md

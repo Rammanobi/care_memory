@@ -16,7 +16,7 @@ from cm.core.retry import ProviderCallFailed, RateLimiter, call_with_fallback, c
 from cm.core.tokenize import assert_clean
 
 ROLES = ("ORCHESTRATOR", "WORKER", "VISION", "EMBEDDING", "JUDGE")
-OPENAI_ONLY = ("VISION", "EMBEDDING")
+OPENAI_ONLY = ("EMBEDDING",)  # VISION may use deepseek:* (image_url data URIs) while CM_DATA_CLASS != real
 
 
 class ModelConfigError(Exception):
@@ -83,10 +83,23 @@ def _text_of(messages: Any) -> str:
     if isinstance(messages, (list, tuple)):
         return "\n".join(_text_of(m) for m in messages)
     if isinstance(messages, dict):
+        if messages.get("type") in {"image_url", "image"}:
+            return ""  # image bytes are not text; the real-data image guard is _has_image
+        if "text" in messages:
+            return str(messages["text"])
         return _text_of(messages.get("content", ""))
     if isinstance(messages, tuple):
         return str(messages[-1])
     return _text_of(getattr(messages, "content", str(messages)))
+
+
+def _has_image(messages: Any) -> bool:
+    if isinstance(messages, dict):
+        return messages.get("type") in {"image_url", "image"} or _has_image(messages.get("content"))
+    if isinstance(messages, (list, tuple)):
+        return any(_has_image(m) for m in messages)
+    c = getattr(messages, "content", None)
+    return isinstance(c, list) and _has_image(c)
 
 
 class GovernedModel:
@@ -120,7 +133,10 @@ class GovernedModel:
     def invoke(self, messages: Any, *, task_id: str = "adhoc", task_type: str = "other",
                patient_id: str | None = None, **kw: Any) -> Any:
         text = _text_of(messages)
-        assert_clean(text)  # prompt must already be tokenized
+        assert_clean(text)  # prompt must already be tokenized (text parts only)
+        env = os.environ if self._env is None else self._env
+        if _has_image(messages) and env.get("CM_DATA_CLASS", "synthetic").lower() == "real":
+            raise ModelConfigError("images are refused when CM_DATA_CLASS=real (no real patient images to an LLM)")
         spec = self._spec()
         gov, pol = self.gov, self.gov.policy()
         est_in = _budget.estimate_tokens(text)
@@ -155,6 +171,36 @@ class GovernedModel:
                    tokens_out=usage.get("output_tokens", est_out if usage else est_out // 2),
                    task_id=task_id, task_type=task_type, patient_id=patient_id)
         return out
+
+    # ---- embeddings (role EMBEDDING only): governed, retried, PII-guarded, usage recorded ----
+    def embed_documents(self, texts: list[str], *, task_id: str = "adhoc", task_type: str = "embed",
+                        patient_id: str | None = None) -> list[list[float]]:
+        if self.role != "EMBEDDING":
+            raise ModelConfigError("embed_documents is only available for the EMBEDDING role")
+        if not texts:
+            return []
+        for t in texts:
+            assert_clean(t)  # texts must already be tokenized
+        spec = self._spec()
+        name = spec.partition(":")[2]
+        gov = self.gov
+        est_in = sum(_budget.estimate_tokens(t) for t in texts)
+        gov.check(name, est_in, 0, task_id=task_id, patient_id=patient_id)
+        (self._lim or get_limiter()).acquire(est_in)
+        try:
+            vecs = call_with_retry(lambda: self._inner(spec).embed_documents(list(texts)))
+        except ProviderCallFailed as e:
+            if e.error_class == "spend_cap":
+                gov.mark_billing_error()
+            raise
+        # the embeddings API returns no usage through LangChain: record the same estimate used to gate
+        gov.record(model=name, tokens_in=est_in, tokens_out=0, task_id=task_id, task_type=task_type,
+                   patient_id=patient_id)
+        return [list(map(float, v)) for v in vecs]
+
+    def embed_query(self, text: str, *, task_id: str = "adhoc", task_type: str = "embed",
+                    patient_id: str | None = None) -> list[float]:
+        return self.embed_documents([text], task_id=task_id, task_type=task_type, patient_id=patient_id)[0]
 
 
 def get_model(role: str, **kw: Any) -> GovernedModel:

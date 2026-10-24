@@ -18,6 +18,8 @@ load_dotenv()
 # Never touch the dev database: tests always use their own.
 os.environ["DEMO_IGNORE_QUIET_HOURS"] = "0"  # dev .env demo switch must not change test behaviour
 os.environ.setdefault("CM_WEB_DIR", os.path.join(os.path.dirname(__file__), "_no_web_dist"))  # API tests never serve a built web/dist
+os.environ["CM_QUESTION_RESEARCH_LIVE"] = "0"  # tests never call the live research model
+os.environ["DOCTOR_NOTIFY_MODE"] = "dry-run"  # tests never send email
 os.environ["CM_ENV"] = "test"  # load_settings() reloads .env; setdefault semantics keep these
 os.environ["DB_NAME"] = os.environ.get("CM_TEST_DB_NAME", "caremem_test")
 os.environ.setdefault("JWT_SIGNING_KEY", "test-" + secrets.token_hex(24))

@@ -22,8 +22,13 @@ log = get_logger()
 
 
 def drain_loop(stop: threading.Event, interval: float) -> None:
+    from cm.core import clock
+    from cm.core.db import transaction
+
     while not stop.is_set():
         try:
+            with transaction() as conn:  # follow the demo clock the API uses, so rows it schedules are due here too
+                clock.load_pin(conn)
             out = outbox_drainer.drain_once()
             if out["claimed"]:
                 log.info("drained", **out)

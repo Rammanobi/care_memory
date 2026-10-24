@@ -56,3 +56,4 @@ Thumbs.db
 
 # local state
 *.log
+gmail_cred/

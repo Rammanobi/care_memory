@@ -69,7 +69,15 @@ class MessagePort(Protocol):
     """Free-text chat messages: stored as an event plus a doctor-visible request; ack rate limit."""
 
     def save(
-        self, b: Binding, update_id: int, text: str, category: str, at: datetime
+        self,
+        b: Binding,
+        update_id: int,
+        text: str,
+        category: str,
+        at: datetime,
+        *,
+        chat_id: int | None = None,
+        message_id: int | None = None,
     ) -> tuple[bool, UUID | None]:
         """Idempotent per update_id. Returns (newly_stored, request_id or None when a repeat was folded)."""
 
@@ -85,9 +93,13 @@ class AuditPort(Protocol):
 
 class TelegramClient(Protocol):
     async def send_message(
-        self, chat_id: str, text: str, reply_markup: dict[str, Any] | None = None
+        self,
+        chat_id: str,
+        text: str,
+        reply_markup: dict[str, Any] | None = None,
+        reply_to_message_id: int | None = None,
     ) -> str:
-        """Returns the provider message id. Raises TgRetryAfter, TgAuthError, TgBlocked, TgTransient."""
+        """``reply_to_message_id`` threads the message under an earlier one. Returns the provider message id. Raises TgRetryAfter, TgAuthError, TgBlocked, TgTransient."""
 
     async def edit_reply_markup(
         self, chat_id: str, message_id: str, reply_markup: dict[str, Any] | None

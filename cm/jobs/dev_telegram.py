@@ -40,6 +40,10 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
     stop = threading.Event()
     install_signals(stop)
+    from cm.core import tasks as core_tasks
+
+    if core_tasks.start_local_worker():  # question research and other queued tasks run in this process
+        log.info("local task worker started")
     t = threading.Thread(target=drain_loop, args=(stop, a.interval), daemon=True)
     t.start()
     try:

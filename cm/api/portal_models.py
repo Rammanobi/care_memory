@@ -8,7 +8,7 @@ contracts; they never replace a contract model that exists.
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Literal
+from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import Field
@@ -181,6 +181,19 @@ class RequestOut(CMModel):
     due_at: datetime
     refs: list[str] = Field(default_factory=list)
     archived: bool = False
+    # doctor-side only (never copied into a /portal/* model)
+    tier: Literal["red", "amber", "green"] = "green"
+    priority: str | None = None
+    source: str | None = Field(default=None, description="telegram, or None for the web portal")
+    origin: dict[str, Any] | None = Field(
+        default=None, description="{channel, telegram_chat_id?, telegram_message_id?, question_excerpt}"
+    )
+    research: dict[str, Any] | None = Field(
+        default=None,
+        description="{status pending|ready|failed, category, priority, brief[{text,refs}], suggested_reply, "
+        "confidence, model, cost_usd, reason}",
+    )
+    answered_at: datetime | None = Field(default=None, description="When the doctor decided")
 
 
 # ---- admin / usage -----------------------------------------------------------------------
@@ -300,6 +313,11 @@ class PortalRecord(CMModel):
     past: list[Appointment] = Field(default_factory=list)
 
 
+class InReplyTo(CMModel):
+    approval_id: UUID = Field(description="The patient's question this message answers")
+    question_excerpt: str = Field(description="Short quote of the question (at most 80 characters)")
+
+
 class PortalMessage(CMModel):
     id: UUID = Field(description="outbox_id")
     title: str
@@ -307,6 +325,9 @@ class PortalMessage(CMModel):
     created_at: datetime
     read: bool
     for_supporter: bool = False
+    in_reply_to: InReplyTo | None = Field(
+        default=None, description="Set when this is the care team's answer to a question"
+    )
 
 
 class PortalRequestIn(CMModel):
@@ -319,6 +340,9 @@ class ReminderRequestIn(CMModel):
     time: str = Field(pattern=r"^(0?[1-9]|1[0-2]):[0-5][0-9] (am|pm)$")
 
 
+QuestionStatus = Literal["waiting", "answered", "closed"]
+
+
 class PortalRequestOut(CMModel):
     id: UUID
     text: str
@@ -326,6 +350,11 @@ class PortalRequestOut(CMModel):
     when: datetime
     status: RequestStatus
     reply: str | None = None
+    question_status: QuestionStatus = Field(
+        default="waiting",
+        description="waiting until the care team replies; answered (see reply); closed when no reply is coming",
+    )
+    answered_at: datetime | None = None
 
 
 class ConsentSwitches(CMModel):

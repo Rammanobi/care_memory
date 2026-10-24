@@ -111,9 +111,17 @@ class PgMessages:
     patient's message to the care team), and the ack rate limit. Replies come only from the doctor."""
 
     def save(
-        self, b: Binding, update_id: int, text: str, category: str, at: datetime
+        self,
+        b: Binding,
+        update_id: int,
+        text: str,
+        category: str,
+        at: datetime,
+        *,
+        chat_id: int | None = None,
+        message_id: int | None = None,
     ) -> tuple[bool, UUID | None]:
-        from cm.channels import tg_text
+        from cm.channels import question_routing, tg_text
         from cm.core.tokenize import tokenize
 
         stored, cut = tg_text.clip(text)
@@ -144,7 +152,16 @@ class PgMessages:
                 b.patient_id, sha, at - timedelta(minutes=10), conn=conn
             ):
                 return True, None  # same words again within 10 minutes: the doctor already has them
-            return True, approvals_repo.upsert(self._request(b, update_id, stored, sha, category, cut, at), conn=conn)
+            req = self._request(b, update_id, stored, sha, category, cut, at)
+            req["payload"]["data"]["origin"] = question_routing.build_origin(
+                "telegram", stored, chat_id=chat_id, message_id=message_id
+            )
+            req["payload"]["data"]["research"] = question_routing.blank_research(
+                category=category, priority="urgent" if category == "danger" else "normal"
+            )
+            aid = approvals_repo.upsert(req, conn=conn)
+        question_routing.enqueue_research(aid)  # after commit; idempotent per approval
+        return True, aid
 
     @staticmethod
     def _request(

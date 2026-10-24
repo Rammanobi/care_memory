@@ -39,6 +39,7 @@ _TASK_TYPE = {
     "calendar_sync": "calendar_sync",
     "tap": "ingest_event",
     "ingest_event": "ingest_event",
+    "question_research": "investigate",  # task_runs.task_type CHECK has no new value; closest allowed type
 }
 _key_fetcher: gmail_oidc.KeyFetcher | None = None
 
@@ -71,6 +72,10 @@ def dispatch(queue: str, name: str, payload: Any) -> None:
         from cm.jobs.nightly import run_patient
 
         run_patient(str(payload["patient"]), live=bool(payload.get("live", False)))
+    elif kind == "question_research":
+        from cm.channels.question_routing import run_question_research
+
+        run_question_research(str(payload["approval_id"]))
     elif kind == "calendar_sync":
         log.info("calendar_sync is a stub", queue=queue)  # Lane M wires the real sync
     elif kind in ("tap", "ingest_event"):

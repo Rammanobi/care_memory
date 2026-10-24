@@ -144,7 +144,17 @@ def _free_text(
     if not text:
         return OK  # sticker, photo, voice: nothing to store or answer
     category = tg_text.classify(text)
-    inserted, _ = d.messages.save(b, upd.update_id, text, category, now)
+    m = upd.message or {}
+    mid = m.get("message_id")
+    inserted, _ = d.messages.save(
+        b,
+        upd.update_id,
+        text,
+        category,
+        now,
+        chat_id=int(chat_id) if chat_id.lstrip("-").isdigit() else None,
+        message_id=mid if isinstance(mid, int) else None,
+    )
     if not inserted:
         return OK  # repeated update: no second request, no second ack
     d.tasks.enqueue(

@@ -1,7 +1,8 @@
 """Lane G: GET /stream, Server-Sent Events fed by Postgres LISTEN/NOTIFY (migration 0008).
 
 Event name = topic (review, channels) because web/src/realtime/sse.ts listens by topic name; the JSON
-data carries the precise type: approval_created, approval_decided, request_created, message_sent.
+data carries the precise type: approval_created, approval_decided, request_created, message_sent, patient_question
+(published by cm.store.stream_repo when a question brief is ready; doctors and admins only).
 A comment line ": ping" is sent every 15 s. Auth is the session cookie (or bearer header).
 """
 # ruff: noqa: B008  (FastAPI Depends() defaults)

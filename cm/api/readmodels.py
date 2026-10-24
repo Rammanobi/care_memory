@@ -193,7 +193,9 @@ def request_rows(
         where.append("per.token = %s")
         args.append(token_from_code(code))
     rows = conn.execute(
-        "SELECT a.*, per.token FROM cm.approvals a JOIN cm.patients p USING (patient_id) "
+        "SELECT a.*, per.token, (SELECT d.decided_at FROM cm.review_decisions d "
+        "WHERE d.approval_id = a.approval_id LIMIT 1) AS decided_at "
+        "FROM cm.approvals a JOIN cm.patients p USING (patient_id) "
         "JOIN cm.persons per ON per.person_id = p.person_id WHERE "
         + " AND ".join(where)
         + " ORDER BY a.created_at DESC",
@@ -223,6 +225,12 @@ def request_rows(
                 due_at=r["due_at"],
                 refs=data.get("refs", []),
                 archived=bool(data.get("archived")),
+                tier=r["tier"],
+                priority=data.get("priority"),
+                source=data.get("source"),
+                origin=data.get("origin"),
+                research=data.get("research"),
+                answered_at=r["decided_at"] if st == "approved" else None,
             )
         )
     return out

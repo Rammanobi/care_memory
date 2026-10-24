@@ -66,7 +66,8 @@ def inbox_for(
     include_requests: bool = False,
     conn: Any = None,
 ) -> list[dict[str, Any]]:
-    """Approved messages addressed to a person, newest first (request replies only when asked)."""
+    """Approved messages addressed to a person, newest first. Replies to a patient request are included only
+    when asked, except doctor replies to a patient question (meta.reply_to), which always show."""
     if conn is None:
         with transaction() as c:
             return inbox_for(
@@ -84,7 +85,8 @@ def inbox_for(
         + (
             ""
             if include_requests
-            else "AND COALESCE(a.payload->>'subkind','') <> 'patient_request' "
+            else "AND (COALESCE(a.payload->>'subkind','') <> 'patient_request' "
+            "OR o.meta->'reply_to' IS NOT NULL) "
         )
         + "ORDER BY o.created_at DESC, o.outbox_id LIMIT %s",
         (recipient_id, list(channels), as_of, limit),
@@ -149,7 +151,8 @@ def sent_today(recipient_id: UUID, day: date, *, conn: Any = None) -> int:
             return sent_today(recipient_id, day, conn=c)
     row = conn.execute(
         "SELECT count(*) AS n FROM cm.outbox WHERE recipient_id=%s AND status='sent' "
-        "AND channel='telegram' AND (sent_at AT TIME ZONE 'Asia/Kolkata')::date = %s",
+        "AND channel='telegram' AND meta->'reply_to' IS NULL "  # replies to a question are cap-exempt
+        "AND (sent_at AT TIME ZONE 'Asia/Kolkata')::date = %s",
         (recipient_id, day),
     ).fetchone()
     return int(row["n"])

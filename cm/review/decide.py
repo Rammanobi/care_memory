@@ -88,10 +88,30 @@ def _existing(conn: Any, approval_id: UUID, as_of: datetime) -> ReviewDecisionOu
     )
 
 
-def _outbox_meta(payload: dict[str, Any]) -> dict[str, Any]:
+def _reply_meta(approval: dict[str, Any]) -> dict[str, Any]:
+    """Threading info for a doctor's reply to a patient question (rows that carry data.origin only)."""
+    payload = approval["payload"]
+    data = payload.get("data") or {}
+    origin = data.get("origin")
+    if payload.get("subkind") != "patient_request" or not isinstance(origin, dict):
+        return {}
+    urgent = data.get("priority") == "urgent" or approval.get("tier") == "red"
+    return {
+        "reply_to": {
+            "approval_id": str(approval["approval_id"]),
+            "question_excerpt": origin.get("question_excerpt") or "",
+            "telegram_message_id": origin.get("telegram_message_id"),
+        },
+        "patient_title": "Reply from your care team",
+        "priority": "urgent" if urgent else "normal",
+    }
+
+
+def _outbox_meta(approval: dict[str, Any]) -> dict[str, Any]:
+    payload = approval["payload"]
     data = payload.get("data") or {}
     keep = {k: data[k] for k in ("patient_title", "for_supporter") if k in data}
-    return {"title": payload.get("title"), **keep}
+    return {"title": payload.get("title"), **keep, **_reply_meta(approval)}
 
 
 def _write_outbox(
@@ -111,7 +131,7 @@ def _write_outbox(
                 "next_attempt_at": at,
                 "for_date": payload.get("for_date"),
                 "dedup_key": f"{decision_id}:{r['person_id']}:{r['channel']}:{payload.get('for_date') or 'now'}",
-                "meta": _outbox_meta(payload),
+                "meta": _outbox_meta(approval),
             },
             conn=conn,
         )

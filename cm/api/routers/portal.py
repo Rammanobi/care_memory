@@ -21,6 +21,7 @@ from cm.api.portal_models import (
     Appointment,
     ConsentSwitches,
     DoseIn,
+    InReplyTo,
     PortalDocument,
     PortalMe,
     PortalMedicine,
@@ -36,6 +37,7 @@ from cm.api.portal_models import (
     SupporterView,
 )
 from cm.api.suppress import clean_texts, is_clean
+from cm.channels import question_routing
 from cm.core.db import transaction
 from cm.core.ids import new_id
 from cm.store import approvals_repo, events_repo, outbox_repo
@@ -200,9 +202,21 @@ def _messages(
                 "created_at": r["created_at"],
                 "read": bool(data.get("seen_at")),
                 "for_supporter": bool(data.get("for_supporter")),
+                "in_reply_to": _in_reply_to(data.get("reply_to")),
             }
         )
     return [PortalMessage(**m) for m in clean_texts(out, ("title", "text"))]
+
+
+def _in_reply_to(raw: Any) -> InReplyTo | None:
+    """Patient-safe link to the question a reply answers: its id and a clean short excerpt, nothing else."""
+    if not isinstance(raw, dict) or not raw.get("approval_id"):
+        return None
+    excerpt = str(raw.get("question_excerpt") or "")
+    return InReplyTo(
+        approval_id=UUID(str(raw["approval_id"])),
+        question_excerpt=excerpt if is_clean(excerpt) else "",
+    )
 
 
 def _new_request(
@@ -451,6 +465,10 @@ def mark_read(outbox_id: UUID, user: User = Depends(require_roles("patient", "su
         raise ApiError(404, "Message not found", "not_found")
 
 
+# waiting until the doctor replies; a declined question is "closed" (no reply is coming, no false hope)
+_QSTATUS = {"waiting": "waiting", "approved": "answered", "declined": "closed"}
+
+
 def _my_requests(conn: Any, user: User, at: datetime) -> list[PortalRequestOut]:
     rows = rm.request_rows(conn, at, code=display_code(user.token))
     out = [
@@ -461,6 +479,8 @@ def _my_requests(conn: Any, user: User, at: datetime) -> list[PortalRequestOut]:
             "when": r.when,
             "status": r.status,
             "reply": r.reply,
+            "question_status": _QSTATUS[r.status],
+            "answered_at": r.answered_at,
         }
         for r in rows
     ]
@@ -484,6 +504,7 @@ def _created(conn: Any, user: User, rid: UUID, at: datetime) -> PortalRequestOut
         when=raw.when,
         status=raw.status,
         reply=None,
+        question_status=_QSTATUS[raw.status],
     )
 
 
@@ -506,10 +527,16 @@ def portal_new_request(
             body.text,
             body.kind,
             "Thank you for your message. Your care team will reply soon.",
-            {},
+            {
+                "source": "portal",
+                "category": "question",
+                "origin": question_routing.build_origin("portal", body.text),
+                "research": question_routing.blank_research(),
+            },
             at,
         )
         created = _created(conn, user, rid, at)
+    question_routing.enqueue_research(rid)  # after commit; idempotent per approval
     return created
 
 

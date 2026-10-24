@@ -35,12 +35,23 @@ class FakeTelegramClient:
         self._n = 0
 
     async def send_message(
-        self, chat_id: str, text: str, reply_markup: dict[str, Any] | None = None
+        self,
+        chat_id: str,
+        text: str,
+        reply_markup: dict[str, Any] | None = None,
+        reply_to_message_id: int | None = None,
     ) -> str:
         if self.script:
             raise self.script.pop(0)
         self._n += 1
-        self.sent.append({"chat_id": chat_id, "text": text, "reply_markup": reply_markup})
+        self.sent.append(
+            {
+                "chat_id": chat_id,
+                "text": text,
+                "reply_markup": reply_markup,
+                "reply_to_message_id": reply_to_message_id,
+            }
+        )
         return str(1000 + self._n)
 
     async def edit_reply_markup(

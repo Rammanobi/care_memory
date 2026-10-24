@@ -82,11 +82,18 @@ class HttpTelegramClient:
         return res if res is not None else {}
 
     async def send_message(
-        self, chat_id: str, text: str, reply_markup: dict[str, Any] | None = None
+        self,
+        chat_id: str,
+        text: str,
+        reply_markup: dict[str, Any] | None = None,
+        reply_to_message_id: int | None = None,
     ) -> str:
         body: dict[str, Any] = {"chat_id": chat_id, "text": text}
         if reply_markup:
             body["reply_markup"] = reply_markup
+        if reply_to_message_id is not None:
+            body["reply_to_message_id"] = int(reply_to_message_id)
+            body["allow_sending_without_reply"] = True  # the original may be deleted: still deliver
         res = await self._call("sendMessage", body)
         return str(res.get("message_id", ""))
 

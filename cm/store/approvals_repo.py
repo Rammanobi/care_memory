@@ -130,3 +130,48 @@ def count_pending_by_tier(as_of: datetime, *, conn: Any = None) -> dict[str, int
         (as_of,),
     ).fetchall()
     return {r["tier"]: r["n"] for r in rows}
+
+
+_TIER_RANK = {"green": 0, "amber": 1, "red": 2}
+
+
+def set_research(
+    approval_id: UUID,
+    research: dict[str, Any],
+    *,
+    priority: str | None = None,
+    tier: str | None = None,
+    mark_notified: bool = False,
+    conn: Any = None,
+) -> dict[str, Any] | None:
+    """Write ``payload.data.research`` (and optionally priority / doctor_notified) on a pending question.
+
+    The tier can only go UP (green < amber < red): a Red item is never lowered. Returns the stored
+    ``{tier, data}`` or None when the approval does not exist. Only this helper edits ``data.research``.
+    """
+    if conn is None:
+        with transaction() as c:
+            return set_research(
+                approval_id, research, priority=priority, tier=tier, mark_notified=mark_notified, conn=c
+            )
+    row = conn.execute(
+        "SELECT tier, payload FROM cm.approvals WHERE approval_id=%s FOR UPDATE", (approval_id,)
+    ).fetchone()
+    if not row:
+        return None
+    payload = dict(row["payload"])
+    data = dict(payload.get("data") or {})
+    data["research"] = research
+    if priority:
+        data["priority"] = priority
+    if mark_notified:
+        data["doctor_notified"] = True
+    payload["data"] = data
+    new_tier = row["tier"]
+    if tier in _TIER_RANK and _TIER_RANK[tier] > _TIER_RANK[new_tier]:
+        new_tier = tier
+    conn.execute(
+        "UPDATE cm.approvals SET payload=%s, tier=%s WHERE approval_id=%s",
+        (Jsonb(payload), new_tier, approval_id),
+    )
+    return {"tier": new_tier, "data": data}

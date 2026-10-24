@@ -1,0 +1,4 @@
+- [x] cm/channels/tg_text.py (classify, clip, ack template loader); tests: tests/integration/test_telegram_free_text.py
+- [x] Templates telegram_ack_v1, telegram_ack_urgent_v1 in confirmations.yaml; tests/unit/content/test_templates.py
+- [x] channels_repo.recent_request_with_hash, claim_ack; adapters_pg.PgMessages; ports.MessagePort
+- [x] tg_inbound._free_text wired via Deps.messages

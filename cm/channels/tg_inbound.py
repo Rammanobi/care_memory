@@ -14,6 +14,7 @@ from typing import Any
 from uuid import UUID
 
 from cm.channels import tg_callback as cb
+from cm.channels import tg_text
 from cm.channels.binding import (
     STOPPED_TEXT,
     UNBOUND_TEXT,
@@ -28,6 +29,7 @@ from cm.channels.ports import (
     ConsentPort,
     EventPort,
     FastPathPort,
+    MessagePort,
     OutboxPort,
     TaskPort,
 )
@@ -50,6 +52,7 @@ class Deps:
     fast: FastPathPort
     audit: AuditPort
     now: Callable[[], datetime]
+    messages: MessagePort | None = None  # None: legacy enqueue-only behaviour (supporters, old tests)
 
 
 def verify_secret(header: str | None, expected: str) -> bool:
@@ -114,7 +117,8 @@ def _on_message(upd: TelegramUpdate, d: Deps) -> dict[str, Any]:
         b.person_id, "telegram", "daily_checkin", now
     ):
         return _say(chat_id, STOPPED_TEXT)
-    # Free text: no event inline; hand to the intake task (named, so a repeat is a no-op).
+    if d.messages is not None and b.role == "patient" and b.patient_id is not None:
+        return _free_text(upd, text, b, chat_id, now, d)
     d.tasks.enqueue(
         "agent-runs",
         f"tg-{upd.update_id}",
@@ -127,6 +131,36 @@ def _on_message(upd: TelegramUpdate, d: Deps) -> dict[str, Any]:
         },
     )
     return OK
+
+
+def _free_text(
+    upd: TelegramUpdate, text: str, b: Binding, chat_id: str, now: datetime, d: Deps
+) -> dict[str, Any]:
+    """Patient free text: store it, route it to the doctor, send ONE template ack (inline, rate limited).
+
+    The system never answers the content. Danger words also raise the Red fast-path draft. Inline
+    replies are not outbox rows, so quiet hours and the 3-per-day cap do not apply (same as /start)."""
+    assert d.messages is not None and b.patient_id is not None
+    if not text:
+        return OK  # sticker, photo, voice: nothing to store or answer
+    category = tg_text.classify(text)
+    inserted, _ = d.messages.save(b, upd.update_id, text, category, now)
+    if not inserted:
+        return OK  # repeated update: no second request, no second ack
+    d.tasks.enqueue(
+        "agent-runs",
+        f"tg-{upd.update_id}",
+        {"kind": "ingest_event", "person_id": str(b.person_id), "channel": "telegram",
+         "update_id": upd.update_id},
+    )
+    if category == "danger":
+        d.fast.red_symptom(b.patient_id, {"recorded_at": now, "update_id": upd.update_id})
+    d.audit.audit("tg_free_text", chat=chat_hash(chat_id), category=category)
+    urgent = category == "danger"
+    if not d.messages.claim_ack(b.person_id, urgent, now, tg_text.ACK_WINDOW_S):
+        return OK
+    _, reply = tg_text.ack_text(urgent, b.lang, d.messages.first_name(b.person_id))
+    return _say(chat_id, reply)
 
 
 def _active_binding(chat_id: str, d: Deps, now: datetime) -> tuple[Binding | None, str | None]:

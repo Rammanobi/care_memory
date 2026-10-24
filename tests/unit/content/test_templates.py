@@ -24,6 +24,8 @@ REQUIRED_KINDS = {
     "consent_confirmation",
     "consent_revoke_confirmation",
     "emergency_note",
+    "telegram_ack",
+    "telegram_ack_urgent",
 }
 TE_COMMENT = re.compile(r"^\s+te:\s*\n\s+# needs native-speaker review", re.MULTILINE)
 

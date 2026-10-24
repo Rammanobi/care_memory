@@ -65,6 +65,20 @@ class FastPathPort(Protocol):
     def red_symptom(self, patient_id: UUID, event: dict[str, Any]) -> None: ...
 
 
+class MessagePort(Protocol):
+    """Free-text chat messages: stored as an event plus a doctor-visible request; ack rate limit."""
+
+    def save(
+        self, b: Binding, update_id: int, text: str, category: str, at: datetime
+    ) -> tuple[bool, UUID | None]:
+        """Idempotent per update_id. Returns (newly_stored, request_id or None when a repeat was folded)."""
+
+    def claim_ack(self, person_id: UUID, urgent: bool, at: datetime, window_s: int) -> bool:
+        """True (and records it) when no ack of this kind went to this person in the last window_s."""
+
+    def first_name(self, person_id: UUID) -> str | None: ...
+
+
 class AuditPort(Protocol):
     def audit(self, action: str, **fields: Any) -> None: ...
 

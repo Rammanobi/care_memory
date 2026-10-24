@@ -106,6 +106,90 @@ class PgTasks:
         tasks.enqueue(queue, name, payload)
 
 
+class PgMessages:
+    """Free text from the bot chat: one event + one doctor-visible request (same table and flow as the web
+    patient's message to the care team), and the ack rate limit. Replies come only from the doctor."""
+
+    def save(
+        self, b: Binding, update_id: int, text: str, category: str, at: datetime
+    ) -> tuple[bool, UUID | None]:
+        from cm.channels import tg_text
+        from cm.core.tokenize import tokenize
+
+        stored, cut = tg_text.clip(text)
+        sha = tg_text.text_sha(stored)
+        ev = {
+            "patient_id": b.patient_id,
+            "type": "ContextNote",
+            "occurred_at": at,
+            "recorded_at": at,
+            "source": "telegram",
+            "reporter_id": b.person_id,
+            "reporter_mode": "self",
+            "channel": "telegram",
+            "idempotency_key": f"tg:{update_id}",
+            "payload": {
+                "origin": "patient_text",
+                "kind": "telegram_message",
+                "text_tokenised": tokenize(stored),
+                "needs_clarification": category != "normal",
+                "data": {"category": category, "truncated": cut},
+            },
+        }
+        _, inserted = PgEvents().append_event(ev)
+        if not inserted:
+            return False, None
+        with db.transaction() as conn:
+            if channels_repo.recent_request_with_hash(
+                b.patient_id, sha, at - timedelta(minutes=10), conn=conn
+            ):
+                return True, None  # same words again within 10 minutes: the doctor already has them
+            return True, approvals_repo.upsert(self._request(b, update_id, stored, sha, category, cut, at), conn=conn)
+
+    @staticmethod
+    def _request(
+        b: Binding, update_id: int, text: str, sha: str, category: str, cut: bool, at: datetime
+    ) -> dict[str, Any]:
+        tier = {"danger": "red", "advice": "amber"}.get(category, "green")
+        kind = {"danger": "Urgent message", "advice": "Medicine question"}.get(category, "Telegram message")
+        return {
+            "approval_id": uuid4(),
+            "patient_id": b.patient_id,
+            "thread_id": f"req-tg-{update_id}",
+            "interrupt_id": "req",
+            "tier": tier,
+            "kind": "needs_human",
+            "created_at": at,
+            "due_at": at + timedelta(hours=1 if tier != "green" else 4),
+            "expires_at": at + timedelta(hours=48),
+            "payload": {
+                "audience": "patient",
+                "title": f"Patient request: {kind}",
+                "channel": "telegram",
+                "recipients": [{"person_id": str(b.person_id), "token": "", "channel": "telegram"}],
+                "body": "Thank you for your message. Your care team will reply soon.",
+                "subkind": "patient_request",
+                "data": {
+                    "kind": kind,
+                    "text": text,
+                    "refs": [],
+                    "source": "telegram",
+                    "priority": "high" if tier != "green" else "normal",
+                    "category": category,
+                    "text_sha": sha,
+                    "truncated": cut,
+                },
+            },
+        }
+
+    def claim_ack(self, person_id: UUID, urgent: bool, at: datetime, window_s: int) -> bool:
+        action = "tg_ack_urgent" if urgent else "tg_ack"
+        return channels_repo.claim_ack(person_id, action, at, window_s)
+
+    def first_name(self, person_id: UUID) -> str | None:
+        return channels_repo.person_first_name(person_id)
+
+
 # ---- fast path: plain rules, no LLM ---------------------------------------------------------
 MISSED_BODY = (
     "We noticed you have missed a few doses. Please call your clinic today so we can help. "
@@ -171,6 +255,7 @@ def build_deps(secret: str | None = None) -> Deps:
         outbox=PgOutbox(),
         tasks=PgTasks(),
         fast=PgFastPath(),
+        messages=PgMessages(),
         audit=PgAudit(),
         now=clock.now,
     )

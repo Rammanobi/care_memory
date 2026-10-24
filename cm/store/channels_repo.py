@@ -209,3 +209,41 @@ def reminder_targets(*, conn: Any = None) -> list[dict[str, Any]]:
         d["first_name"] = first_name_from_vault(r["enc_name"])
         out.append(d)
     return out
+
+
+# ---- free-text chat messages --------------------------------------------------------------------
+def recent_request_with_hash(
+    patient_id: UUID, sha: str, since: datetime, *, conn: Any = None
+) -> bool:
+    """True when this patient already has a request with the same text hash created since ``since``."""
+    if conn is None:
+        with transaction() as c:
+            return recent_request_with_hash(patient_id, sha, since, conn=c)
+    return (
+        conn.execute(
+            "SELECT 1 FROM cm.approvals WHERE patient_id=%s AND payload->>'subkind'='patient_request' "
+            "AND payload->'data'->>'text_sha'=%s AND created_at >= %s LIMIT 1",
+            (patient_id, sha, since),
+        ).fetchone()
+        is not None
+    )
+
+
+def claim_ack(
+    person_id: UUID, action: str, at: datetime, window_s: int, *, conn: Any = None
+) -> bool:
+    """Atomically allow one ack per person and action per window (advisory lock + audit_log row)."""
+    if conn is None:
+        with transaction() as c:
+            return claim_ack(person_id, action, at, window_s, conn=c)
+    pid = str(person_id)
+    conn.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (f"{action}:{pid}",))
+    hit = conn.execute(
+        "SELECT 1 FROM cm.audit_log WHERE action=%s AND %s = ANY(result_ids) "
+        "AND at > %s - make_interval(secs => %s) LIMIT 1",
+        (action, pid, at, window_s),
+    ).fetchone()
+    if hit:
+        return False
+    write_audit(action, {"person_id": pid}, at, conn=conn)
+    return True

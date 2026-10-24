@@ -174,3 +174,61 @@ templates:
 
             ఆప్యాయతతో,
             మీ సంరక్షణ బృందం
+
+  - id: telegram_ack_v1
+    kind: telegram_ack
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [first_name]
+    languages:
+      en:
+        telegram: "Thank you, {first_name}. Your message has been passed to your care team. They will reply here."
+        email:
+          subject: "Your message has been passed to your care team"
+          body: |
+            Hello {first_name},
+
+            Thank you. Your message has been passed to your care team. They will reply to you.
+
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "ధన్యవాదాలు, {first_name}. మీ సందేశం మీ సంరక్షణ బృందానికి అందజేశాం. వారు ఇక్కడే బదులిస్తారు."
+        email:
+          subject: "మీ సందేశం మీ సంరక్షణ బృందానికి అందింది"
+          body: |
+            నమస్కారం {first_name},
+
+            ధన్యవాదాలు. మీ సందేశం మీ సంరక్షణ బృందానికి అందజేశాం. వారు మీకు బదులిస్తారు.
+
+            మీ సంరక్షణ బృందం
+
+  - id: telegram_ack_urgent_v1
+    kind: telegram_ack_urgent
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [first_name]
+    languages:
+      en:
+        telegram: "Thank you, {first_name}. We have told your care team now. If you feel very unwell, please call 108 right away."
+        email:
+          subject: "We have told your care team"
+          body: |
+            Hello {first_name},
+
+            We have told your care team now. If you feel very unwell, please call 108 right away.
+
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "ధన్యవాదాలు, {first_name}. మీ సంరక్షణ బృందానికి ఇప్పుడే తెలియజేశాం. మీకు చాలా బాగోలేకపోతే, వెంటనే 108 కు కాల్ చేయండి."
+        email:
+          subject: "మీ సంరక్షణ బృందానికి తెలియజేశాం"
+          body: |
+            నమస్కారం {first_name},
+
+            మీ సంరక్షణ బృందానికి ఇప్పుడే తెలియజేశాం. మీకు చాలా బాగోలేకపోతే, వెంటనే 108 కు కాల్ చేయండి.
+
+            మీ సంరక్షణ బృందం

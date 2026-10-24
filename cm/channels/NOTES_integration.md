@@ -33,7 +33,7 @@ Notes
 - Reminder greeting uses "friend" (names live encrypted in the vault; no decrypt path wired).
 - `binding_id` is the person_id (table key is person_id+channel). Supporter bindings have no patient_id.
 - Governor patient token cap only tracks UUID patient ids. Seeded demo spend counts toward the event budget (CM_BUDGET_EVENT_USD).
-- Free-text messages from the bot chat are enqueued only; no reply. Onboarding wizard, language commands are not built.
+- Free text from a bound patient chat (add-telegram-free-text): saved as a ContextNote event plus a doctor-visible request (approvals, subkind patient_request, source telegram; danger = Red, medicine question = Amber, both high priority), ONE template ack inline (telegram_ack_v1 / telegram_ack_urgent_v1, EN or TE, max 1 per 10 min per person and kind; inline so quiet hours and the 3/day cap do not apply). Danger words also raise the Red fast-path draft. The doctor's reply goes through decide() and the gated outbox. Supporter chats and non-text messages: no request, no reply. Onboarding wizard, language commands are not built.
 - Red draft recipients carry an empty `token` string.
 
 ## Polling mode (no public URL, no ngrok)

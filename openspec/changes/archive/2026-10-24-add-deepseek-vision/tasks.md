@@ -1,0 +1,3 @@
+- [x] llm.py VISION deepseek + image guard (tests/unit/core_ai/test_ai.py)
+- [x] cm/tools/vision_extract.py (tests/unit/tools/test_vision_extract.py, offline + live)
+- [x] .env.example VISION_MODEL note

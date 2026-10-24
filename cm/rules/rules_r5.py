@@ -6,6 +6,10 @@ that ``for_date`` (or answers that prompt's ``outbox_id``), or a Supporter made 
 (``SupporterVisit`` witnessed/told) after the previous check-in day and up to this one.
 A run of ``r5_amber_streak`` unanswered days opens a conflict anchored on the run's first
 prompt; the tier is Red once the run reaches ``r5_red_streak``. The next answered day closes it.
+
+Bitemporal: the state is swept day by day over what was *known* (recorded) on each day, as R6 does, so a
+late-recorded prompt or reply never rewrites an earlier ``opened_as_of`` and never erases a conflict that
+was open on the record; it closes it on the day the late record arrived.
 """
 
 from __future__ import annotations
@@ -16,7 +20,7 @@ from typing import Any
 from cm.contracts.admin import RuleThresholds
 from cm.contracts.memory import Conflict
 
-from ._common import Ctx, Ev, make_conflict, pdate, prepare
+from ._common import Ctx, Ev, days, make_conflict, pdate, prepare
 
 RULE = "R5"
 
@@ -68,8 +72,30 @@ def _runs(ctx: Ctx) -> list[tuple[list[date], date | None, dict[date, list[Ev]]]
 def evaluate(
     events: Any, patient: Any, as_of: date, thresholds: RuleThresholds | None = None
 ) -> list[Conflict]:
-    """Rule R5."""
+    """Rule R5, swept over knowledge days so history is never rewritten by late records."""
     ctx = prepare(events, patient, as_of, thresholds)
+    starts = [pdate(p, "for_date") or p.occurred for p in ctx.of_type("CheckinPrompt")]
+    if not starts:
+        return []
+    seen: dict[Any, Conflict] = {}  # conflict_id -> latest view (opened = first day seen open)
+    open_ids: set[Any] = set()
+    for k in days(min(starts) + timedelta(days=1), as_of):
+        known = tuple(e for e in ctx.events if e.recorded <= k and e.occurred <= k)
+        snap = {c.conflict_id: c for c in _snapshot(Ctx(ctx.patient_id, ctx.treatment_start, k,
+                                                            ctx.thresholds, known))}  # fmt: skip
+        now_open = {cid for cid, c in snap.items() if c.closed_as_of is None}
+        for cid in now_open:
+            first = seen[cid].opened_as_of if cid in seen else k
+            seen[cid] = snap[cid].model_copy(update={"opened_as_of": first})
+        for cid in open_ids - now_open:  # closed by an answer, or erased by a late record: close today
+            shut = snap[cid].closed_as_of if cid in snap and snap[cid].closed_as_of else k
+            seen[cid] = seen[cid].model_copy(update={"closed_as_of": max(shut, seen[cid].opened_as_of)})
+        open_ids = now_open
+    return list(seen.values())
+
+
+def _snapshot(ctx: Ctx) -> list[Conflict]:
+    """R5 as seen with everything in ``ctx`` (one knowledge day)."""
     amber, red = ctx.thresholds.r5_amber_streak, ctx.thresholds.r5_red_streak
     out: list[Conflict] = []
     for run, closed, by_day in _runs(ctx):

@@ -11,6 +11,8 @@ import re
 from collections.abc import Iterable
 from typing import Any
 
+from cm.router.banned import find_banned as _router_banned
+
 SMALL_CELL_THRESHOLD = 5  # counts 1..THRESHOLD-1 are hidden in officer-facing views
 SMALL_CELL_MAX = SMALL_CELL_THRESHOLD - 1
 
@@ -50,6 +52,10 @@ def find_banned(text: str | None) -> list[str]:
     seen: list[str] = []
     for m in _BANNED_RE.finditer(text):
         t = m.group(1).lower()
+        if t not in seen:
+            seen.append(t)
+    for t in _router_banned(text):  # one list of words for the gate, the portal and the sender
+        t = t.lower()
         if t not in seen:
             seen.append(t)
     return seen

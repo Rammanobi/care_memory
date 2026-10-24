@@ -7,7 +7,7 @@ from datetime import date, datetime
 from typing import Any
 from uuid import UUID
 
-from cm.api.deps import display_code
+from cm.api.deps import display_code, token_from_code
 from cm.api.portal_models import (
     EvidenceOut,
     MessageOut,
@@ -131,7 +131,7 @@ def evidence_rows(
     )
     if code:
         where.append("per.token = %s")
-        args.append("P-" + code.split("-", 1)[1])
+        args.append(token_from_code(code))
     if ref:
         where.append("e.payload->>'ref' = %s")
         args.append(ref)
@@ -164,7 +164,7 @@ def notes_for(conn: Any, as_of: datetime, code: str | None = None) -> list[NoteO
     )
     if code:
         where.append("per.token = %s")
-        args.append("P-" + code.split("-", 1)[1])
+        args.append(token_from_code(code))
     rows = conn.execute(
         "SELECT e.event_id, e.payload, e.occurred_at, per.token FROM cm.events e JOIN cm.patients p USING (patient_id) "
         "JOIN cm.persons per ON per.person_id = p.person_id WHERE "
@@ -191,7 +191,7 @@ def request_rows(
     args: list[Any] = [as_of]
     if code:
         where.append("per.token = %s")
-        args.append("P-" + code.split("-", 1)[1])
+        args.append(token_from_code(code))
     rows = conn.execute(
         "SELECT a.*, per.token FROM cm.approvals a JOIN cm.patients p USING (patient_id) "
         "JOIN cm.persons per ON per.person_id = p.person_id WHERE "
@@ -235,7 +235,7 @@ def message_rows(conn: Any, as_of: datetime, code: str | None = None) -> list[Me
     )
     if code:
         where.append("pp.token = %s")
-        args.append("P-" + code.split("-", 1)[1])
+        args.append(token_from_code(code))
     rows = conn.execute(
         "SELECT o.outbox_id, o.approval_id, o.body, o.channel, o.created_at, o.meta, a.status AS astatus, "
         "o.status AS ostatus, o.last_error, "

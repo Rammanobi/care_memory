@@ -228,7 +228,10 @@ def test_deepseek_refused_for_real_data():
     with pytest.raises(llm.ModelConfigError):  # fallback path too
         llm.resolve_spec("ORCHESTRATOR", fallback=True, env={**ENV, "CM_DATA_CLASS": "real"})
     with pytest.raises(llm.ModelConfigError):
-        llm.get_model("VISION", env={"VISION_MODEL": "deepseek:x"})
+        llm.get_model("VISION", env={"VISION_MODEL": "deepseek:x", "CM_DATA_CLASS": "real"})
+    with pytest.raises(llm.ModelConfigError):
+        llm.get_model("EMBEDDING", env={"EMBEDDING_MODEL": "deepseek:x"})
+    assert llm.get_model("VISION", env={"VISION_MODEL": "deepseek:x"}).role == "VISION"
 
 
 def test_get_model_blocks_raw_pii_and_records_usage():

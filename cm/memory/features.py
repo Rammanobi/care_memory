@@ -91,7 +91,8 @@ def _checkins(events: Iterable[dict[str, Any]]) -> dict[date, dict[str, Any]]:
         and e["event_id"] not in superseded
         and (e.get("payload") or {}).get("status") != "undone"
     )  # undone = no dose recorded
-    for e in sorted(live, key=lambda x: x["occurred_at"]):
+    # deterministic: ties on occurred_at break on recorded_at, then event_id (input order must not matter)
+    for e in sorted(live, key=lambda x: (x["occurred_at"], x["recorded_at"], str(x["event_id"]))):
         raw = (e.get("payload") or {}).get("for_date")
         d = date.fromisoformat(raw) if raw else _day(e["occurred_at"])
         by_day[d] = e

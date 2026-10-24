@@ -120,6 +120,11 @@ def parse_uuid(value: str) -> UUID | None:
         return None
 
 
+def parse_cursor(cursor: str | None) -> int:
+    """Page offset from a cursor string: ASCII digits only, clamped so a huge value cannot overflow SQL."""
+    return min(int(cursor), 1_000_000_000) if cursor and cursor.isascii() and cursor.isdigit() else 0
+
+
 def display_code(token: str) -> str:
     """Person token P-0142 -> display code PT-0142 (the UI's patient code)."""
     return "PT-" + token.split("-", 1)[1] if token.startswith("P-") else token

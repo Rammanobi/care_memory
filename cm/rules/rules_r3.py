@@ -48,6 +48,8 @@ def _paid_not_received(ctx: Ctx, paid: Ev, reports: list[Ev]) -> Conflict | None
     if opened > ctx.as_of:
         return None
     closed = rec[0].recorded if rec else None
+    if closed is not None and closed <= opened:
+        return None  # "received" was already known before the conflict could open: never open
     title = (
         f"Portal shows the {paid.get('month')} support paid on day {ctx.day(p)}; "
         f"{len(nr)} report(s) say not received for {NOT_RECEIVED_DAYS}+ days."

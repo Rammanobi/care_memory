@@ -7,8 +7,10 @@ from collections.abc import Callable, Iterable
 
 _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("EMAIL", re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")),
-    ("PHONE", re.compile(r"(?<![\w-])(?:\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}(?!\w)")),
-    ("AADHAAR", re.compile(r"(?<!\d)\d{4}\s\d{4}\s\d{4}(?!\d)")),
+    # Indian mobile: optional +91 / 91 / 0 prefix, any single space/hyphen grouping (5-5, 3-3-4, 4-3-3 ...).
+    ("PHONE", re.compile(r"(?<![\w-])(?:(?:\+?91|0)[\s-]?)?[6-9](?:[\s-]?\d){9}(?!\w)")),
+    # Aadhaar: 12 digits, grouped 4-4-4 by spaces or hyphens, or unbroken.
+    ("AADHAAR", re.compile(r"(?<!\d)\d{4}[\s-]?\d{4}[\s-]?\d{4}(?!\d)")),
     ("ID", re.compile(r"\b(?:NIK|NI|PAT|MRN)[-\s]?\d{4,}\b", re.I)),
     ("NAME", re.compile(r"\b(?:Mr|Mrs|Ms|Dr|Shri|Smt|Sri)\.?\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?")),
 ]

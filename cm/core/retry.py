@@ -5,6 +5,7 @@ Never retries spend_cap (402 / quota), auth (401/403) or invalid (400/422/valida
 
 from __future__ import annotations
 
+import math
 import random
 import time
 from collections.abc import Callable
@@ -37,7 +38,8 @@ def _retry_after(exc: BaseException) -> float | None:
     try:
         for k, v in dict(headers).items():
             if str(k).lower() == "retry-after":
-                return max(float(v), 0.0)
+                ra = float(v)
+                return max(ra, 0.0) if math.isfinite(ra) else None  # "nan"/"inf" -> use backoff
     except (TypeError, ValueError):
         return None
     return getattr(exc, "retry_after", None)

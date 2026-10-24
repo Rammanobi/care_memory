@@ -63,7 +63,7 @@ class PgUsageStore:
     def task_cost(self, task_id: str) -> float:
         return self._one(
             "SELECT COALESCE(sum(cost_usd),0) AS v FROM cm.task_runs WHERE task_id=%s",
-            (_safe_id(task_id, clock.now().date().isoformat()),),
+            (_safe_id(task_id, clock.ist_date(clock.now()).isoformat()),),  # IST, as in add()
         )
 
     def patient_tokens(self, day: str, patient_id: str) -> int:

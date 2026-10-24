@@ -16,6 +16,7 @@ from cm.api.deps import (
     display_code,
     display_name_of,
     now,
+    parse_cursor,
     require_roles,
     resolve_patient,
 )
@@ -74,7 +75,7 @@ def list_patients(
         "visit": lambda p: p.visit_this_week,
     }[filter]
     rows = [p for p in rows if keep(p)]
-    start = int(cursor) if cursor and cursor.isdigit() else 0
+    start = parse_cursor(cursor)
     limit = max(1, min(limit, 500))
     page = rows[start : start + limit]
     return Page[UiPatient](
@@ -231,7 +232,7 @@ def audit_list(
 ) -> Page[AuditRowOut]:
     at = max(now(), datetime.now(UTC))  # login rows carry real time; the sim clock may be pinned earlier
     limit = max(1, min(limit, 500))
-    offset = int(cursor) if cursor and cursor.isdigit() else 0
+    offset = parse_cursor(cursor)
     where, args = ["a.at <= %s"], [at]
     with transaction() as conn:
         if patient_id:

@@ -118,7 +118,8 @@ def missed_days(patient_id: UUID, since: datetime, until: datetime, *, conn: Any
             return missed_days(patient_id, since, until, conn=c)
     row = conn.execute(
         "SELECT count(DISTINCT payload->>'for_date') AS n FROM cm.events WHERE patient_id=%s "
-        "AND type='DoseCheckin' AND payload->>'status'='missed' AND occurred_at >= %s AND occurred_at <= %s",
-        (patient_id, since, until),
+        "AND type='DoseCheckin' AND payload->>'status'='missed' AND occurred_at >= %s AND occurred_at <= %s "
+        "AND recorded_at <= %s",  # as_of: a miss recorded after `until` was not knowable then
+        (patient_id, since, until, until),
     ).fetchone()
     return int(row["n"])

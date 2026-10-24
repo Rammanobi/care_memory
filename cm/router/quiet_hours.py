@@ -12,8 +12,8 @@ END = time(7, 0)
 
 def in_quiet_hours(when: datetime) -> bool:
     """True when ``when`` (tz-aware) falls in 21:00-07:00 IST."""
-    if os.environ.get("DEMO_IGNORE_QUIET_HOURS") == "1" and os.environ.get("CM_ENV") == "dev":
-        return False  # demo override, dev only
+    if os.environ.get("DEMO_IGNORE_QUIET_HOURS") == "1" and os.environ.get("CM_ENV") in {"dev", "demo"}:
+        return False  # demo override: dev or demo only, never prod
     t = when.astimezone(IST).time()
     return t >= START or t < END
 

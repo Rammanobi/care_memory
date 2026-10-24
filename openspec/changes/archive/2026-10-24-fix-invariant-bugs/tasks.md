@@ -1,0 +1,11 @@
+# Tasks
+- [x] Tokenizer PHONE/AADHAAR patterns (`cm/core/tokenize.py`); tests/property/test_core_props.py
+- [x] Retry-After non-finite guard (`cm/core/retry.py`); tests/property/test_core_props.py
+- [x] Budget IST day (`cm/core/budget.py`, `cm/core/budget_pg.py`); tests/property/test_core_props.py, tests/invariants/test_db_invariants.py
+- [x] Refill IST dates (`cm/memory/detectors/refill.py`); tests/property/test_memory_props.py
+- [x] Check-in tie-break (`cm/memory/features.py`); tests/property/test_memory_props.py
+- [x] missed_days as_of (`cm/store/events_repo.py`); tests/invariants/test_db_invariants.py
+- [x] Outbox gate migration 0010 (`cm/store/migrations/0010_outbox_gate_hardening.sql`); tests/invariants/test_db_invariants.py
+- [x] R5 knowledge-day sweep (`cm/rules/rules_r5.py`); tests/property/test_rules_props.py, tests/unit/rules
+- [x] R3 inverted interval (`cm/rules/rules_r3.py`); tests/property/test_rules_props.py
+- [x] Full fast suite green: `pytest -m "not live and not slow and not docs" -q`

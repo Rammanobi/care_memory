@@ -88,7 +88,8 @@ def _on_message(upd: TelegramUpdate, d: Deps) -> dict[str, Any]:
     chat_id = str(chat.get("id"))
     text = (m.get("text") or "").strip()
     now = d.now()
-    if text.startswith("/start"):
+    low = text.lower()  # phone keyboards capitalise: "/Stop" must still stop
+    if low.startswith("/start"):
         r = bind_telegram(
             text[6:].strip(),
             chat_id,
@@ -98,7 +99,7 @@ def _on_message(upd: TelegramUpdate, d: Deps) -> dict[str, Any]:
             now=now,
         )
         return _say(chat_id, r.text)
-    if text.startswith("/stop"):
+    if low.startswith("/stop"):
         return _say(
             chat_id,
             stop_telegram(

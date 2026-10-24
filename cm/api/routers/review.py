@@ -8,7 +8,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from cm.api.deps import ApiError, User, now, require_roles, resolve_patient
+from cm.api.deps import ApiError, User, now, parse_cursor, require_roles, resolve_patient
 from cm.contracts.review import (
     BulkDecisionIn,
     DecisionRecord,
@@ -74,7 +74,7 @@ def review_queue(
 ) -> ReviewQueueOut:
     at = now()
     limit = max(1, min(limit, 200))
-    offset = int(cursor) if cursor and cursor.isdigit() else 0
+    offset = parse_cursor(cursor)
     with transaction() as conn:
         pid = resolve_patient(conn, patient_id)["patient_id"] if patient_id else None
         rows = approvals_repo.queue(

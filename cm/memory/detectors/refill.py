@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Any
 
+from cm.core.clock import ist_date
 from cm.memory.features import cite_id
 
 
@@ -26,10 +27,10 @@ def refill_coverage(events: list[dict[str, Any]], as_of) -> RefillCoverage:
         ds = (e.get("payload") or {}).get("days_supply")
         if not isinstance(ds, int) or ds < 0:
             continue
-        end = e["occurred_at"].date() + timedelta(days=ds)
+        end = ist_date(e["occurred_at"]) + timedelta(days=ds)  # IST dates, as features.py
         if best is None or end > best[0]:
             best = (end, e)
     if best is None:
         return RefillCoverage(0, None, None, ())
-    gap = max(0, (as_of.date() - best[0]).days)
+    gap = max(0, (ist_date(as_of) - best[0]).days)
     return RefillCoverage(gap, best[0], gap == 0, (cite_id(best[1]),))

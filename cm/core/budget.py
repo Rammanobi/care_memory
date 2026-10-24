@@ -210,7 +210,11 @@ class BudgetGovernor:
         self._alerted: set[str] = set()
 
     def today(self) -> str:
-        return self._clock().date().isoformat()
+        """Budget day label: the IST calendar date (an aware clock in any zone gives the same day)."""
+        from cm.core.clock import IST
+
+        at = self._clock()
+        return (at.astimezone(IST) if at.tzinfo else at).date().isoformat()
 
     # state
     def pct_used(self) -> float:

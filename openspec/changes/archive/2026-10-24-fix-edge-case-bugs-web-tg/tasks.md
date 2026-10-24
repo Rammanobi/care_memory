@@ -1,0 +1,1 @@
+- [x] Add టీబీ to cm/router/banned.py; proved by tests/unit/channels/test_tg_edge.py and tests/unit/jobs/test_reminders_edge.py

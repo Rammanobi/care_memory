@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Callable
 from typing import Any
 from uuid import UUID
 
@@ -45,5 +46,35 @@ def create_visit_event(spec: CalendarEventSpec, *, patient_id: UUID | str, calen
     return api.upsert_event(calendar_id, eid, body)
 
 
-def sync_calendar_events(as_of: Any) -> Any:  # job stub, wired by the integrator
-    raise NotImplementedError("wire to /tasks/calendar-sync: list approved visit decisions, call create_visit_event")
+def sync_calendar_events(as_of: Any, *, api: CalendarApi | None = None, calendar_id: str | None = None,
+                         list_approved: Callable[[Any], list[dict[str, Any]]] | None = None,
+                         consent_of: Callable[[Any], tuple[str | None, bool]] | None = None) -> dict[str, int]:
+    """Job skeleton for /tasks/calendar-sync (task kind ``calendar_sync``).
+
+    Reads approved/edited visit decisions decided at or before ``as_of`` and upserts one event each via
+    ``create_visit_event`` (deterministic id, so re-runs update). The approval payload carries the event in
+    ``payload['calendar_event']`` (a CalendarEventSpec dict); rows without one are skipped. ``api`` is the
+    real GoogleCalendarApi only when wired by the integrator; with none given this is a dry run (counts only).
+    ``consent_of(patient_id) -> (email, consents)`` supplies the optional attendee.
+    """
+    if list_approved is None:
+        from cm.store import gmail_repo
+
+        list_approved = gmail_repo.approved_visit_decisions
+    out = {"seen": 0, "upserted": 0, "skipped": 0, "dry_run": 0}
+    for row in list_approved(as_of):
+        out["seen"] += 1
+        raw = (row.get("payload") or {}).get("calendar_event")
+        if not raw:
+            out["skipped"] += 1
+            continue
+        spec = CalendarEventSpec.model_validate(raw)
+        if api is None or not calendar_id:
+            out["dry_run"] += 1
+            continue
+        email, consents = consent_of(row["patient_id"]) if consent_of else (None, False)
+        eid = create_visit_event(spec, patient_id=row["patient_id"], calendar_id=calendar_id, api=api,
+                                 approved=True, approval_id=row["approval_id"], patient_email=email,
+                                 patient_consents=consents)
+        out["upserted" if eid else "skipped"] += 1
+    return out

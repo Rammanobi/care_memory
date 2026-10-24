@@ -1,0 +1,2183 @@
+{
+ "patients": [
+  {
+   "code": "PT-0142",
+   "sex": "M",
+   "age": 34,
+   "day": 60,
+   "base": "red",
+   "tag": "RED",
+   "why": "Refill gap suspected",
+   "missed": [
+    3,
+    5,
+    6,
+    9,
+    10,
+    11,
+    18,
+    19
+   ],
+   "noData": 0,
+   "nextStep": "Approve visit Wed 6 pm",
+   "visitThisWeek": true,
+   "quiet": false,
+   "nextVisit": "Wed 6 pm",
+   "supporter": "Linked",
+   "consent": "Active",
+   "clinic": "anantapur",
+   "changes": [
+    {
+     "text": "Missed 3 doses in 4 days",
+     "ev": "E-0412"
+    },
+    {
+     "text": "no chemist refill since day 33",
+     "ev": "E-0388"
+    },
+    {
+     "text": "Supporter says he is travelling",
+     "ev": "E-0420"
+    }
+   ]
+  },
+  {
+   "code": "PT-0087",
+   "sex": "F",
+   "age": 41,
+   "day": 44,
+   "base": "red",
+   "tag": "RED",
+   "why": "3 missed, lab slot open",
+   "missed": [
+    13,
+    14,
+    17
+   ],
+   "noData": 0,
+   "nextStep": "Approve call today",
+   "visitThisWeek": true,
+   "quiet": false,
+   "nextVisit": "Fri 10 am",
+   "supporter": "Linked",
+   "consent": "Active",
+   "clinic": "anantapur",
+   "changes": [
+    {
+     "text": "3 missed doses in 7 days",
+     "ev": "E-0377"
+    },
+    {
+     "text": "lab slot still open",
+     "ev": "E-0391"
+    }
+   ]
+  },
+  {
+   "code": "PT-0213",
+   "sex": "F",
+   "age": 29,
+   "day": 18,
+   "base": "grn",
+   "tag": "ASKED",
+   "why": "Wants reminder at 7 pm",
+   "missed": [
+    17
+   ],
+   "noData": 0,
+   "nextStep": "Approve change",
+   "visitThisWeek": false,
+   "quiet": false,
+   "nextVisit": "Mon 11 am",
+   "supporter": "Not linked",
+   "consent": "Active",
+   "clinic": "anantapur",
+   "changes": [
+    {
+     "text": "Asked to change her reminder time",
+     "ev": "E-0431"
+    }
+   ]
+  },
+  {
+   "code": "PT-0198",
+   "sex": "F",
+   "age": 37,
+   "day": 52,
+   "base": "amb",
+   "tag": "QUIET",
+   "why": "No reply for 4 days",
+   "missed": [],
+   "noData": 6,
+   "nextStep": "Ask Supporter to check",
+   "visitThisWeek": true,
+   "quiet": true,
+   "nextVisit": "Today 4 pm",
+   "supporter": "Linked",
+   "consent": "Active",
+   "clinic": "anantapur",
+   "changes": [
+    {
+     "text": "No data since Monday",
+     "ev": "E-0405"
+    },
+    {
+     "text": "Last reply was 6 days ago",
+     "ev": "E-0361"
+    }
+   ]
+  },
+  {
+   "code": "PT-0301",
+   "sex": "M",
+   "age": 45,
+   "day": 40,
+   "base": "grn",
+   "tag": "ON TRACK",
+   "why": "Adherence steady",
+   "missed": [],
+   "noData": 0,
+   "nextStep": "Nothing needed",
+   "visitThisWeek": false,
+   "quiet": false,
+   "nextVisit": "Next month",
+   "supporter": "Linked",
+   "consent": "Active",
+   "clinic": "anantapur",
+   "changes": [
+    {
+     "text": "No missed doses in 20 days",
+     "ev": "E-0399"
+    }
+   ]
+  },
+  {
+   "code": "PT-0254",
+   "sex": "M",
+   "age": 52,
+   "day": 27,
+   "base": "amb",
+   "tag": "WATCH",
+   "why": "Felt tired after tablets",
+   "missed": [
+    8,
+    12,
+    15
+   ],
+   "noData": 0,
+   "nextStep": "Approve check-in message",
+   "visitThisWeek": false,
+   "quiet": false,
+   "nextVisit": "Today 11 am",
+   "supporter": "Linked",
+   "consent": "Active",
+   "clinic": "anantapur",
+   "changes": [
+    {
+     "text": "Reported feeling tired in the mornings",
+     "ev": "E-0425"
+    },
+    {
+     "text": "2 doses logged late",
+     "ev": "E-0366"
+    }
+   ]
+  },
+  {
+   "code": "PT-0416",
+   "sex": "F",
+   "age": 61,
+   "day": 95,
+   "base": "grn",
+   "tag": "ON TRACK",
+   "why": "Adherence steady",
+   "missed": [],
+   "noData": 0,
+   "nextStep": "Nothing needed",
+   "visitThisWeek": false,
+   "quiet": false,
+   "nextVisit": "Next month",
+   "supporter": "Linked",
+   "consent": "Active",
+   "clinic": "anantapur",
+   "changes": [
+    {
+     "text": "No missed doses in 20 days",
+     "ev": "E-0433"
+    }
+   ]
+  },
+  {
+   "code": "PT-0900",
+   "sex": "F",
+   "age": 40,
+   "day": 3,
+   "base": "amb",
+   "tag": "WATCH",
+   "why": "Day 3: little is known yet",
+   "missed": [],
+   "noData": 0,
+   "nextStep": "Approve welcome message",
+   "visitThisWeek": false,
+   "quiet": false,
+   "nextVisit": "Thu 10 am",
+   "supporter": "Not linked",
+   "consent": "Pending",
+   "clinic": "anantapur",
+   "changes": [
+    {
+     "text": "First dose logged on day 1",
+     "ev": "E-0301"
+    },
+    {
+     "text": "No chemist record yet",
+     "ev": "E-0302"
+    }
+   ]
+  },
+  {
+   "code": "PT-0901",
+   "sex": "F",
+   "age": 40,
+   "day": 60,
+   "base": "grn",
+   "tag": "ON TRACK",
+   "why": "Day 60: pattern is known",
+   "missed": [
+    4
+   ],
+   "noData": 0,
+   "nextStep": "Nothing needed",
+   "visitThisWeek": false,
+   "quiet": false,
+   "nextVisit": "Next month",
+   "supporter": "Linked",
+   "consent": "Active",
+   "clinic": "anantapur",
+   "changes": [
+    {
+     "text": "Takes doses 7 to 8 am, steady",
+     "ev": "E-0440"
+    }
+   ]
+  },
+  {
+   "code": "PT-0176",
+   "sex": "F",
+   "age": 58,
+   "day": 71,
+   "base": "red",
+   "tag": "RED",
+   "why": "Missed 5 of last 7",
+   "missed": [
+    10,
+    13,
+    14,
+    16,
+    17,
+    19
+   ],
+   "noData": 0,
+   "nextStep": "Approve call today",
+   "visitThisWeek": true,
+   "quiet": false,
+   "nextVisit": "Today 2 pm",
+   "supporter": "Linked",
+   "consent": "Active",
+   "clinic": "kalyandurg",
+   "changes": [
+    {
+     "text": "5 missed doses in 7 days",
+     "ev": "E-0415"
+    },
+    {
+     "text": "Phone was off for 2 days",
+     "ev": "E-0416"
+    }
+   ]
+  },
+  {
+   "code": "PT-0310",
+   "sex": "M",
+   "age": 31,
+   "day": 12,
+   "base": "grn",
+   "tag": "ON TRACK",
+   "why": "Adherence steady",
+   "missed": [],
+   "noData": 0,
+   "nextStep": "Nothing needed",
+   "visitThisWeek": false,
+   "quiet": false,
+   "nextVisit": "Next week",
+   "supporter": "Linked",
+   "consent": "Active",
+   "clinic": "kalyandurg",
+   "changes": [
+    {
+     "text": "All doses logged this week",
+     "ev": "E-0408"
+    }
+   ]
+  },
+  {
+   "code": "PT-0322",
+   "sex": "F",
+   "age": 26,
+   "day": 90,
+   "base": "grn",
+   "tag": "ON TRACK",
+   "why": "Adherence steady",
+   "missed": [
+    7
+   ],
+   "noData": 0,
+   "nextStep": "Nothing needed",
+   "visitThisWeek": false,
+   "quiet": false,
+   "nextVisit": "Next month",
+   "supporter": "Not linked",
+   "consent": "Active",
+   "clinic": "kalyandurg",
+   "changes": [
+    {
+     "text": "Reminder moved to 8 pm",
+     "ev": "E-0409"
+    }
+   ]
+  },
+  {
+   "code": "PT-0333",
+   "sex": "M",
+   "age": 63,
+   "day": 35,
+   "base": "amb",
+   "tag": "QUIET",
+   "why": "No data for 4 days",
+   "missed": [],
+   "noData": 4,
+   "nextStep": "Ask Supporter to check",
+   "visitThisWeek": true,
+   "quiet": true,
+   "nextVisit": "Thu 9 am",
+   "supporter": "Linked",
+   "consent": "Active",
+   "clinic": "kalyandurg",
+   "changes": [
+    {
+     "text": "No data since Tuesday",
+     "ev": "E-0417"
+    }
+   ]
+  },
+  {
+   "code": "PT-0345",
+   "sex": "F",
+   "age": 47,
+   "day": 8,
+   "base": "amb",
+   "tag": "WATCH",
+   "why": "First week, 2 doses missed",
+   "missed": [
+    5,
+    9
+   ],
+   "noData": 0,
+   "nextStep": "Approve first-week note",
+   "visitThisWeek": false,
+   "quiet": false,
+   "nextVisit": "Sat 10 am",
+   "supporter": "Not linked",
+   "consent": "Active",
+   "clinic": "kalyandurg",
+   "changes": [
+    {
+     "text": "2 missed doses in first 7 days",
+     "ev": "E-0422"
+    }
+   ]
+  },
+  {
+   "code": "PT-0427",
+   "sex": "M",
+   "age": 36,
+   "day": 48,
+   "base": "amb",
+   "tag": "WATCH",
+   "why": "Travelling, supply low",
+   "missed": [
+    14
+   ],
+   "noData": 0,
+   "nextStep": "Approve supply check",
+   "visitThisWeek": true,
+   "quiet": false,
+   "nextVisit": "Fri 3 pm",
+   "supporter": "Linked",
+   "consent": "Active",
+   "clinic": "kalyandurg",
+   "changes": [
+    {
+     "text": "Told supporter about a trip",
+     "ev": "E-0428"
+    },
+    {
+     "text": "Strip count suggests 3 days left",
+     "ev": "E-0429"
+    }
+   ]
+  },
+  {
+   "code": "PT-0360",
+   "sex": "M",
+   "age": 39,
+   "day": 120,
+   "base": "grn",
+   "tag": "ON TRACK",
+   "why": "Adherence steady",
+   "missed": [],
+   "noData": 0,
+   "nextStep": "Nothing needed",
+   "visitThisWeek": false,
+   "quiet": false,
+   "nextVisit": "Next month",
+   "supporter": "Linked",
+   "consent": "Active",
+   "clinic": "dharmavaram",
+   "changes": [
+    {
+     "text": "Visit done, all well",
+     "ev": "E-0410"
+    }
+   ]
+  },
+  {
+   "code": "PT-0371",
+   "sex": "F",
+   "age": 33,
+   "day": 66,
+   "base": "red",
+   "tag": "RED",
+   "why": "Lab result overdue",
+   "missed": [
+    11,
+    12,
+    15,
+    18
+   ],
+   "noData": 0,
+   "nextStep": "Approve lab follow-up",
+   "visitThisWeek": true,
+   "quiet": false,
+   "nextVisit": "Wed 12 pm",
+   "supporter": "Linked",
+   "consent": "Active",
+   "clinic": "dharmavaram",
+   "changes": [
+    {
+     "text": "Lab result 9 days late",
+     "ev": "E-0418"
+    },
+    {
+     "text": "4 missed doses in 10 days",
+     "ev": "E-0419"
+    }
+   ]
+  },
+  {
+   "code": "PT-0382",
+   "sex": "M",
+   "age": 55,
+   "day": 150,
+   "base": "grn",
+   "tag": "ON TRACK",
+   "why": "Adherence steady",
+   "missed": [],
+   "noData": 0,
+   "nextStep": "Nothing needed",
+   "visitThisWeek": false,
+   "quiet": false,
+   "nextVisit": "Next month",
+   "supporter": "Linked",
+   "consent": "Withdrawn",
+   "clinic": "dharmavaram",
+   "changes": [
+    {
+     "text": "Supporter consent withdrawn",
+     "ev": "E-0414"
+    }
+   ]
+  },
+  {
+   "code": "PT-0394",
+   "sex": "F",
+   "age": 44,
+   "day": 22,
+   "base": "amb",
+   "tag": "QUIET",
+   "why": "No reply for 3 days",
+   "missed": [],
+   "noData": 3,
+   "nextStep": "Ask Supporter to check",
+   "visitThisWeek": false,
+   "quiet": true,
+   "nextVisit": "Next week",
+   "supporter": "Linked",
+   "consent": "Active",
+   "clinic": "dharmavaram",
+   "changes": [
+    {
+     "text": "No data since Wednesday",
+     "ev": "E-0423"
+    }
+   ]
+  },
+  {
+   "code": "PT-0405",
+   "sex": "M",
+   "age": 28,
+   "day": 5,
+   "base": "grn",
+   "tag": "ON TRACK",
+   "why": "New, doing well",
+   "missed": [],
+   "noData": 0,
+   "nextStep": "Nothing needed",
+   "visitThisWeek": false,
+   "quiet": false,
+   "nextVisit": "Today 5 pm",
+   "supporter": "Not linked",
+   "consent": "Pending",
+   "clinic": "dharmavaram",
+   "changes": [
+    {
+     "text": "Started well, 5 of 5 doses",
+     "ev": "E-0424"
+    }
+   ]
+  }
+ ],
+ "requests": [
+  {
+   "id": "rq-1",
+   "patientCode": "PT-0142",
+   "kind": "Change visit",
+   "text": "Can I move my visit to Thursday?",
+   "when": "today 09:12",
+   "draft": "Your visit is moved to Thursday 5 pm. Please bring your medicine strip.",
+   "status": "waiting",
+   "dueMin": 102,
+   "refs": [
+    "E-0420"
+   ]
+  },
+  {
+   "id": "rq-2",
+   "patientCode": "PT-0213",
+   "kind": "Reminder time",
+   "text": "Please remind me at 7 pm, not in the morning.",
+   "when": "today 08:40",
+   "draft": "Your reminder is now 7 pm. Tell us if you want to change it again.",
+   "status": "waiting",
+   "dueMin": 190,
+   "refs": [
+    "E-0431",
+    "B-0104"
+   ]
+  },
+  {
+   "id": "rq-3",
+   "patientCode": "PT-0087",
+   "kind": "Other",
+   "text": "Can I do my lab test on Friday?",
+   "when": "yesterday 18:05",
+   "draft": "Your lab slot is held for Friday 10 am. Please come after breakfast.",
+   "status": "waiting",
+   "dueMin": 45,
+   "refs": [
+    "E-0391"
+   ]
+  },
+  {
+   "id": "rq-4",
+   "patientCode": "PT-0176",
+   "kind": "Other",
+   "text": "Can someone call me? My phone was off.",
+   "when": "today 07:50",
+   "draft": "A nurse will call you today before noon. Please keep your phone on.",
+   "status": "waiting",
+   "dueMin": 75,
+   "refs": [
+    "E-0416"
+   ]
+  },
+  {
+   "id": "rq-5",
+   "patientCode": "PT-0254",
+   "kind": "Other",
+   "text": "I felt tired after my morning tablets. What should I do?",
+   "when": "today 09:20",
+   "draft": "Thank you for telling us. A nurse will call you today to ask how you feel.",
+   "status": "waiting",
+   "dueMin": 130,
+   "refs": [
+    "E-0425"
+   ]
+  },
+  {
+   "id": "rq-6",
+   "patientCode": "PT-0301",
+   "kind": "Visit",
+   "text": "Can I get a reminder before my next visit?",
+   "when": "yesterday 12:00",
+   "draft": "Yes. We will remind you 2 days before your visit.",
+   "status": "approved",
+   "dueMin": 0,
+   "refs": [],
+   "reply": "Yes. We will remind you 2 days before your visit."
+  },
+  {
+   "id": "rq-7",
+   "patientCode": "PT-0322",
+   "kind": "Reminder time",
+   "text": "Please move my reminder to 8 pm.",
+   "when": "2 days ago",
+   "draft": "Your reminder is now 8 pm.",
+   "status": "approved",
+   "dueMin": 0,
+   "refs": [
+    "E-0409"
+   ],
+   "reply": "Your reminder is now 8 pm."
+  },
+  {
+   "id": "rq-8",
+   "patientCode": "PT-0310",
+   "kind": "Other",
+   "text": "Can I skip this week?",
+   "when": "2 days ago",
+   "draft": "Please call the clinic so we can talk about it.",
+   "status": "declined",
+   "dueMin": 0,
+   "refs": []
+  },
+  {
+   "id": "rq-9",
+   "patientCode": "PT-0345",
+   "kind": "Other",
+   "text": "Where is the lab?",
+   "when": "3 days ago",
+   "draft": "The lab is on the ground floor, next to the pharmacy.",
+   "status": "approved",
+   "dueMin": 0,
+   "refs": [],
+   "reply": "The lab is on the ground floor, next to the pharmacy."
+  },
+  {
+   "id": "rq-0",
+   "patientCode": "PT-0142",
+   "kind": "Reminder time",
+   "text": "Can you remind me at 7 pm?",
+   "when": "last week",
+   "draft": "Reminder now 7 pm",
+   "status": "approved",
+   "dueMin": 0,
+   "refs": [],
+   "reply": "Reminder now 7 pm",
+   "archived": true
+  }
+ ],
+ "approvals": [
+  {
+   "id": "ap-1",
+   "patientCode": "PT-0142",
+   "lane": "red",
+   "title": "Confirm visit Wed 6 pm",
+   "draft": "Please come to the clinic on Wednesday at 6 pm. Bring your medicine strip.",
+   "dueMin": 102,
+   "why": "No refill since day 33 and 3 missed doses in 4 days.",
+   "refs": [
+    "E-0412",
+    "E-0388",
+    "R-0301"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-2",
+   "patientCode": "PT-0087",
+   "lane": "red",
+   "title": "Call today",
+   "draft": "A nurse will call you today about your lab test. Please keep your phone near you.",
+   "dueMin": 185,
+   "why": "3 missed doses in 7 days and the lab slot is still open.",
+   "refs": [
+    "E-0377",
+    "E-0391",
+    "R-0302"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-7",
+   "patientCode": "PT-0176",
+   "lane": "red",
+   "title": "Call today",
+   "draft": "A nurse will call you today. Please keep your phone on and near you.",
+   "dueMin": 38,
+   "why": "5 missed doses in 7 days; phone was off.",
+   "refs": [
+    "E-0415",
+    "E-0416",
+    "R-0303"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-8",
+   "patientCode": "PT-0371",
+   "lane": "red",
+   "title": "Lab result follow-up",
+   "draft": "We are checking your lab result. Please come to the clinic on Wednesday at 12 pm.",
+   "dueMin": 240,
+   "why": "Lab result is 9 days late and 4 doses were missed.",
+   "refs": [
+    "E-0418",
+    "E-0419",
+    "C-0202"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-3",
+   "patientCode": "PT-0198",
+   "lane": "amber",
+   "title": "Ask Supporter to check",
+   "draft": "We have not heard from you for some days. Please tell us how you are.",
+   "dueMin": 300,
+   "why": "No data for 6 days; she usually replies within a day.",
+   "refs": [
+    "E-0405",
+    "B-0103"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-9",
+   "patientCode": "PT-0254",
+   "lane": "amber",
+   "title": "Check-in message",
+   "draft": "How are you feeling this week? A nurse is happy to talk if you want to.",
+   "dueMin": 420,
+   "why": "Said he felt tired; 2 doses logged late.",
+   "refs": [
+    "E-0425",
+    "E-0366"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-10",
+   "patientCode": "PT-0333",
+   "lane": "amber",
+   "title": "Ask Supporter to check",
+   "draft": "Your family helper will check in with you today. Please reply when you can.",
+   "dueMin": 360,
+   "why": "No data for 4 days.",
+   "refs": [
+    "E-0417"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-11",
+   "patientCode": "PT-0345",
+   "lane": "amber",
+   "title": "First-week note",
+   "draft": "Welcome. Two doses were missed this week. It is common. Tell us if anything is hard.",
+   "dueMin": 480,
+   "why": "2 missed doses in the first week.",
+   "refs": [
+    "E-0422"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-15",
+   "patientCode": "PT-0394",
+   "lane": "amber",
+   "title": "Ask Supporter to check",
+   "draft": "We have not heard from you for 3 days. Please tell us how you are.",
+   "dueMin": 390,
+   "why": "No data for 3 days.",
+   "refs": [
+    "E-0423"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-16",
+   "patientCode": "PT-0427",
+   "lane": "amber",
+   "title": "Supply check before trip",
+   "draft": "Planning a trip? Please visit us on Friday at 3 pm to collect enough medicine.",
+   "dueMin": 330,
+   "why": "Strip count suggests 3 days left and a trip is planned.",
+   "refs": [
+    "E-0428",
+    "E-0429"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-17",
+   "patientCode": "PT-0900",
+   "lane": "amber",
+   "title": "Welcome message",
+   "draft": "Welcome. We will remind you each morning. Tell us what time suits you best.",
+   "dueMin": 520,
+   "why": "Day 3: the system does not know her routine yet.",
+   "refs": [
+    "E-0301",
+    "B-0107"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-4",
+   "patientCode": "PT-0301",
+   "lane": "green",
+   "title": "Weekly thank-you note",
+   "draft": "Well done, you did not miss a day this week. Keep going.",
+   "dueMin": 900,
+   "why": "No missed doses in 20 days.",
+   "refs": [
+    "E-0399"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-5",
+   "patientCode": "PT-0213",
+   "lane": "green",
+   "title": "Reminder time confirmed",
+   "draft": "Your reminder time is saved. See you at your next visit.",
+   "dueMin": 900,
+   "why": "Follows her request.",
+   "refs": [
+    "E-0431"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-6",
+   "patientCode": "PT-0301",
+   "lane": "green",
+   "title": "Visit reminder",
+   "draft": "Your next visit is next month. We will remind you a few days before.",
+   "dueMin": 900,
+   "why": "Routine reminder.",
+   "refs": [
+    "E-0399"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-12",
+   "patientCode": "PT-0310",
+   "lane": "green",
+   "title": "Weekly thank-you note",
+   "draft": "Great start. All your doses were logged this week.",
+   "dueMin": 900,
+   "why": "All doses logged.",
+   "refs": [
+    "E-0408"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-13",
+   "patientCode": "PT-0322",
+   "lane": "green",
+   "title": "Weekly thank-you note",
+   "draft": "Thank you for keeping up. See you next month.",
+   "dueMin": 900,
+   "why": "Steady routine.",
+   "refs": [
+    "E-0409"
+   ],
+   "status": "waiting"
+  },
+  {
+   "id": "ap-14",
+   "patientCode": "PT-0360",
+   "lane": "green",
+   "title": "Visit reminder",
+   "draft": "Your next visit is next month. We will remind you a few days before.",
+   "dueMin": 0,
+   "why": "Routine reminder.",
+   "refs": [
+    "E-0410"
+   ],
+   "status": "approved",
+   "reply": "Your next visit is next month. We will remind you a few days before."
+  }
+ ],
+ "dose": {
+  "today": "none"
+ },
+ "simDay": 60,
+ "evidence": [
+  {
+   "id": "R-0303",
+   "code": "PT-0176",
+   "at": "Day 71",
+   "kind": "system",
+   "reporter": "Risk rules",
+   "text": "Risk rank: high (range 66 to 82 out of 100)",
+   "why": "5 missed in 7 days"
+  },
+  {
+   "id": "R-0302",
+   "code": "PT-0087",
+   "at": "Day 44",
+   "kind": "system",
+   "reporter": "Risk rules",
+   "text": "Risk rank: raised (range 44 to 61 out of 100)",
+   "why": "3 missed in 7 days and an open lab slot"
+  },
+  {
+   "id": "R-0301",
+   "code": "PT-0142",
+   "at": "Day 60",
+   "kind": "system",
+   "reporter": "Risk rules",
+   "text": "Risk rank: high (range 58 to 74 out of 100)",
+   "why": "Shown as a range because the sources disagree"
+  },
+  {
+   "id": "E-0445",
+   "code": "PT-0371",
+   "at": "Day 64 · 08:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Missed dose",
+   "why": "One of 4 misses"
+  },
+  {
+   "id": "E-0444",
+   "code": "PT-0176",
+   "at": "Day 68 · 08:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Missed dose",
+   "why": "One of 5 misses this week"
+  },
+  {
+   "id": "E-0443",
+   "code": "PT-0087",
+   "at": "Day 41 · 08:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Dose logged",
+   "why": "Before the misses started"
+  },
+  {
+   "id": "E-0442",
+   "code": "PT-0142",
+   "at": "Day 56 · 08:10",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Dose logged",
+   "why": "Part of the good run before the gap"
+  },
+  {
+   "id": "E-0441",
+   "code": "PT-0142",
+   "at": "Day 55 · 08:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Dose logged",
+   "why": "Part of the good run before the gap"
+  },
+  {
+   "id": "E-0440",
+   "code": "PT-0901",
+   "at": "Day 60 · 07:55",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Takes doses 7 to 8 am, steady",
+   "why": "Learned routine from 60 days of data"
+  },
+  {
+   "id": "E-0433",
+   "code": "PT-0416",
+   "at": "Day 95 · 08:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "No missed doses in 20 days",
+   "why": "Steady routine"
+  },
+  {
+   "id": "E-0431",
+   "code": "PT-0213",
+   "at": "Day 18 · 08:40",
+   "kind": "message",
+   "reporter": "Patient app",
+   "text": "Asked to change her reminder time",
+   "why": "Request waiting for approval"
+  },
+  {
+   "id": "E-0429",
+   "code": "PT-0427",
+   "at": "Day 48 · 17:05",
+   "kind": "refill",
+   "reporter": "Chemist feed",
+   "text": "Strip count suggests 3 days left",
+   "why": "Supply may run out during the trip"
+  },
+  {
+   "id": "E-0428",
+   "code": "PT-0427",
+   "at": "Day 48 · 17:00",
+   "kind": "supporter",
+   "reporter": "Supporter",
+   "text": "Told supporter about a trip",
+   "why": "Travel can break the routine"
+  },
+  {
+   "id": "E-0425",
+   "code": "PT-0254",
+   "at": "Day 27 · 09:20",
+   "kind": "message",
+   "reporter": "Patient app",
+   "text": "Said he felt tired in the mornings",
+   "why": "A nurse should check how he feels"
+  },
+  {
+   "id": "E-0424",
+   "code": "PT-0405",
+   "at": "Day 5 · 08:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Started well, 5 of 5 doses",
+   "why": "Good start"
+  },
+  {
+   "id": "E-0423",
+   "code": "PT-0394",
+   "at": "Day 22 · 09:00",
+   "kind": "system",
+   "reporter": "System",
+   "text": "No data since Wednesday",
+   "why": "Silent for 3 days"
+  },
+  {
+   "id": "E-0422",
+   "code": "PT-0345",
+   "at": "Day 8 · 09:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "2 missed doses in first 7 days",
+   "why": "Early misses are worth a kind check-in"
+  },
+  {
+   "id": "E-0420",
+   "code": "PT-0142",
+   "at": "Day 59 · 18:30",
+   "kind": "supporter",
+   "reporter": "Supporter",
+   "text": "Supporter says he is travelling",
+   "why": "May explain the refill gap"
+  },
+  {
+   "id": "E-0419",
+   "code": "PT-0371",
+   "at": "Day 66 · 08:30",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "4 missed doses in 10 days",
+   "why": "Second reason for the rank"
+  },
+  {
+   "id": "E-0418",
+   "code": "PT-0371",
+   "at": "Day 66 · 09:00",
+   "kind": "lab",
+   "reporter": "Lab feed",
+   "text": "Lab result 9 days late",
+   "why": "Needs a follow-up call"
+  },
+  {
+   "id": "E-0417",
+   "code": "PT-0333",
+   "at": "Day 35 · 09:00",
+   "kind": "system",
+   "reporter": "System",
+   "text": "No data since Tuesday",
+   "why": "Silent for 4 days"
+  },
+  {
+   "id": "E-0416",
+   "code": "PT-0176",
+   "at": "Day 70 · 12:00",
+   "kind": "supporter",
+   "reporter": "Supporter",
+   "text": "Phone was off for 2 days",
+   "why": "May explain the silence"
+  },
+  {
+   "id": "E-0415",
+   "code": "PT-0176",
+   "at": "Day 70 · 08:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "5 missed doses in 7 days",
+   "why": "Rule: 5 missed in 7 days is RED"
+  },
+  {
+   "id": "E-0414",
+   "code": "PT-0382",
+   "at": "Day 150 · 11:00",
+   "kind": "message",
+   "reporter": "Clinic",
+   "text": "Supporter consent withdrawn",
+   "why": "Supporter messages are paused"
+  },
+  {
+   "id": "E-0412",
+   "code": "PT-0142",
+   "at": "Day 59 · 08:10",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Missed 3 doses in 4 days",
+   "why": "Rule: 3 missed in 4 days raises the rank"
+  },
+  {
+   "id": "E-0410",
+   "code": "PT-0360",
+   "at": "Day 120 · 10:00",
+   "kind": "visit",
+   "reporter": "Clinic",
+   "text": "Visit done, all well",
+   "why": "Routine review"
+  },
+  {
+   "id": "E-0409",
+   "code": "PT-0322",
+   "at": "Day 90 · 10:20",
+   "kind": "message",
+   "reporter": "Patient app",
+   "text": "Reminder moved to 8 pm",
+   "why": "Patient chose a time that fits"
+  },
+  {
+   "id": "E-0408",
+   "code": "PT-0310",
+   "at": "Day 12 · 08:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "All doses logged this week",
+   "why": "Steady start"
+  },
+  {
+   "id": "E-0405",
+   "code": "PT-0198",
+   "at": "Day 52 · 09:00",
+   "kind": "system",
+   "reporter": "System",
+   "text": "No data since Monday",
+   "why": "Silent for 6 days; rank raised"
+  },
+  {
+   "id": "E-0399",
+   "code": "PT-0301",
+   "at": "Day 40 · 08:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "No missed doses in 20 days",
+   "why": "Sign of a steady routine"
+  },
+  {
+   "id": "E-0391",
+   "code": "PT-0087",
+   "at": "Day 44 · 09:45",
+   "kind": "lab",
+   "reporter": "Lab feed",
+   "text": "Lab slot still open",
+   "why": "No sample has been collected yet"
+  },
+  {
+   "id": "E-0388",
+   "code": "PT-0142",
+   "at": "Day 58 · 10:05",
+   "kind": "refill",
+   "reporter": "Chemist feed",
+   "text": "No refill since day 33",
+   "why": "Supply for 14 days ran out around day 47"
+  },
+  {
+   "id": "E-0385",
+   "code": "PT-0416",
+   "at": "Day 90 · 08:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Dose logged",
+   "why": "Steady routine"
+  },
+  {
+   "id": "E-0384",
+   "code": "PT-0405",
+   "at": "Day 2 · 07:40",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Dose logged",
+   "why": "Good start"
+  },
+  {
+   "id": "E-0383",
+   "code": "PT-0394",
+   "at": "Day 18 · 08:10",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Dose logged",
+   "why": "Last data before the quiet days"
+  },
+  {
+   "id": "E-0382",
+   "code": "PT-0382",
+   "at": "Day 140 · 09:30",
+   "kind": "visit",
+   "reporter": "Clinic",
+   "text": "Visit done",
+   "why": "Routine review"
+  },
+  {
+   "id": "E-0381",
+   "code": "PT-0322",
+   "at": "Day 80 · 20:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Dose logged at 8 pm",
+   "why": "Evening routine"
+  },
+  {
+   "id": "E-0380",
+   "code": "PT-0310",
+   "at": "Day 10 · 08:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "All doses logged",
+   "why": "Good start"
+  },
+  {
+   "id": "E-0379",
+   "code": "PT-0360",
+   "at": "Day 112 · 10:00",
+   "kind": "visit",
+   "reporter": "Clinic",
+   "text": "Visit done",
+   "why": "Routine review"
+  },
+  {
+   "id": "E-0378",
+   "code": "PT-0427",
+   "at": "Day 44 · 09:00",
+   "kind": "refill",
+   "reporter": "Chemist feed",
+   "text": "Refill collected",
+   "why": "Supply starts here"
+  },
+  {
+   "id": "E-0377",
+   "code": "PT-0087",
+   "at": "Day 43 · 08:15",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "3 missed doses in 7 days",
+   "why": "Rule: 3 missed in 7 days raises the rank"
+  },
+  {
+   "id": "E-0376",
+   "code": "PT-0345",
+   "at": "Day 3 · 08:30",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Dose logged",
+   "why": "First week routine starting"
+  },
+  {
+   "id": "E-0375",
+   "code": "PT-0371",
+   "at": "Day 60 · 11:00",
+   "kind": "lab",
+   "reporter": "Lab feed",
+   "text": "Result not received after 5 days",
+   "why": "Result is later than usual"
+  },
+  {
+   "id": "E-0374",
+   "code": "PT-0371",
+   "at": "Day 55 · 11:00",
+   "kind": "lab",
+   "reporter": "Lab feed",
+   "text": "Sample collected",
+   "why": "Starts the result clock"
+  },
+  {
+   "id": "E-0373",
+   "code": "PT-0333",
+   "at": "Day 31 · 18:20",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Last dose logged",
+   "why": "Last data before the quiet days"
+  },
+  {
+   "id": "E-0372",
+   "code": "PT-0176",
+   "at": "Day 65 · 08:00",
+   "kind": "supporter",
+   "reporter": "Supporter",
+   "text": "Supporter visited, patient was resting",
+   "why": "Context for the missed doses"
+  },
+  {
+   "id": "E-0371",
+   "code": "PT-0176",
+   "at": "Day 62 · 08:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Dose logged",
+   "why": "Start of recent run"
+  },
+  {
+   "id": "E-0370",
+   "code": "PT-0087",
+   "at": "Day 38 · 09:30",
+   "kind": "visit",
+   "reporter": "Clinic",
+   "text": "Lab test requested",
+   "why": "Opens the lab slot"
+  },
+  {
+   "id": "E-0369",
+   "code": "PT-0142",
+   "at": "Day 47 · 08:12",
+   "kind": "visit",
+   "reporter": "Clinic",
+   "text": "Visit done, supply given for 14 days",
+   "why": "Defines when the next refill is due"
+  },
+  {
+   "id": "E-0368",
+   "code": "PT-0142",
+   "at": "Day 40 · 08:05",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Dose logged at 8:05",
+   "why": "Good run before the gap"
+  },
+  {
+   "id": "E-0367",
+   "code": "PT-0254",
+   "at": "Day 26 · 11:10",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Dose logged 2 hours late",
+   "why": "Second late dose in a row"
+  },
+  {
+   "id": "E-0366",
+   "code": "PT-0254",
+   "at": "Day 25 · 10:40",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Dose logged 3 hours late",
+   "why": "Pattern of late doses"
+  },
+  {
+   "id": "E-0365",
+   "code": "PT-0301",
+   "at": "Day 38 · 08:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "All doses logged this week",
+   "why": "Steady routine"
+  },
+  {
+   "id": "E-0364",
+   "code": "PT-0213",
+   "at": "Day 17 · 09:00",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Missed morning dose",
+   "why": "Morning reminder does not fit her day"
+  },
+  {
+   "id": "E-0363",
+   "code": "PT-0213",
+   "at": "Day 15 · 19:10",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Dose logged at 7 pm",
+   "why": "Shows an evening habit"
+  },
+  {
+   "id": "E-0362",
+   "code": "PT-0198",
+   "at": "Day 49 · 08:00",
+   "kind": "system",
+   "reporter": "System",
+   "text": "Reminder sent, no response",
+   "why": "Silence is not the same as missing"
+  },
+  {
+   "id": "E-0361",
+   "code": "PT-0198",
+   "at": "Day 46 · 10:15",
+   "kind": "message",
+   "reporter": "Patient app",
+   "text": "Last reply from the patient",
+   "why": "Start of the silence"
+  },
+  {
+   "id": "E-0309",
+   "code": "PT-0901",
+   "at": "Day 57 · 07:55",
+   "kind": "supporter",
+   "reporter": "Supporter",
+   "text": "Supporter says she is well",
+   "why": "Second source agrees with the app"
+  },
+  {
+   "id": "E-0308",
+   "code": "PT-0901",
+   "at": "Day 45 · 09:00",
+   "kind": "visit",
+   "reporter": "Clinic",
+   "text": "Visit done, no concerns",
+   "why": "Doctor saw her in person"
+  },
+  {
+   "id": "E-0307",
+   "code": "PT-0901",
+   "at": "Day 34 · 12:30",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "One missed dose, reason: forgot",
+   "why": "A single miss with a clear reason"
+  },
+  {
+   "id": "E-0306",
+   "code": "PT-0901",
+   "at": "Day 20 · 07:45",
+   "kind": "refill",
+   "reporter": "Chemist feed",
+   "text": "Refill collected on time",
+   "why": "Supply matches the doses logged"
+  },
+  {
+   "id": "E-0305",
+   "code": "PT-0901",
+   "at": "Day 9 · 07:50",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Dose logged at 7:50",
+   "why": "Routine is forming"
+  },
+  {
+   "id": "E-0304",
+   "code": "PT-0901",
+   "at": "Day 3 · 08:20",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "Dose logged at 8:20",
+   "why": "Early sign of her morning routine"
+  },
+  {
+   "id": "E-0303",
+   "code": "PT-0900",
+   "at": "Day 3 · 09:10",
+   "kind": "message",
+   "reporter": "Patient app",
+   "text": "Asked: when is my next visit?",
+   "why": "Shows the patient reads messages"
+  },
+  {
+   "id": "E-0302",
+   "code": "PT-0900",
+   "at": "Day 2 · 17:40",
+   "kind": "refill",
+   "reporter": "Chemist feed",
+   "text": "No chemist record yet",
+   "why": "Nothing to compare the supply against yet"
+  },
+  {
+   "id": "E-0301",
+   "code": "PT-0900",
+   "at": "Day 1 · 08:05",
+   "kind": "dose",
+   "reporter": "Patient app",
+   "text": "First dose logged",
+   "why": "First data point; starts the record"
+  },
+  {
+   "id": "C-0202",
+   "code": "PT-0371",
+   "at": "Day 66",
+   "kind": "system",
+   "reporter": "Memory engine",
+   "text": "Lab feed shows collected, no result",
+   "why": "The result may be lost or late"
+  },
+  {
+   "id": "C-0201",
+   "code": "PT-0142",
+   "at": "Day 59",
+   "kind": "system",
+   "reporter": "Memory engine",
+   "text": "App says doses taken, chemist shows no refill",
+   "why": "Two sources disagree; needs a human look"
+  },
+  {
+   "id": "B-0107",
+   "code": "PT-0900",
+   "at": "Day 3",
+   "kind": "system",
+   "reporter": "Memory engine",
+   "text": "Dose time not known yet",
+   "why": "Only 3 days of data"
+  },
+  {
+   "id": "B-0106",
+   "code": "PT-0901",
+   "at": "Day 60",
+   "kind": "system",
+   "reporter": "Memory engine",
+   "text": "Supporter and app agree",
+   "why": "Two sources match, so trust is higher"
+  },
+  {
+   "id": "B-0105",
+   "code": "PT-0901",
+   "at": "Day 60",
+   "kind": "system",
+   "reporter": "Memory engine",
+   "text": "Doses between 7 and 8 am",
+   "why": "Learned from 54 logged doses"
+  },
+  {
+   "id": "B-0104",
+   "code": "PT-0213",
+   "at": "Day 18",
+   "kind": "system",
+   "reporter": "Memory engine",
+   "text": "Prefers evening reminders",
+   "why": "Evening doses were on time; morning ones were missed"
+  },
+  {
+   "id": "B-0103",
+   "code": "PT-0198",
+   "at": "Day 52",
+   "kind": "system",
+   "reporter": "Memory engine",
+   "text": "Usually replies within a day",
+   "why": "So 4 days of silence is unusual for her"
+  },
+  {
+   "id": "B-0102",
+   "code": "PT-0142",
+   "at": "Day 60",
+   "kind": "system",
+   "reporter": "Memory engine",
+   "text": "Refill is due about every 14 days",
+   "why": "Learned from the last 2 refills"
+  },
+  {
+   "id": "B-0101",
+   "code": "PT-0142",
+   "at": "Day 60",
+   "kind": "system",
+   "reporter": "Memory engine",
+   "text": "Takes the morning dose around 8 am",
+   "why": "Learned from 38 logged doses; used to judge a late dose"
+  }
+ ],
+ "messages": [
+  {
+   "id": "m-1",
+   "srcId": "rq-6",
+   "code": "PT-0301",
+   "at": "yesterday 12:20",
+   "channel": "Patient app",
+   "text": "Yes. We will remind you 2 days before your visit.",
+   "approvedBy": "Dr. A. Rao",
+   "version": 1,
+   "status": "seen"
+  },
+  {
+   "id": "m-2",
+   "srcId": "rq-7",
+   "code": "PT-0322",
+   "at": "2 days ago 10:30",
+   "channel": "Patient app",
+   "text": "Your reminder is now 8 pm.",
+   "approvedBy": "Dr. A. Rao",
+   "version": 1,
+   "status": "seen"
+  },
+  {
+   "id": "m-3",
+   "srcId": "rq-9",
+   "code": "PT-0345",
+   "at": "3 days ago 11:00",
+   "channel": "Patient app",
+   "text": "The lab is on the ground floor, next to the pharmacy.",
+   "approvedBy": "Dr. A. Rao",
+   "version": 1,
+   "status": "seen"
+  },
+  {
+   "id": "m-4",
+   "srcId": "ap-14",
+   "code": "PT-0360",
+   "at": "yesterday 16:00",
+   "channel": "Telegram",
+   "text": "Your next visit is next month. We will remind you a few days before.",
+   "approvedBy": "Dr. A. Rao",
+   "version": 1,
+   "status": "seen"
+  },
+  {
+   "id": "m-5",
+   "srcId": "old-1",
+   "code": "PT-0142",
+   "at": "last week 09:00",
+   "channel": "Patient app",
+   "text": "Reminder now 7 pm",
+   "approvedBy": "Dr. A. Rao",
+   "version": 1,
+   "status": "seen"
+  },
+  {
+   "id": "m-6",
+   "srcId": "old-2",
+   "code": "PT-0142",
+   "at": "Day 47 · 08:30",
+   "channel": "Telegram",
+   "text": "Your supply is for 14 days. Please come back on day 61.",
+   "approvedBy": "Dr. A. Rao",
+   "version": 1,
+   "status": "seen"
+  },
+  {
+   "id": "m-7",
+   "srcId": "old-3",
+   "code": "PT-0087",
+   "at": "Day 38 · 10:00",
+   "channel": "Telegram",
+   "text": "Please come for a lab test. The nurse will take a small sample.",
+   "approvedBy": "Dr. A. Rao",
+   "version": 2,
+   "status": "seen"
+  },
+  {
+   "id": "m-8",
+   "srcId": "old-4",
+   "code": "PT-0901",
+   "at": "Day 45 · 10:00",
+   "channel": "Telegram",
+   "text": "Thank you for coming today. See you next month.",
+   "approvedBy": "Dr. A. Rao",
+   "version": 1,
+   "status": "seen"
+  },
+  {
+   "id": "m-9",
+   "srcId": "old-5",
+   "code": "PT-0176",
+   "at": "Day 66 · 09:00",
+   "channel": "Telegram",
+   "text": "We noticed you missed a few doses. Is everything all right?",
+   "approvedBy": "Dr. A. Rao",
+   "version": 2,
+   "status": "seen"
+  },
+  {
+   "id": "m-10",
+   "srcId": "old-6",
+   "code": "PT-0198",
+   "at": "Day 49 · 09:00",
+   "channel": "Telegram",
+   "text": "Good morning. Please tell us how you are today.",
+   "approvedBy": "Dr. A. Rao",
+   "version": 1,
+   "status": "sent"
+  },
+  {
+   "id": "m-11",
+   "srcId": "old-7",
+   "code": "PT-0301",
+   "at": "Day 38 · 18:00",
+   "channel": "Telegram",
+   "text": "Well done this week. Keep going.",
+   "approvedBy": "Dr. A. Rao",
+   "version": 1,
+   "status": "seen"
+  },
+  {
+   "id": "m-12",
+   "srcId": "old-8",
+   "code": "PT-0900",
+   "at": "Day 1 · 08:00",
+   "channel": "Telegram",
+   "text": "Welcome to the programme. We will help you each day.",
+   "approvedBy": "Dr. A. Rao",
+   "version": 1,
+   "status": "seen"
+  }
+ ],
+ "audit": [
+  {
+   "id": "au-1",
+   "code": "PT-0142",
+   "at": "today 07:58",
+   "actor": "Assistant",
+   "action": "Drafted: Confirm visit Wed 6 pm",
+   "srcId": "ap-1",
+   "version": 1,
+   "note": "Cited E-0412, E-0388"
+  },
+  {
+   "id": "au-2",
+   "code": "PT-0142",
+   "at": "today 09:12",
+   "actor": "Patient",
+   "action": "Asked to move visit",
+   "srcId": "rq-1"
+  },
+  {
+   "id": "au-3",
+   "code": "PT-0142",
+   "at": "today 09:13",
+   "actor": "Assistant",
+   "action": "Drafted reply",
+   "srcId": "rq-1",
+   "version": 1
+  },
+  {
+   "id": "au-4",
+   "code": "PT-0142",
+   "at": "last week 09:00",
+   "actor": "Dr. A. Rao",
+   "action": "Approved reply",
+   "srcId": "old-1",
+   "version": 1
+  },
+  {
+   "id": "au-5",
+   "code": "PT-0142",
+   "at": "Day 47 · 08:30",
+   "actor": "Dr. A. Rao",
+   "action": "Approved reply",
+   "srcId": "old-2",
+   "version": 1
+  },
+  {
+   "id": "au-6",
+   "code": "PT-0087",
+   "at": "Day 38 · 09:55",
+   "actor": "Dr. A. Rao",
+   "action": "Edited then approved",
+   "srcId": "old-3",
+   "version": 2,
+   "note": "Shortened the text"
+  },
+  {
+   "id": "au-7",
+   "code": "PT-0087",
+   "at": "today 08:05",
+   "actor": "Assistant",
+   "action": "Drafted: Call today",
+   "srcId": "ap-2",
+   "version": 1
+  },
+  {
+   "id": "au-8",
+   "code": "PT-0176",
+   "at": "today 07:40",
+   "actor": "Assistant",
+   "action": "Drafted: Call today",
+   "srcId": "ap-7",
+   "version": 1
+  },
+  {
+   "id": "au-9",
+   "code": "PT-0176",
+   "at": "Day 66 · 08:55",
+   "actor": "Dr. A. Rao",
+   "action": "Edited then approved",
+   "srcId": "old-5",
+   "version": 2,
+   "note": "Made the tone softer"
+  },
+  {
+   "id": "au-10",
+   "code": "PT-0198",
+   "at": "Day 49 · 08:50",
+   "actor": "Dr. A. Rao",
+   "action": "Approved reply",
+   "srcId": "old-6",
+   "version": 1
+  },
+  {
+   "id": "au-11",
+   "code": "PT-0301",
+   "at": "yesterday 12:20",
+   "actor": "Dr. A. Rao",
+   "action": "Approved reply",
+   "srcId": "rq-6",
+   "version": 1
+  },
+  {
+   "id": "au-12",
+   "code": "PT-0322",
+   "at": "2 days ago 10:30",
+   "actor": "Dr. A. Rao",
+   "action": "Approved reply",
+   "srcId": "rq-7",
+   "version": 1
+  },
+  {
+   "id": "au-13",
+   "code": "PT-0310",
+   "at": "2 days ago 14:00",
+   "actor": "Dr. A. Rao",
+   "action": "Declined reply",
+   "srcId": "rq-8",
+   "version": 1,
+   "note": "Needs a phone call instead"
+  },
+  {
+   "id": "au-14",
+   "code": "PT-0345",
+   "at": "3 days ago 11:00",
+   "actor": "Dr. A. Rao",
+   "action": "Approved reply",
+   "srcId": "rq-9",
+   "version": 1
+  },
+  {
+   "id": "au-15",
+   "code": "PT-0360",
+   "at": "yesterday 16:00",
+   "actor": "Dr. A. Rao",
+   "action": "Approved reply",
+   "srcId": "ap-14",
+   "version": 1
+  },
+  {
+   "id": "au-16",
+   "code": "PT-0382",
+   "at": "Day 150 · 11:00",
+   "actor": "Clinic staff",
+   "action": "Recorded Supporter consent withdrawn",
+   "note": "Supporter messages paused"
+  },
+  {
+   "id": "au-17",
+   "code": "PT-0901",
+   "at": "Day 45 · 10:00",
+   "actor": "Dr. A. Rao",
+   "action": "Approved reply",
+   "srcId": "old-4",
+   "version": 1
+  },
+  {
+   "id": "au-18",
+   "code": "PT-0900",
+   "at": "Day 1 · 07:55",
+   "actor": "Dr. A. Rao",
+   "action": "Approved reply",
+   "srcId": "old-8",
+   "version": 1
+  }
+ ],
+ "notes": [
+  {
+   "id": "n-1",
+   "code": "PT-0142",
+   "at": "Day 47 · 08:40",
+   "by": "Dr. A. Rao",
+   "text": "Works far from the clinic. Offer a visit after 5 pm."
+  },
+  {
+   "id": "n-2",
+   "code": "PT-0142",
+   "at": "Day 52 · 17:10",
+   "by": "Nurse S. Devi",
+   "text": "Spoke to the family helper. Patient plans a short trip."
+  },
+  {
+   "id": "n-3",
+   "code": "PT-0087",
+   "at": "Day 40 · 11:00",
+   "by": "Dr. A. Rao",
+   "text": "Lab visits are hard on weekdays. Try Friday."
+  },
+  {
+   "id": "n-4",
+   "code": "PT-0176",
+   "at": "Day 66 · 09:10",
+   "by": "Nurse S. Devi",
+   "text": "Lives alone. Phone is often switched off to save battery."
+  },
+  {
+   "id": "n-5",
+   "code": "PT-0901",
+   "at": "Day 45 · 10:15",
+   "by": "Dr. A. Rao",
+   "text": "Doing well. Next visit in a month."
+  }
+ ],
+ "clinics": [
+  {
+   "id": "anantapur",
+   "name": "Anantapur Urban Clinic",
+   "area": "Urban"
+  },
+  {
+   "id": "kalyandurg",
+   "name": "Kalyandurg Health Centre",
+   "area": "Rural"
+  },
+  {
+   "id": "dharmavaram",
+   "name": "Dharmavaram Clinic",
+   "area": "Semi-urban"
+  }
+ ],
+ "templates": [
+  {
+   "id": "t-1",
+   "name": "Visit reminder",
+   "text": "Your next visit is on {date} at {time}. Please bring your medicine strip."
+  },
+  {
+   "id": "t-2",
+   "name": "Weekly thank-you",
+   "text": "Well done, you took your doses this week. Keep going."
+  },
+  {
+   "id": "t-3",
+   "name": "Missed dose, gentle",
+   "text": "We noticed a missed dose. Is everything all right? Tell us if you need help."
+  },
+  {
+   "id": "t-4",
+   "name": "Call from nurse",
+   "text": "A nurse will call you today. Please keep your phone near you."
+  },
+  {
+   "id": "t-5",
+   "name": "Reminder time saved",
+   "text": "Your reminder time is saved. Tell us if you want to change it again."
+  },
+  {
+   "id": "t-6",
+   "name": "Lab test",
+   "text": "Your lab test is on {date}. Please come after breakfast."
+  },
+  {
+   "id": "t-7",
+   "name": "Welcome",
+   "text": "Welcome. We will remind you each day. Tell us what time suits you best."
+  },
+  {
+   "id": "t-8",
+   "name": "Call the clinic",
+   "text": "Please call the clinic so we can talk about it."
+  }
+ ],
+ "lens": [
+  {
+   "code": "PT-0900",
+   "day": 3,
+   "known": "3 days of data, 1 source (the app)",
+   "beliefs": [
+    {
+     "id": "B-0107",
+     "text": "Dose time not known yet",
+     "conf": "Low"
+    },
+    {
+     "id": "E-0301",
+     "text": "First dose logged on day 1",
+     "conf": "Seen once"
+    },
+    {
+     "id": "E-0302",
+     "text": "No chemist record yet",
+     "conf": "Unknown"
+    }
+   ],
+   "risk": [
+    15,
+    70
+   ],
+   "conflicts": []
+  },
+  {
+   "code": "PT-0901",
+   "day": 60,
+   "known": "60 days of data, 3 sources (app, chemist, Supporter)",
+   "beliefs": [
+    {
+     "id": "B-0105",
+     "text": "Doses between 7 and 8 am",
+     "conf": "High"
+    },
+    {
+     "id": "B-0106",
+     "text": "Supporter and app agree",
+     "conf": "High"
+    },
+    {
+     "id": "E-0306",
+     "text": "Refills collected on time",
+     "conf": "High"
+    }
+   ],
+   "risk": [
+    12,
+    24
+   ],
+   "conflicts": [
+    {
+     "id": "E-0307",
+     "text": "One missed dose on day 34, explained by the patient"
+    }
+   ]
+  }
+ ],
+ "usage": {
+  "mode": "GREEN",
+  "todaySpend": 4.1,
+  "todayCap": 10,
+  "budgetUsed": 61,
+  "budget": 150,
+  "days": [
+   {
+    "d": "D47",
+    "spend": 2.4
+   },
+   {
+    "d": "D48",
+    "spend": 3.1
+   },
+   {
+    "d": "D49",
+    "spend": 2.8
+   },
+   {
+    "d": "D50",
+    "spend": 3.6
+   },
+   {
+    "d": "D51",
+    "spend": 4.2
+   },
+   {
+    "d": "D52",
+    "spend": 3.3
+   },
+   {
+    "d": "D53",
+    "spend": 2.9
+   },
+   {
+    "d": "D54",
+    "spend": 3.8
+   },
+   {
+    "d": "D55",
+    "spend": 4.4
+   },
+   {
+    "d": "D56",
+    "spend": 5.1
+   },
+   {
+    "d": "D57",
+    "spend": 3.9
+   },
+   {
+    "d": "D58",
+    "spend": 4.6
+   },
+   {
+    "d": "D59",
+    "spend": 5.3
+   },
+   {
+    "d": "D60",
+    "spend": 4.1
+   }
+  ],
+  "tasks": [
+   {
+    "name": "Nightly memory rebuild",
+    "spend": 2.1,
+    "pct": 52,
+    "flag": "on budget"
+   },
+   {
+    "name": "Narrator cards",
+    "spend": 1.2,
+    "pct": 30,
+    "flag": "on budget"
+   },
+   {
+    "name": "Doctor Ask box",
+    "spend": 0.55,
+    "pct": 68,
+    "flag": "watch"
+   },
+   {
+    "name": "Other",
+    "spend": 0.25,
+    "pct": 6,
+    "flag": "on budget"
+   }
+  ],
+  "retries": 7,
+  "breaker": 0,
+  "billing": 0,
+  "providerPct": 22
+ },
+ "channels": [
+  {
+   "name": "Telegram",
+   "connected": true,
+   "detail": "Bot online, last message 2 min ago"
+  },
+  {
+   "name": "Gmail",
+   "connected": true,
+   "detail": "Inbox watched, 0 unread replies"
+  },
+  {
+   "name": "Calendar",
+   "connected": false,
+   "detail": "Not connected (mock)"
+  }
+ ],
+ "settings": {
+  "notifyRed": true,
+  "notifyRequests": true,
+  "digest": false,
+  "quiet": true,
+  "sound": false
+ }
+}

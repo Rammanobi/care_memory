@@ -13,6 +13,11 @@ def sim_instant(day0: date, sim_day: int) -> datetime:
     return datetime.combine(day0 + timedelta(days=sim_day), time(18, 0), tzinfo=IST).astimezone(UTC)
 
 
+def ist_date(at: datetime) -> date:
+    """The IST calendar date of an instant. Date labels must use this, never ``at.date()`` (UTC)."""
+    return at.astimezone(IST).date()
+
+
 def pin(at: datetime, clinic_id: object | None = None) -> None:
     _pins[None if clinic_id is None else str(clinic_id)] = at
 

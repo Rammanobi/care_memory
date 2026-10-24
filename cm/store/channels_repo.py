@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import secrets
+import unicodedata
 from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID
@@ -156,14 +157,55 @@ def ensure_template(
     ).fetchone()["template_id"]
 
 
+_NAME_CHARS = {"L", "M"}  # letters and combining marks (Telugu vowel signs are marks)
+
+
+def first_name_from_vault(raw: Any) -> str | None:
+    """Decrypt a vault ``enc_name`` value to a safe first name, or None.
+
+    Same approved path as ``cm.api.deps.display_name_of`` (the vault holds the UTF-8 name bytes at rest in
+    the demo; swap to ``cm.core.crypto.decrypt_field`` here when the DEK path lands). Only the first word is
+    returned, letters only, so no other vault field and no free text can reach a patient message.
+    """
+    if not raw:
+        return None
+    try:
+        text = bytes(raw).decode("utf-8")
+    except (UnicodeDecodeError, TypeError):
+        return None
+    for prefix in ("Dr.", "Dr", "Mr.", "Mrs.", "Ms."):
+        if text.startswith(prefix + " "):
+            text = text[len(prefix) :].lstrip()
+    for word in text.split():
+        name = "".join(ch for ch in word if unicodedata.category(ch)[0] in _NAME_CHARS)
+        if name:
+            return name[:40]
+    return None
+
+
+def person_first_name(person_id: UUID, *, conn: Any = None) -> str | None:
+    if conn is None:
+        with transaction() as c:
+            return person_first_name(person_id, conn=c)
+    r = conn.execute("SELECT enc_name FROM cm.identity_vault WHERE person_id=%s", (person_id,)).fetchone()
+    return first_name_from_vault(r["enc_name"]) if r else None
+
+
 def reminder_targets(*, conn: Any = None) -> list[dict[str, Any]]:
-    """Active Telegram-bound patients."""
+    """Active Telegram-bound patients. ``first_name`` is the decrypted first name only (never enc_name)."""
     if conn is None:
         with transaction() as c:
             return reminder_targets(conn=c)
-    return conn.execute(
-        "SELECT cb.person_id, pt.patient_id, COALESCE(iv.lang,'en') AS lang FROM cm.channel_bindings cb "
+    rows = conn.execute(
+        "SELECT cb.person_id, pt.patient_id, COALESCE(iv.lang,'en') AS lang, iv.enc_name "
+        "FROM cm.channel_bindings cb "
         "JOIN cm.patients pt ON pt.person_id=cb.person_id "
         "LEFT JOIN cm.identity_vault iv ON iv.person_id=cb.person_id "
         "WHERE cb.channel='telegram' AND cb.status='active' AND pt.status='active'"
     ).fetchall()
+    out = []
+    for r in rows:
+        d = {k: v for k, v in r.items() if k != "enc_name"}
+        d["first_name"] = first_name_from_vault(r["enc_name"])
+        out.append(d)
+    return out

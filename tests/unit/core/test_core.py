@@ -36,3 +36,13 @@ def test_ids_are_deterministic_and_keys_validated() -> None:
     assert idempotency_key("web", "dose", "1") == "web:dose:1"
     with pytest.raises(ValueError):
         idempotency_key("x" * 300)
+
+
+def test_ist_date_label_is_not_utc_date() -> None:
+    """Regression (fix-sim-clock-day-offset): 20:00 UTC is already the next calendar day in IST."""
+    at = datetime(2026, 10, 24, 20, 0, tzinfo=UTC)
+    assert at.date() == date(2026, 10, 24)  # the UTC label the callers used to write
+    assert clock.ist_date(at) == date(2026, 10, 25)
+    pinned = clock.sim_instant(date(2026, 8, 27), 0)
+    assert clock.ist_date(pinned) == date(2026, 8, 27)  # day 0 has no offset
+    assert clock.ist_date(clock.sim_instant(date(2026, 8, 27), 59)) == date(2026, 10, 25)

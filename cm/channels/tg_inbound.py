@@ -32,6 +32,7 @@ from cm.channels.ports import (
     TaskPort,
 )
 from cm.contracts.api import TelegramUpdate
+from cm.core import clock
 
 NOTED = "Noted"
 OK: dict[str, Any] = {"ok": True}
@@ -200,7 +201,7 @@ def _dose(upd, q, code, row, b, at, d, answer):  # noqa: ANN001
         return answer(NOTED)
     sent_at = row.get("sent_at")
     reply_s = max(0, int((at - sent_at).total_seconds())) if sent_at else None
-    for_date = row.get("for_date") or at.date()
+    for_date = row.get("for_date") or clock.ist_date(at)
     payload = {
         "status": status,
         "for_date": str(for_date),

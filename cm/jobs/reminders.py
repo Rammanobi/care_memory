@@ -23,6 +23,7 @@ from cm.channels.adapters_pg import PgConsents
 from cm.core import clock, db
 from cm.core.config import REPO_ROOT
 from cm.core.logging import get_logger
+from cm.router.banned import find_banned
 from cm.router.quiet_hours import in_quiet_hours, next_open
 from cm.store import channels_repo, outbox_repo
 
@@ -46,6 +47,13 @@ def _text(tpl: dict[str, Any], lang: str) -> tuple[str, str]:
     langs = tpl["languages"]
     use = lang if lang in langs and "telegram" in langs[lang] else "en"
     return use, langs[use]["telegram"]
+
+
+def greeting_name(first_name: str | None) -> str:
+    """The name to greet with: the decrypted first name, or the neutral fallback when absent or unsafe."""
+    if not first_name or find_banned(first_name):
+        return FALLBACK_NAME
+    return first_name
 
 
 def produce(at: datetime | None = None) -> dict[str, int]:
@@ -73,7 +81,7 @@ def produce(at: datetime | None = None) -> dict[str, int]:
                     "kind": "checkin",
                     "recipient_id": t["person_id"],
                     "channel": "telegram",
-                    "body": raw.replace("{first_name}", FALLBACK_NAME),
+                    "body": raw.replace("{first_name}", greeting_name(t.get("first_name"))),
                     "template_id": tid,
                     "next_attempt_at": next_open(at) if in_quiet_hours(at) else at,
                     "created_at": at,

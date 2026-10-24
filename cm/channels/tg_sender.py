@@ -23,6 +23,7 @@ from cm.channels.ports import (
 from cm.channels.tg_client import TgAuthError, TgBlocked, TgRetryAfter, TgTransient
 from cm.channels.tg_ratelimit import ChatLimiter
 from cm.contracts.review import SYSTEM_OUTBOX_KINDS, SendResult
+from cm.core import clock
 from cm.router.banned import find_banned
 from cm.router.quiet_hours import in_quiet_hours, next_open
 
@@ -83,7 +84,7 @@ async def send_outbox(row: dict[str, Any], d: SenderDeps) -> SendResult:
     if in_quiet_hours(now) and row["kind"] not in QUIET_EXEMPT:
         wait = (next_open(now) - now).total_seconds()
         return _res(row, "retry", skip_reason="quiet_hours", retry_after_s=wait)
-    if d.outbox.sent_today(row["recipient_id"], now.date()) >= DAILY_CAP:
+    if d.outbox.sent_today(row["recipient_id"], clock.ist_date(now)) >= DAILY_CAP:
         return _res(row, "skipped", skip_reason="rate_limit")
     wait = d.limiter.allow(b.external_id)
     if wait > 0:
@@ -147,7 +148,7 @@ def _record_prompt(row: dict[str, Any], b: Any, mid: str, now: datetime, d: Send
             "idempotency_key": f"prompt:{row['outbox_id']}",
             "payload": {
                 "outbox_id": str(row["outbox_id"]),
-                "for_date": str(row.get("for_date") or now.date()),
+                "for_date": str(row.get("for_date") or clock.ist_date(now)),
                 "sent_at": now.isoformat(),
                 "provider_message_id": mid,
             },

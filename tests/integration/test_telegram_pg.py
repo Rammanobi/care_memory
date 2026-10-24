@@ -112,6 +112,7 @@ def test_reminder_sent_once_with_buttons_and_prompt_event(env: dict[str, Any]) -
     bind(env)
     oid, client = sent_reminder(env)
     assert len(client.sent) == 1 and client.sent[0]["chat_id"] == CHAT
+    assert "Ravi" in client.sent[0]["text"] and "friend" not in client.sent[0]["text"]  # decrypted vault name
     assert client.sent[0]["reply_markup"]["inline_keyboard"][0][0]["callback_data"] == f"c:{oid.hex}:t"
     row = outbox_repo.get(oid)
     assert row and row["status"] == "sent" and row["provider_message_id"]

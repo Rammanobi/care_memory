@@ -7,6 +7,8 @@ from collections.abc import Sequence
 from typing import Any
 
 
-def run_in_memory(events: Any, consents: Any, as_of_days: Sequence[int], *, exclude_sources: Sequence[str] = ()) -> Any:
+def run_in_memory(
+    events: Any, consents: Any, as_of_days: Sequence[int], *, exclude_sources: Sequence[str] = ()
+) -> Any:
     """Pure in-memory engine run."""
     raise NotImplementedError

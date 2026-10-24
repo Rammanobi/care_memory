@@ -50,9 +50,13 @@ class PatientFeatures:
     @property
     def numbers(self) -> dict[str, int]:
         n = {
-            "missed_3d": self.missed_3d, "missed_7d": self.missed_7d, "taken_7d": self.taken_7d,
-            "longest_streak": self.longest_streak, "refill_gap_days": self.refill_gap_days,
-            "quiet_days": self.quiet_days, "checkins_total": self.checkins_total,
+            "missed_3d": self.missed_3d,
+            "missed_7d": self.missed_7d,
+            "taken_7d": self.taken_7d,
+            "longest_streak": self.longest_streak,
+            "refill_gap_days": self.refill_gap_days,
+            "quiet_days": self.quiet_days,
+            "checkins_total": self.checkins_total,
         }
         if self.top_miss_weekday:
             n["top_miss_count"] = self.weekday_misses[self.top_miss_weekday]
@@ -66,8 +70,12 @@ class PatientFeatures:
 
     def as_dict(self) -> dict[str, Any]:
         return {
-            "as_of": self.as_of.isoformat(), **self.numbers, "weekday_misses": self.weekday_misses,
-            "top_miss_weekday": self.top_miss_weekday, "conflicts": self.conflicts, "cites": self.cites,
+            "as_of": self.as_of.isoformat(),
+            **self.numbers,
+            "weekday_misses": self.weekday_misses,
+            "top_miss_weekday": self.top_miss_weekday,
+            "conflicts": self.conflicts,
+            "cites": self.cites,
         }
 
 
@@ -76,8 +84,13 @@ def _checkins(events: Iterable[dict[str, Any]]) -> dict[date, dict[str, Any]]:
     by_day: dict[date, dict[str, Any]] = {}
     evs = list(events)
     superseded = {e["supersedes"] for e in evs if e.get("supersedes")}
-    live = (e for e in evs if e["type"] == "DoseCheckin" and e["event_id"] not in superseded
-            and (e.get("payload") or {}).get("status") != "undone")  # undone = no dose recorded
+    live = (
+        e
+        for e in evs
+        if e["type"] == "DoseCheckin"
+        and e["event_id"] not in superseded
+        and (e.get("payload") or {}).get("status") != "undone"
+    )  # undone = no dose recorded
     for e in sorted(live, key=lambda x: x["occurred_at"]):
         raw = (e.get("payload") or {}).get("for_date")
         d = date.fromisoformat(raw) if raw else _day(e["occurred_at"])
@@ -108,7 +121,9 @@ def _supply_end(e: dict[str, Any], day0: date | None) -> date | None:
     return None
 
 
-def compute_features(events: Iterable[dict[str, Any]], as_of: datetime, day0: date | None = None) -> PatientFeatures:
+def compute_features(
+    events: Iterable[dict[str, Any]], as_of: datetime, day0: date | None = None
+) -> PatientFeatures:
     """Pure function. ``day0`` (sim day 0 date) is only needed to read 'ran out around day N' chemist notes."""
     evs = [e for e in events if e["occurred_at"] <= as_of and e["recorded_at"] <= as_of]
     today = _day(as_of)
@@ -133,7 +148,11 @@ def compute_features(events: Iterable[dict[str, Any]], as_of: datetime, day0: da
     if miss_c and max(miss_c.values()) >= 2:
         k = min(k for k, v in miss_c.items() if v == max(miss_c.values()))
         f.top_miss_weekday = WEEKDAYS[k]
-        f.cites["weekday_pattern"] = [cite_id(e) for d, e in by_day.items() if d.weekday() == k and e["payload"].get("status") == "missed"]
+        f.cites["weekday_pattern"] = [
+            cite_id(e)
+            for d, e in by_day.items()
+            if d.weekday() == k and e["payload"].get("status") == "missed"
+        ]
     # refill gap: days past the end of the latest known supply
     ends = [(end, e) for e in evs if e["type"] == "Dispense" and (end := _supply_end(e, day0))]
     if ends:
@@ -142,7 +161,11 @@ def compute_features(events: Iterable[dict[str, Any]], as_of: datetime, day0: da
         if f.refill_gap_days:
             f.cites["refill_gap_days"] = [cite_id(e)]
     # quiet days: days since any patient-side event
-    mine = [e for e in evs if e.get("source") in PATIENT_SOURCES and e["type"] in {"DoseCheckin", "ContextNote"}]
+    mine = [
+        e
+        for e in evs
+        if e.get("source") in PATIENT_SOURCES and e["type"] in {"DoseCheckin", "ContextNote"}
+    ]
     if mine:
         last = max(mine, key=lambda x: x["occurred_at"])
         f.quiet_days = max(0, (today - _day(last["occurred_at"])).days)
@@ -150,11 +173,14 @@ def compute_features(events: Iterable[dict[str, Any]], as_of: datetime, day0: da
             f.cites["quiet_days"] = [cite_id(last)]
     # conflict: self-report says taken, supply says there was nothing to take
     if f.refill_gap_days > 0 and f.taken_7d >= 3:
-        f.conflicts.append({
-            "kind": "self_report_vs_refill",
-            "taken_7d": f.taken_7d, "refill_gap_days": f.refill_gap_days,
-            "cites": f.cites.get("taken_7d", [])[:3] + f.cites.get("refill_gap_days", []),
-        })
+        f.conflicts.append(
+            {
+                "kind": "self_report_vs_refill",
+                "taken_7d": f.taken_7d,
+                "refill_gap_days": f.refill_gap_days,
+                "cites": f.cites.get("taken_7d", [])[:3] + f.cites.get("refill_gap_days", []),
+            }
+        )
     return f
 
 

@@ -1,0 +1,29 @@
+flowchart LR
+  classDef lc fill:#DCFCE7,stroke:#15803D,stroke-width:2.5px,color:#14301F
+  classDef lg fill:#DBEAFE,stroke:#1D4ED8,stroke-width:2.5px,color:#10244F
+  classDef da fill:#EDE9FE,stroke:#7C3AED,stroke-width:2.5px,color:#2E1065
+  classDef py fill:#CCFBF1,stroke:#0F766E,stroke-width:2.5px,color:#0B3B36
+  classDef gc fill:#F3F4F6,stroke:#6B7280,stroke-width:2.5px,color:#1F2933
+  classDef hu fill:#FEF3C7,stroke:#D97706,stroke-width:2.5px,color:#451A03
+
+  subgraph Q["A · ASK A QUESTION"]
+    direction LR
+    U1["1 · DOCTOR TYPES<br/>the question in the<br/>Ask box (React app)"]:::hu
+    U2["2 · BROWSER CALLS<br/>POST /query with the<br/>login cookie"]:::gc
+    U3["3 · CHECK ACCESS<br/>Plain Python: JWT, role,<br/>clinic scope, as_of day"]:::py
+    U4["4 · ANSWER AGENT<br/>LANGCHAIN read-only tools<br/>fetch counts, risk, flags"]:::lc
+    U5["5 · NUMBER CHECK<br/>Plain Python: every number<br/>must match a tool result"]:::py
+    U6["6 · ANSWER + CITATIONS<br/>click [n] to open<br/>the source event"]:::hu
+    U1 --> U2 --> U3 --> U4 --> U5 --> U6
+  end
+
+  subgraph W["B · CLICK APPROVE"]
+    direction LR
+    V1["1 · DOCTOR OPENS QUEUE<br/>red, amber, green lanes,<br/>evidence shown first"]:::hu
+    V2["2 · CLICKS APPROVE<br/>POST /review/id/decision"]:::gc
+    V3["3 · decide()<br/>Plain Python: one transaction,<br/>decision and outbox rows"]:::py
+    V4["4 · RESUME TASK QUEUED<br/>Cloud Tasks resume task,<br/>named by approval_id"]:::gc
+    V5["5 · LANGGRAPH RESUMES<br/>Command(resume=...) on the<br/>same thread"]:::lg
+    V6["6 · SCREEN UPDATES<br/>live over SSE, or<br/>5 second polling"]:::hu
+    V1 --> V2 --> V3 --> V4 --> V5 --> V6
+  end

@@ -1,0 +1,56 @@
+flowchart TB
+  classDef built fill:#E6F2F0,stroke:#0F766E,color:#1F2933
+  classDef partial fill:#FEF3DC,stroke:#B45309,color:#1F2933
+  classDef planned fill:#F1F5F9,stroke:#94A3B8,color:#475569,stroke-dasharray:5 4
+  classDef human fill:#E3ECFD,stroke:#1D4ED8,color:#1F2933
+
+  subgraph PEOPLE["People (opt-in)"]
+    direction LR
+    PT["Patient"]:::human
+    SUP["Supporter"]:::human
+    DOC["Doctor"]:::human
+  end
+
+  subgraph EDGE["Channels"]
+    direction LR
+    TG["Telegram bot<br/>webhook + sender"]:::partial
+    WEB["React web app<br/>doctor console, patient app,<br/>Supporter view"]:::built
+    GM["Gmail digest +<br/>approve-by-reply"]:::partial
+  end
+
+  subgraph CORE["cm-api (FastAPI)"]
+    direction LR
+    API["REST routers<br/>auth, review, patients,<br/>portal, query, admin"]:::built
+    AG["Agent runtime<br/>Deep Agents + LangGraph"]:::partial
+    GOV["AI budget governor"]:::built
+    DEC["decide()<br/>one transaction"]:::built
+    RUL["Rules R1-R6 +<br/>memory engine"]:::planned
+  end
+
+  subgraph DATA["Postgres 16 + pgvector"]
+    direction LR
+    EV[("events<br/>append-only")]:::built
+    AP[("approvals +<br/>review_decisions")]:::built
+    OB[("outbox<br/>doctor-gate CHECK")]:::built
+    MEM[("beliefs, conflicts,<br/>risk_scores")]:::partial
+  end
+
+  LLM["LLM provider: DeepSeek<br/>(OpenAI allowed)"]:::partial
+
+  PT --> TG
+  PT --> WEB
+  SUP --> WEB
+  DOC --> WEB
+  DOC --> GM
+  TG --> API
+  WEB --> API
+  GM -.-> DEC
+  API --> AG
+  API --> DEC
+  AG --> GOV --> LLM
+  RUL -.-> MEM
+  API --> EV
+  AG --> AP
+  DEC --> AP
+  DEC --> OB
+  OB -.->|"drainer sends approved rows"| TG

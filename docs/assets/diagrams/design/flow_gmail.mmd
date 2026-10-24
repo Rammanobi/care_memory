@@ -1,0 +1,37 @@
+flowchart LR
+  classDef lc fill:#DCFCE7,stroke:#15803D,stroke-width:2.5px,color:#14301F
+  classDef lg fill:#DBEAFE,stroke:#1D4ED8,stroke-width:2.5px,color:#10244F
+  classDef da fill:#EDE9FE,stroke:#7C3AED,stroke-width:2.5px,color:#2E1065
+  classDef py fill:#CCFBF1,stroke:#0F766E,stroke-width:2.5px,color:#0B3B36
+  classDef gc fill:#F3F4F6,stroke:#6B7280,stroke-width:2.5px,color:#1F2933
+  classDef hu fill:#FEF3C7,stroke:#D97706,stroke-width:2.5px,color:#451A03
+
+  subgraph I["A · A REPLY COMES IN"]
+    direction LR
+    G1["1 · DOCTOR REPLIES<br/>to the digest email"]:::hu
+    G2["2 · GMAIL PUSHES<br/>a notice through<br/>Pub/Sub to cm-api"]:::gc
+    G3["3 · ACK FAST<br/>reply 200 in under 1 s,<br/>queue gmail-fetch task"]:::py
+    G4["4 · READ THE MAIL<br/>worker: history.list from a<br/>saved cursor, fetch message"]:::py
+    G5["5 · VERIFY<br/>sender check, one-time token<br/>per item, parse the commands"]:::py
+    G6["6 · decide()<br/>same function as the console:<br/>decision and outbox rows"]:::py
+    G7["7 · RESUME AND ECHO<br/>LANGGRAPH resumes the thread,<br/>a confirmation email goes back"]:::lg
+    G1 --> G2 --> G3 --> G4 --> G5 --> G6 --> G7
+  end
+
+  subgraph O["B · A DIGEST GOES OUT"]
+    direction LR
+    O1["1 · SCHEDULER FIRES<br/>18:30, 19:00 and 00:30<br/>jobs call the worker"]:::gc
+    O2["2 · BUILD THE DIGEST<br/>drafter uses approved<br/>cards and templates"]:::lc
+    O3["3 · DOCTOR GATE<br/>anything the AI wrote<br/>waits for approval"]:::lg
+    O4["4 · OUTBOX AND SEND<br/>Gmail send with item tokens,<br/>Calendar events for visits"]:::py
+    O1 --> O2 --> O3 --> O4
+  end
+
+  subgraph C["C · A FILE COMES IN"]
+    direction LR
+    C1["1 · CSV ARRIVES<br/>by email, same Gmail<br/>push path as above"]:::hu
+    C2["2 · PARSE<br/>Plain Python reads the rows,<br/>the LLM never supplies values"]:::py
+    C3["3 · EVENTS SAVED<br/>one event per bill line,<br/>a repeat file adds nothing"]:::py
+    C4["4 · REFILL CHECK<br/>rule R1 compares sales with<br/>the patient's Taken taps"]:::py
+    C1 --> C2 --> C3 --> C4
+  end

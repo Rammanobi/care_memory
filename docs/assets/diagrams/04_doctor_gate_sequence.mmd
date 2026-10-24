@@ -1,0 +1,21 @@
+sequenceDiagram
+  autonumber
+  participant AG as Agent or fast-path rule
+  participant DB as Postgres
+  participant DOC as Doctor (console or Gmail)
+  participant DEC as decide()
+  participant DR as Outbox drainer
+  participant P as Patient or Supporter
+
+  AG->>DB: upsert approvals row (pending, evidence ids)
+  Note over AG,DB: Graph pauses at interrupt(). Nothing is sent.
+  DOC->>DB: open queue, read evidence chips first
+  DOC->>DEC: approve, edit or reject
+  DEC->>DB: BEGIN
+  DEC->>DB: insert review_decisions (one per approval)
+  DEC->>DB: insert outbox rows with approval_id and decision_id
+  Note over DB: CHECK outbox_doctor_gate refuses any row<br/>without a decision or an approved template
+  DEC->>DB: COMMIT
+  DR->>DB: claim pending rows (quiet hours, rate limit)
+  DR->>P: send message
+  DR->>DB: mark sent (idempotent dedup_key)

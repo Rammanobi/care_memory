@@ -1,0 +1,10 @@
+flowchart TB
+  classDef lc fill:#DCFCE7,stroke:#15803D,stroke-width:2.5px,color:#14301F
+  classDef lg fill:#DBEAFE,stroke:#1D4ED8,stroke-width:2.5px,color:#10244F
+  classDef da fill:#EDE9FE,stroke:#7C3AED,stroke-width:2.5px,color:#2E1065
+  classDef py fill:#CCFBF1,stroke:#0F766E,stroke-width:2.5px,color:#0B3B36
+
+  T1["LANGCHAIN (green) · steps 7 and 8<br/>init_chat_model: OpenAI or DeepSeek<br/>structured output into Pydantic<br/>governed tools · model fallback · PII guard<br/>embeddings and text splitters · LangSmith tracing"]:::lc
+  T2["LANGGRAPH (blue) · steps 5, 11, 13 and nightly<br/>graph runtime · PostgresSaver · PostgresStore<br/>interrupt and resume · RetryPolicy, error_handler<br/>task for safe side effects<br/>our graphs: narrator, review, nightly"]:::lg
+  T3["DEEP AGENTS (purple) · steps 6 and 11<br/>create_deep_agent orchestrator<br/>write_todos planning · task tool for sub-agents<br/>virtual files /memories per patient<br/>interrupt_on for the doctor gate"]:::da
+  T4["PLAIN PYTHON (teal) · steps 2, 4, 9, 10, 12, 14<br/>no framework, no LLM: rules R1 to R6, detectors,<br/>risk, identity, validator, decide(), outbox drainer<br/>plus FastAPI, Telegram and Gmail clients"]:::py

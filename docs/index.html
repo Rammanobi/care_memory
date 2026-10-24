@@ -1,0 +1,1059 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CareMemory</title>
+<meta name="description" content="CareMemory: a care memory that a doctor approves. Hackathon project, JNTU Anantapur Innovators Conclave 2026, team The Sentience Circuit.">
+<style>
+:root{--paper:#FAF7F2;--card:#FFFFFF;--ink:#1F2933;--mute:#5B6670;--line:#E6DFD3;--teal:#0F766E;--tealbg:#E6F2F0;--saf:#B45309;--safbg:#FEF3DC;--red:#B91C1C;--grey:#64748B;--greybg:#F1F5F9;--violet:#6D28D9;--violetbg:#EDE7F6;--code:#F3EEE5;--shadow:0 1px 2px rgba(31,41,51,.06),0 4px 16px rgba(31,41,51,.06)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#14181C;--card:#1C2228;--ink:#E7E3DC;--mute:#A3ACB5;--line:#2E363E;--teal:#4FB3A9;--tealbg:#16302D;--saf:#F2B55C;--safbg:#3A2C14;--grey:#94A3B8;--greybg:#252C33;--violet:#B59CF0;--violetbg:#2A2340;--code:#232A31;--shadow:none}}
+:root[data-theme="dark"]{--paper:#14181C;--card:#1C2228;--ink:#E7E3DC;--mute:#A3ACB5;--line:#2E363E;--teal:#4FB3A9;--tealbg:#16302D;--saf:#F2B55C;--safbg:#3A2C14;--grey:#94A3B8;--greybg:#252C33;--violet:#B59CF0;--violetbg:#2A2340;--code:#232A31;--shadow:none}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;overflow-x:hidden}
+a{color:var(--teal)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+header.hero{padding:48px 0 28px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:600}
+.hero h1{font-size:clamp(34px,6vw,54px);line-height:1.08;margin:10px 0 8px;color:var(--teal);letter-spacing:-.01em}
+.hero .pitch{font-size:clamp(18px,2.6vw,23px);margin:0 0 6px;font-weight:600}
+.hero .tag{color:var(--mute);margin:0 0 20px}
+.cta{display:flex;flex-wrap:wrap;gap:10px}
+.cta a{display:inline-block;padding:9px 16px;border-radius:999px;border:1.5px solid var(--teal);text-decoration:none;font-weight:600;font-size:15px}
+.cta a.primary{background:var(--teal);color:var(--paper)}
+nav.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav.top .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-top:8px;padding-bottom:8px}
+nav.top .wrap::-webkit-scrollbar{display:none}
+nav.top a{flex:none;font-size:14px;padding:6px 11px;border-radius:999px;text-decoration:none;color:var(--ink);white-space:nowrap}
+nav.top a:hover{background:var(--tealbg);color:var(--teal)}
+.progress{margin:28px 0 8px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
+.progress h2{margin:0 0 4px;font-size:20px}
+.overall{display:flex;align-items:center;gap:12px;margin:12px 0 16px}
+.overall .bar{height:14px}
+.overall b{font-size:28px;color:var(--teal);min-width:64px}
+.bar-row{display:grid;grid-template-columns:40px minmax(120px,230px) 1fr 92px;gap:10px;align-items:center;padding:5px 0;font-size:14.5px}
+.bar-id{font-family:ui-monospace,Consolas,monospace;color:var(--mute);font-size:13px}
+.bar{display:block;height:10px;border-radius:999px;background:var(--greybg);overflow:hidden;width:100%}
+.fill{display:block;height:100%;border-radius:999px;background:var(--teal)}
+.fill.partial{background:var(--saf)}.fill.inprogress{background:var(--violet)}
+.badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;text-align:center;line-height:1.5}
+.badge.done{background:var(--tealbg);color:var(--teal)}.badge.partial{background:var(--safbg);color:var(--saf)}
+.badge.planned{background:var(--greybg);color:var(--grey)}.badge.inprogress{background:var(--violetbg);color:var(--violet)}
+section{padding:36px 0 8px;border-top:1px solid var(--line);margin-top:28px}
+section h2{font-size:clamp(23px,3.4vw,30px);margin:0 0 14px;display:flex;gap:12px;align-items:baseline}
+section h2 .num{font-size:14px;color:var(--paper);background:var(--teal);border-radius:8px;padding:2px 9px;transform:translateY(-3px)}
+h3.sub{font-size:19px;margin:28px 0 10px}
+p,li{max-width:78ch}.muted{color:var(--mute)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:4px solid var(--teal);background:var(--tealbg);border-radius:0 10px 10px 0}
+code{font-family:ui-monospace,Consolas,monospace;font-size:.88em;background:var(--code);padding:1px 6px;border-radius:6px;overflow-wrap:anywhere}
+pre{background:var(--code);border:1px solid var(--line);border-radius:12px;padding:14px;overflow-x:auto;font-size:13.5px;line-height:1.5}
+pre code{background:none;padding:0;overflow-wrap:normal}
+.tw{overflow-x:auto;margin:14px 0;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{background:var(--greybg);font-weight:700;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin:6px 0 22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+.card-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.card h3{margin:0;font-size:17px}.card p{margin:8px 0 0;color:var(--mute);font-size:15px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.shot{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;text-decoration:none;color:var(--ink);box-shadow:var(--shadow)}
+.shot img{width:100%;height:170px;object-fit:cover;object-position:top;display:block;background:#fff}
+.shot span{padding:9px 12px;font-size:14px;font-weight:600}
+figure.diagram{margin:14px 0 22px;background:#FFFFFF;border:1px solid var(--line);border-radius:14px;padding:14px;overflow-x:auto}
+figure.diagram img.fallback{display:block;max-width:100%;height:auto;margin:0 auto}
+figure.diagram .mm svg{display:block;margin:0 auto;max-width:100%;height:auto}
+figure.diagram.rendered img.fallback{display:none}
+figure.diagram figcaption{font-size:13px;color:#5B6670;margin-top:8px;text-align:right}
+figure.diagram figcaption a{color:#0F766E}
+footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);color:var(--mute);font-size:14px}
+@media (max-width:640px){body{font-size:15.5px}.bar-row{grid-template-columns:34px 1fr 84px}.bar-row .bar{grid-column:1/-1;order:4}header.hero{padding-top:32px}th,td{padding:8px 9px;font-size:13.5px}.shot img{height:150px}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">Innovators Conclave 2026 · JNTU Anantapur · IC26-03-10 Open Health Innovation</div>
+  <h1>CareMemory</h1>
+  <p class="pitch">A care memory that a doctor approves.</p>
+  <p class="tag">Day 3, it reminds. Day 60, it understands. Team The Sentience Circuit: Manobiram, Idris, Abhishek.</p>
+  <div class="cta"><a class="primary" href="tracker.html">&#128202; Visual progress tracker</a><a href="../TRACKER.md">TRACKER.md</a><a href="../README.md">README</a><a href="design/">Design docs</a><a href="design/EVALUATION_PLAN.md">Evaluation plan</a></div>
+</div></header>
+<nav class="top" aria-label="Sections"><div class="wrap"><a href="tracker.html" style="font-weight:700;color:var(--teal)">&#128202; Tracker</a><a href="#progress">Progress</a><a href="#s1">The problem</a><a href="#s2">What is different</a><a href="#s3">Screenshots</a><a href="#s4">Features and honest status</a><a href="#s5">Architecture</a><a href="#s6">Tech stack and models</a><a href="#s7">Safety and privacy</a><a href="#s8">Repository map</a><a href="#s9">How to run</a><a href="#s10">Environment variables</a><a href="#s11">Testing</a><a href="#s12">Evaluation mapping</a><a href="#s13">Roadmap</a><a href="#s14">Team</a></div></nav>
+<main class="wrap">
+  <div class="progress" id="progress">
+    <h2>Build progress</h2>
+    <p class="muted" style="margin:0">12 of 16 feature slices done, 3 partial, 1 in progress (AI runtime). 207 Python tests and 14 web tests pass; the doctor gate is enforced by a database constraint. Still to land: AI runtime, memory engine, rules R1-R6, cloud deploy.</p>
+    <div class="overall"><b>88%</b><span class="bar"><span class="fill" style="width:88%"></span></span></div>
+    <p class="muted" style="margin:0 0 10px;font-size:14px">12 of 16 slices done. Weighted: done 100%, partial 60%, in progress 35%. Details and commit plan in <a href="../TRACKER.md">TRACKER.md</a>.</p>
+    <div class="bar-row"><span class="bar-id">F01</span><span class="bar-name">Project scaffold</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F02</span><span class="bar-name">Contracts and skeletons</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F03</span><span class="bar-name">Infra and GCP scripts</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F04</span><span class="bar-name">Data core and event store</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F05</span><span class="bar-name">Doctor decision service</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F06</span><span class="bar-name">Core API and seed</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F07</span><span class="bar-name">AI budget governor</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F08</span><span class="bar-name">Templates and banned terms</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F09</span><span class="bar-name">Telegram lane</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F10</span><span class="bar-name">Gmail lane</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F11</span><span class="bar-name">Telegram live wiring</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F12</span><span class="bar-name">Doctor console</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F13</span><span class="bar-name">Patient app and Supporter</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F14</span><span class="bar-name">Web on the real API</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F15</span><span class="bar-name">AI runtime</span><span class="bar"><span class="fill inprogress" style="width:35%"></span></span><span class="badge inprogress">in progress</span></div><div class="bar-row"><span class="bar-id">F16</span><span class="bar-name">Documentation</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div>
+  </div>
+  <section id="s1"><h2><span class="num">1</span>The problem</h2><p><em>Problem statement IC26-03-10, as filed (this section names the clinical domain; nothing patient-facing does).</em></p>
+<p>Patients on long tuberculosis (TB) treatment often drop out, take the wrong medicines, or miss support they are entitled to. Six parties each hold one piece of the patient's journey: the patient, the private doctor, the lab, the chemist, the treatment Supporter and the national programme portal. Over six months or more of daily treatment, nobody joins these pieces.</p>
+<p><strong>Users</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Who</th>
+<th>What they need</th>
+<th>Where they use CareMemory</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Patient (e.g. Ravi, 32, daily-wage loader)</td>
+<td>A one-tap daily check-in in their language, and answers that a doctor has approved</td>
+<td>Patient web app, Telegram</td>
+</tr>
+<tr>
+<td>Doctor (e.g. Dr. Prasad, about 15 such patients)</td>
+<td>One ranked queue: who needs me first, why, with evidence</td>
+<td>Doctor console, Gmail digest</td>
+</tr>
+<tr>
+<td>Supporter (e.g. Lakshmi, community health worker)</td>
+<td>Who to visit and when, nothing more</td>
+<td>Supporter web view</td>
+</tr>
+<tr>
+<td>District officer</td>
+<td>Clinic-level picture without personal data</td>
+<td>District dashboard</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Expected output (from the problem statement):</strong> opt-in multi-channel check-ins and a Supporter workflow, a doctor review queue, a patient memory timeline with a Day 3 vs Day 60 comparison, contradiction and risk flags with cited evidence, a district dashboard and a 60-day synthetic-data evaluation. Full text: <a href="design/CAREMEMORY_PROBLEM_STATEMENT.md">docs/design/CAREMEMORY_PROBLEM_STATEMENT.md</a>. Story: <a href="design/CAREMEMORY_STORY_AND_FEATURES.md">docs/design/CAREMEMORY_STORY_AND_FEATURES.md</a>.</p></section><section id="s2"><h2><span class="num">2</span>What is different</h2><div class="cards"><div class="card"><div class="card-top"><h3>&#129489;&#8205;&#9877;&#65039; Memory a doctor approves</h3><span class="badge done">done</span></div><p>Every AI-written message becomes an approval item. Nothing reaches a patient until a doctor approves, edits or rejects it.</p></div><div class="card"><div class="card-top"><h3>&#128274; Gate in the database</h3><span class="badge done">done</span></div><p>A CHECK constraint and trigger on the outbox refuse any send without a doctor decision or an approved template.</p></div><div class="card"><div class="card-top"><h3>&#127919; One decision function</h3><span class="badge done">done</span></div><p>Console, Gmail and the sweeper all call decide(): one transaction writes the decision and the outbox rows.</p></div><div class="card"><div class="card-top"><h3>&#128208; Rules decide, AI explains</h3><span class="badge partial">partial</span></div><p>Numbers come from Python and SQL. The LLM only parses and narrates, through a governed get_model().</p></div><div class="card"><div class="card-top"><h3>&#128206; Cite or cut</h3><span class="badge partial">partial</span></div><p>Every sentence cites an event or belief id; uncited sentences and wrong numbers are cut. The Ask box already checks numbers.</p></div><div class="card"><div class="card-top"><h3>&#128267; Degrades, never dies</h3><span class="badge done">done</span></div><p>A budget governor moves GREEN to AMBER to RED; in RED only rules and approved templates run.</p></div></div><div class="tw"><table>
+<thead>
+<tr>
+<th>Idea</th>
+<th>What it means in the code</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Memory a doctor approves</strong></td>
+<td>Every AI-written message becomes an <code>approvals</code> row. Nothing reaches a patient until a doctor approves, edits or rejects it.</td>
+</tr>
+<tr>
+<td><strong>The doctor gate is a database constraint</strong></td>
+<td><code>cm.outbox</code> has <code>CHECK outbox_doctor_gate</code>: a row needs an <code>approval_id</code> plus a <code>decision_id</code>, or an allow-listed system kind backed by an <em>approved</em> template. A trigger also checks the decision is approve/edit and belongs to that approval. Even a buggy agent cannot insert an unapproved send. (<a href="../cm/store/migrations/0002_reliability.sql">0002_reliability.sql</a>)</td>
+</tr>
+<tr>
+<td><strong>One decision function</strong></td>
+<td>Console, Gmail and the expiry sweeper all call <a href="../cm/review/decide.py"><code>cm/review/decide.py</code></a>: one transaction writes the decision and the outbox rows.</td>
+</tr>
+<tr>
+<td><strong>Rules decide, AI explains</strong></td>
+<td>Numbers (missed doses, refill gaps, risk) come from plain Python and SQL. The LLM only parses and narrates.</td>
+</tr>
+<tr>
+<td><strong>Cite or cut</strong></td>
+<td>Every sentence must cite an event/belief id (<code>E-</code>, <code>B-</code>, <code>C-</code>, <code>R-</code>, <code>G-</code>, <code>D-</code>). Uncited sentences and numbers that do not match the cited rows are cut; too few left means a template. The Ask box already reports <code>numbers_verified</code>.</td>
+</tr>
+<tr>
+<td><strong>Degrades, never dies</strong></td>
+<td>An AI budget governor moves GREEN to AMBER to RED. In RED the system runs on rules and approved templates only.</td>
+</tr>
+<tr>
+<td><strong>Opt-in, minimal data</strong></td>
+<td>Channels are per-person opt-in, with consent stored per person, channel and purpose; people are pseudonymous tokens (<code>P-0142</code>) and prompts are tokenised before any LLM call.</td>
+</tr>
+</tbody>
+</table></div></section><section id="s3"><h2><span class="num">3</span>Screenshots</h2><p class="muted">All screens use mock data. Click a screenshot to open it full size.</p><div class="gallery"><a class="shot" href="assets/ui/built_doctor_laptop.png"><img src="assets/ui/built_doctor_laptop.png" alt="Doctor console: who needs me first" loading="lazy"><span>Doctor console: who needs me first</span></a><a class="shot" href="assets/ui/doctor_approvals_laptop.png"><img src="assets/ui/doctor_approvals_laptop.png" alt="Approvals queue, Red / Amber / Green" loading="lazy"><span>Approvals queue, Red / Amber / Green</span></a><a class="shot" href="assets/ui/doctor_evidence-drawer_laptop.png"><img src="assets/ui/doctor_evidence-drawer_laptop.png" alt="Evidence drawer with cited ids" loading="lazy"><span>Evidence drawer with cited ids</span></a><a class="shot" href="assets/ui/doctor_lens-day60_laptop.png"><img src="assets/ui/doctor_lens-day60_laptop.png" alt="Memory Lens, Day 60" loading="lazy"><span>Memory Lens, Day 60</span></a><a class="shot" href="assets/ui/doctor_patient-timeline_laptop.png"><img src="assets/ui/doctor_patient-timeline_laptop.png" alt="Patient timeline" loading="lazy"><span>Patient timeline</span></a><a class="shot" href="assets/ui/doctor_ask_laptop.png"><img src="assets/ui/doctor_ask_laptop.png" alt="Ask box with citations" loading="lazy"><span>Ask box with citations</span></a><a class="shot" href="assets/ui/doctor_admin-amber_laptop.png"><img src="assets/ui/doctor_admin-amber_laptop.png" alt="Admin: AI usage and caps" loading="lazy"><span>Admin: AI usage and caps</span></a><a class="shot" href="assets/ui/doctor_district_laptop.png"><img src="assets/ui/doctor_district_laptop.png" alt="District view" loading="lazy"><span>District view</span></a><a class="shot" href="assets/ui/built_patient_laptop.png"><img src="assets/ui/built_patient_laptop.png" alt="Patient app" loading="lazy"><span>Patient app</span></a><a class="shot" href="assets/ui/patient_home_telugu_laptop.png"><img src="assets/ui/patient_home_telugu_laptop.png" alt="Patient app in Telugu" loading="lazy"><span>Patient app in Telugu</span></a><a class="shot" href="assets/ui/patient_me_revoke_dialog_laptop.png"><img src="assets/ui/patient_me_revoke_dialog_laptop.png" alt="Consent revoke dialog" loading="lazy"><span>Consent revoke dialog</span></a><a class="shot" href="assets/ui/built_patient_phone.png"><img src="assets/ui/built_patient_phone.png" alt="Patient app on a phone" loading="lazy"><span>Patient app on a phone</span></a><a class="shot" href="assets/ui/built_doctor_phone.png"><img src="assets/ui/built_doctor_phone.png" alt="Doctor console on a phone" loading="lazy"><span>Doctor console on a phone</span></a><a class="shot" href="assets/ui/supporter_home_phone.png"><img src="assets/ui/supporter_home_phone.png" alt="Supporter view on a phone" loading="lazy"><span>Supporter view on a phone</span></a></div></section><section id="s4"><h2><span class="num">4</span>Features and honest status</h2><div class="tw"><table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Feature</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&#128451;&#65039; Data</td>
+<td>Postgres schema, 7 migrations (events, approvals, outbox, consents, memory tables, RAG tables, auth, views, role grants)</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/store/migrations/</code>, <code>tests/integration/test_repos.py</code></td>
+</tr>
+<tr>
+<td>&#128451;&#65039; Data</td>
+<td>Append-only event store with idempotency keys and <code>recorded_at</code></td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/store/events_repo.py</code>, integration tests</td>
+</tr>
+<tr>
+<td>&#128274; Gate</td>
+<td>Doctor gate as DB <code>CHECK</code> + trigger on <code>outbox</code></td>
+<td><span class="badge done">done</span></td>
+<td><code>0002_reliability.sql</code>, <code>tests/integration/test_decide.py</code></td>
+</tr>
+<tr>
+<td>&#128274; Gate</td>
+<td>Single <code>decide()</code> transaction (console, Gmail, sweeper)</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/review/decide.py</code>, <code>test_decide.py</code></td>
+</tr>
+<tr>
+<td>&#128268; API</td>
+<td>Auth: scrypt passwords, HS256 JWT cookie, role guards, login rate limits</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/api/auth.py</code>, <code>cm/api/routers/auth.py</code>, <code>tests/unit/api/test_auth_unit.py</code></td>
+</tr>
+<tr>
+<td>&#128268; API</td>
+<td>Doctor routes: review queue, bulk decision, patients, timeline, requests, dashboard, settings</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/api/routers/</code>, <code>tests/integration/test_e2e_api.py</code></td>
+</tr>
+<tr>
+<td>&#128268; API</td>
+<td>Patient portal routes: today, dose, record, inbox, requests, consents, Supporter check-in</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/api/routers/portal.py</code>, e2e tests</td>
+</tr>
+<tr>
+<td>&#128268; API</td>
+<td>Banned-term filter on every patient and Supporter response</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/api/suppress.py</code>, <code>tests/unit/api/test_suppress.py</code></td>
+</tr>
+<tr>
+<td>&#128268; API</td>
+<td>Ask box: answers built from DB rows with numbered citations and a number check</td>
+<td><span class="badge done">done</span> (rule-based)</td>
+<td><code>cm/api/routers/query.py</code>; LLM version in progress (below)</td>
+</tr>
+<tr>
+<td>&#128268; API</td>
+<td>Live updates (SSE <code>/stream</code>), district endpoint, dose undo, documents</td>
+<td><span class="badge partial">partial</span> (in progress today, lane G)</td>
+<td><code>cm/api/routers/stream.py</code>; web falls back to 5 s polling</td>
+</tr>
+<tr>
+<td>&#127793; Seed</td>
+<td>Deterministic seed 42 (same sample content as the UI), idempotent</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/jobs/seed.py</code>, <code>tests/integration/test_seed.py</code></td>
+</tr>
+<tr>
+<td>&#128221; Content</td>
+<td>12 approved message templates, English + Telugu (Telugu flagged for native review)</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/router/templates/*.yaml</code>, <code>tests/unit/content/</code></td>
+</tr>
+<tr>
+<td>&#128221; Content</td>
+<td>Banned-term scanner over templates and patient/Supporter UI</td>
+<td><span class="badge done">done</span></td>
+<td><code>scripts/banned_terms.py</code> (clean on 24 Oct)</td>
+</tr>
+<tr>
+<td>&#129302; AI</td>
+<td>Budget governor GREEN/AMBER/RED, demo reserve, circuit breaker, retry with retry-after, no retry on 402/auth</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/core/budget.py</code>, <code>retry.py</code>, <code>tests/unit/core_ai/test_ai.py</code></td>
+</tr>
+<tr>
+<td>&#129302; AI</td>
+<td>Governed <code>get_model(role)</code>, PII tokenise + <code>assert_clean()</code> before any LLM call</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/core/llm.py</code>, <code>tokenize.py</code>, unit tests</td>
+</tr>
+<tr>
+<td>&#129302; AI</td>
+<td>Deep Agents orchestrator, narrator and drafter sub-agents, LangGraph <code>interrupt()</code> at <code>submit_for_review</code></td>
+<td><span class="badge partial">partial</span> (being built today, change <code>add-ai-runtime</code>)</td>
+<td><code>cm/agents/</code>, <code>cm/tools/</code>, <code>cm/validator/</code></td>
+</tr>
+<tr>
+<td>&#129302; AI</td>
+<td>Cite-or-cut validator</td>
+<td><span class="badge partial">partial</span> (being built today)</td>
+<td><code>cm/validator/cite_or_cut.py</code></td>
+</tr>
+<tr>
+<td>&#129302; AI</td>
+<td>Intake, identity, curator, investigator sub-agents</td>
+<td><span class="badge planned">planned</span></td>
+<td>stubs in <code>cm/agents/subagents/</code></td>
+</tr>
+<tr>
+<td>&#129504; Memory</td>
+<td>Beliefs, weekday pattern detector, per-reporter trust, drift alarm, calibrated risk with interval</td>
+<td><span class="badge planned">planned</span></td>
+<td>schema exists (<code>0003_memory.sql</code>); stubs in <code>cm/memory/</code></td>
+</tr>
+<tr>
+<td>&#128208; Rules</td>
+<td>Reconciler rules R1 to R6 (refill vs self-report, payment mismatch, danger symptom, silence, household contacts)</td>
+<td><span class="badge planned">planned</span> (only the Telegram fast path runs today)</td>
+<td>stubs in <code>cm/rules/</code></td>
+</tr>
+<tr>
+<td>&#9992;&#65039; Telegram</td>
+<td>Webhook: secret check, dedupe on <code>update_id</code>, tap saved as event first, ack under 1 s</td>
+<td><span class="badge done">done</span> (tested with fakes and Postgres)</td>
+<td><code>cm/channels/tg_inbound.py</code>, <code>tests/unit/channels/</code>, <code>tests/integration/test_telegram_pg.py</code></td>
+</tr>
+<tr>
+<td>&#9992;&#65039; Telegram</td>
+<td>Fast path: 3 missed in 3 days or a danger symptom creates a Red draft (fixed text, no LLM)</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/channels/adapters_pg.py</code>, integration test</td>
+</tr>
+<tr>
+<td>&#9992;&#65039; Telegram</td>
+<td>Outbox sender: approved rows only, quiet hours 21:00 to 07:00, 1 msg/s per chat, 3 per day, retry-after</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/channels/tg_sender.py</code>, <code>cm/jobs/outbox_drainer.py</code></td>
+</tr>
+<tr>
+<td>&#9992;&#65039; Telegram</td>
+<td>Live bot run</td>
+<td><span class="badge partial">partial</span></td>
+<td>needs the owner's bot token and ngrok; steps in <code>cm/channels/NOTES_integration.md</code></td>
+</tr>
+<tr>
+<td>&#9992;&#65039; Telegram</td>
+<td>Onboarding wizard with itemised consent, free-text intake, Supporter proxy taps</td>
+<td><span class="badge planned">planned</span></td>
+<td>listed in <code>cm/channels/NOTES.md</code></td>
+</tr>
+<tr>
+<td>&#9993;&#65039; Gmail</td>
+<td>Digest builder, reply parser ("approve 1, reject 2 reason"), single-use token check, consent flows, calendar visits, channel fallback</td>
+<td><span class="badge partial">partial</span> (tested against fakes only)</td>
+<td><code>cm/channels/gmail*.py</code>, <code>tests/unit/gmail/</code></td>
+</tr>
+<tr>
+<td>&#9993;&#65039; Gmail</td>
+<td>Real Google API client, OIDC check on Pub/Sub push</td>
+<td><span class="badge planned">planned</span></td>
+<td><code>cm/channels/NOTES_gmail.md</code></td>
+</tr>
+<tr>
+<td>&#128421;&#65039; Web</td>
+<td>Doctor console: Today, Patients, patient page with tabs, Approvals with SLA countdown and bulk approve, Requests, Ask, Memory Lens, District, Admin usage caps, Settings, keyboard shortcuts, undo toast</td>
+<td><span class="badge done">done</span> (screens)</td>
+<td><code>web/src/pages/</code>, screenshots above</td>
+</tr>
+<tr>
+<td>&#128421;&#65039; Web</td>
+<td>Patient app: welcome and consent, home, record, messages, ask, me (consent revoke, large text), help, privacy; English/Telugu</td>
+<td><span class="badge done">done</span> (screens)</td>
+<td><code>web/src/pages/PatientApp/</code></td>
+</tr>
+<tr>
+<td>&#128421;&#65039; Web</td>
+<td>Supporter view</td>
+<td><span class="badge done">done</span> (screens)</td>
+<td><code>web/src/pages/Supporter/</code></td>
+</tr>
+<tr>
+<td>&#128421;&#65039; Web</td>
+<td>Real HTTP adapter (cookie session, 401 to login, GET-only retry, optimistic update with rollback), SSE with polling fallback</td>
+<td><span class="badge done">done</span></td>
+<td><code>web/src/api/httpAdapter.ts</code>, <code>mapping.test.ts</code> (14 tests)</td>
+</tr>
+<tr>
+<td>&#128421;&#65039; Web</td>
+<td>Memory Lens and District on real memory data</td>
+<td><span class="badge partial">partial</span></td>
+<td>screens exist; backed by sample data until the memory engine lands</td>
+</tr>
+<tr>
+<td>&#128200; Eval</td>
+<td>60-day synthetic simulator, eval harness, LLM judge, cassette replay for offline demo</td>
+<td><span class="badge planned">planned</span></td>
+<td>stubs in <code>cm/sim/</code>, <code>cm/eval/</code></td>
+</tr>
+<tr>
+<td>&#128640; Deploy</td>
+<td>Dockerfile, docker-compose (pgvector/pg16), numbered GCP scripts, Cloud Build</td>
+<td><span class="badge partial">partial</span> (written, not yet deployed)</td>
+<td><code>infra/00_project.sh</code> to <code>80_webhooks.sh</code>, <code>infra/cloudbuild.yaml</code></td>
+</tr>
+<tr>
+<td>&#128640; Deploy</td>
+<td>Cloud Tasks mode for the task queue</td>
+<td><span class="badge planned">planned</span></td>
+<td>local in-process queue only (<code>TASKS_MODE=local</code>)</td>
+</tr>
+</tbody>
+</table></div></section><section id="s5"><h2><span class="num">5</span>Architecture</h2><p>PNG copies of every diagram are in <a href="assets/diagrams/">docs/assets/diagrams/</a> (rendered with Mermaid 11.4.1). Colour key: teal = done, amber = partial, grey dashed = planned.</p>
+<h3 class="sub">5.1 System architecture</h3>
+
+<figure class="diagram"><div class="mm" data-src="flowchart TB
+  classDef built fill:#E6F2F0,stroke:#0F766E,color:#1F2933
+  classDef partial fill:#FEF3DC,stroke:#B45309,color:#1F2933
+  classDef planned fill:#F1F5F9,stroke:#94A3B8,color:#475569,stroke-dasharray:5 4
+  classDef human fill:#E3ECFD,stroke:#1D4ED8,color:#1F2933
+
+  subgraph PEOPLE[&quot;People (opt-in)&quot;]
+    direction LR
+    PT[&quot;Patient&quot;]:::human
+    SUP[&quot;Supporter&quot;]:::human
+    DOC[&quot;Doctor&quot;]:::human
+  end
+
+  subgraph EDGE[&quot;Channels&quot;]
+    direction LR
+    TG[&quot;Telegram bot&lt;br/&gt;webhook + sender&quot;]:::partial
+    WEB[&quot;React web app&lt;br/&gt;doctor console, patient app,&lt;br/&gt;Supporter view&quot;]:::built
+    GM[&quot;Gmail digest +&lt;br/&gt;approve-by-reply&quot;]:::partial
+  end
+
+  subgraph CORE[&quot;cm-api (FastAPI)&quot;]
+    direction LR
+    API[&quot;REST routers&lt;br/&gt;auth, review, patients,&lt;br/&gt;portal, query, admin&quot;]:::built
+    AG[&quot;Agent runtime&lt;br/&gt;Deep Agents + LangGraph&quot;]:::partial
+    GOV[&quot;AI budget governor&quot;]:::built
+    DEC[&quot;decide()&lt;br/&gt;one transaction&quot;]:::built
+    RUL[&quot;Rules R1-R6 +&lt;br/&gt;memory engine&quot;]:::planned
+  end
+
+  subgraph DATA[&quot;Postgres 16 + pgvector&quot;]
+    direction LR
+    EV[(&quot;events&lt;br/&gt;append-only&quot;)]:::built
+    AP[(&quot;approvals +&lt;br/&gt;review_decisions&quot;)]:::built
+    OB[(&quot;outbox&lt;br/&gt;doctor-gate CHECK&quot;)]:::built
+    MEM[(&quot;beliefs, conflicts,&lt;br/&gt;risk_scores&quot;)]:::partial
+  end
+
+  LLM[&quot;LLM provider: DeepSeek&lt;br/&gt;(OpenAI allowed)&quot;]:::partial
+
+  PT --&gt; TG
+  PT --&gt; WEB
+  SUP --&gt; WEB
+  DOC --&gt; WEB
+  DOC --&gt; GM
+  TG --&gt; API
+  WEB --&gt; API
+  GM -.-&gt; DEC
+  API --&gt; AG
+  API --&gt; DEC
+  AG --&gt; GOV --&gt; LLM
+  RUL -.-&gt; MEM
+  API --&gt; EV
+  AG --&gt; AP
+  DEC --&gt; AP
+  DEC --&gt; OB
+  OB -.-&gt;|&quot;drainer sends approved rows&quot;| TG"></div><img class="fallback" src="../assets/diagrams/01_system_architecture.png" alt="system architecture diagram" loading="lazy"><figcaption><a href="../assets/diagrams/01_system_architecture.png">Open PNG</a> · <a href="../assets/diagrams/01_system_architecture.mmd">Mermaid source</a></figcaption></figure>
+
+<h3 class="sub">5.2 Data flows: Ask box, Telegram tap, Gmail reply</h3>
+
+<figure class="diagram"><div class="mm" data-src="flowchart TB
+  classDef built fill:#E6F2F0,stroke:#0F766E,color:#1F2933
+  classDef partial fill:#FEF3DC,stroke:#B45309,color:#1F2933
+  classDef db fill:#FFFFFF,stroke:#1F2933,color:#1F2933
+
+  subgraph Q[&quot;A. Doctor asks a question in the console&quot;]
+    Q1[&quot;Ask box: Who needs me first today?&quot;]:::built --&gt; Q2[&quot;POST /query&quot;]:::built
+    Q2 --&gt; Q3[&quot;Read rows from Postgres&lt;br/&gt;tool calls recorded&quot;]:::built
+    Q3 --&gt; Q4[&quot;Answer with numbered citations&lt;br/&gt;numbers_verified check&quot;]:::built
+  end
+
+  subgraph T[&quot;B. Patient taps a Telegram button&quot;]
+    T1[&quot;Tap: Taken / Missed / Unwell&quot;]:::built --&gt; T2[&quot;POST /webhooks/telegram&lt;br/&gt;secret header, dedupe on update_id&quot;]:::built
+    T2 --&gt; T3[&quot;Dose or symptom event&lt;br/&gt;saved first&quot;]:::built
+    T3 --&gt; T4{&quot;Fast-path rule:&lt;br/&gt;3 missed in 3 days&lt;br/&gt;or danger symptom?&quot;}:::built
+    T4 --&gt;|yes| T5[&quot;Red approval draft&lt;br/&gt;fixed text, no LLM&quot;]:::built
+    T4 --&gt;|no| T6[&quot;Task enqueued&lt;br/&gt;agent intake planned&quot;]:::partial
+  end
+
+  subgraph G[&quot;C. Doctor works from Gmail&quot;]
+    G1[&quot;Digest email with&lt;br/&gt;numbered pending items&quot;]:::partial --&gt; G2[&quot;Reply: approve 1, reject 2 reason&quot;]:::partial
+    G2 --&gt; G3[&quot;Parse + single-use token check&quot;]:::partial
+    G3 --&gt; G4[&quot;decide via gmail&quot;]:::built
+  end
+
+  DB[(&quot;Postgres&lt;br/&gt;events, approvals, outbox&quot;)]:::db
+  Q3 --- DB
+  T3 --&gt; DB
+  T5 --&gt; DB
+  G4 --&gt; DB"></div><img class="fallback" src="../assets/diagrams/02_data_flow.png" alt="data flow diagram" loading="lazy"><figcaption><a href="../assets/diagrams/02_data_flow.png">Open PNG</a> · <a href="../assets/diagrams/02_data_flow.mmd">Mermaid source</a></figcaption></figure>
+
+<h3 class="sub">5.3 Agent graph (target design; orchestrator and narrator are being built today)</h3>
+
+<figure class="diagram"><div class="mm" data-src="flowchart TB
+  classDef det fill:#E6F2F0,stroke:#0F766E,color:#1F2933
+  classDef ai fill:#EDE7F6,stroke:#7C3AED,color:#1F2933
+  classDef human fill:#FDF1D6,stroke:#B45309,color:#1F2933
+
+  IN[&quot;Task arrives&lt;br/&gt;tap, email, nightly run, Ask box&quot;] --&gt; DISP{&quot;dispatch()&quot;}
+  DISP --&gt;|&quot;button tap, red symptom,&lt;br/&gt;known CSV&quot;| FAST[&quot;Plain-code fast path&lt;br/&gt;no LLM&quot;]:::det
+  DISP --&gt;|&quot;everything else&quot;| ORCH[&quot;Deep Agents orchestrator&lt;br/&gt;ORCHESTRATOR model, write_todos&quot;]:::ai
+
+  subgraph SUBS[&quot;Sub-agents&quot;]
+    INT[&quot;intake&lt;br/&gt;parse free text&quot;]:::ai
+    IDN[&quot;identity&lt;br/&gt;match patient&quot;]:::det
+    CUR[&quot;memory curator&quot;]:::ai
+    INV[&quot;investigator&lt;br/&gt;ORCHESTRATOR model&quot;]:::ai
+    NAR[&quot;narrator&lt;br/&gt;ORCHESTRATOR model&quot;]:::ai
+    DRA[&quot;drafter&lt;br/&gt;patient, Supporter, doctor&quot;]:::ai
+  end
+
+  ORCH --&gt; INT
+  ORCH --&gt; IDN
+  ORCH --&gt; CUR
+  ORCH --&gt; INV
+  ORCH --&gt; NAR
+  ORCH --&gt; DRA
+
+  TOOLS[&quot;Governed tools, read-only by default&lt;br/&gt;as_of reads, detectors, rules R1-R6&quot;]:::det
+  CUR --&gt; TOOLS
+  INV --&gt; TOOLS
+  NAR --&gt; VAL[&quot;Cite-or-cut validator&lt;br/&gt;number check, uncited sentences cut&quot;]:::det
+  DRA --&gt; VAL
+  VAL --&gt; SUB[&quot;submit_for_review&quot;]:::human
+  SUB --&gt; INTR[&quot;LangGraph interrupt()&lt;br/&gt;thread paused, state in Postgres&quot;]:::human
+  INTR --&gt; APR[&quot;approvals row&lt;br/&gt;doctor decides&quot;]:::human
+  APR --&gt; DEC[&quot;decide()&lt;br/&gt;decision + outbox rows, one transaction&quot;]:::det
+  DEC --&gt;|&quot;resume with Command&quot;| ORCH
+  FAST --&gt; APR"></div><img class="fallback" src="../assets/diagrams/03_agent_graph.png" alt="agent graph diagram" loading="lazy"><figcaption><a href="../assets/diagrams/03_agent_graph.png">Open PNG</a> · <a href="../assets/diagrams/03_agent_graph.mmd">Mermaid source</a></figcaption></figure>
+
+<h3 class="sub">5.4 Doctor-gate approval sequence (built and tested)</h3>
+
+<figure class="diagram"><div class="mm" data-src="sequenceDiagram
+  autonumber
+  participant AG as Agent or fast-path rule
+  participant DB as Postgres
+  participant DOC as Doctor (console or Gmail)
+  participant DEC as decide()
+  participant DR as Outbox drainer
+  participant P as Patient or Supporter
+
+  AG-&gt;&gt;DB: upsert approvals row (pending, evidence ids)
+  Note over AG,DB: Graph pauses at interrupt(). Nothing is sent.
+  DOC-&gt;&gt;DB: open queue, read evidence chips first
+  DOC-&gt;&gt;DEC: approve, edit or reject
+  DEC-&gt;&gt;DB: BEGIN
+  DEC-&gt;&gt;DB: insert review_decisions (one per approval)
+  DEC-&gt;&gt;DB: insert outbox rows with approval_id and decision_id
+  Note over DB: CHECK outbox_doctor_gate refuses any row&lt;br/&gt;without a decision or an approved template
+  DEC-&gt;&gt;DB: COMMIT
+  DR-&gt;&gt;DB: claim pending rows (quiet hours, rate limit)
+  DR-&gt;&gt;P: send message
+  DR-&gt;&gt;DB: mark sent (idempotent dedup_key)"></div><img class="fallback" src="../assets/diagrams/04_doctor_gate_sequence.png" alt="doctor gate sequence diagram" loading="lazy"><figcaption><a href="../assets/diagrams/04_doctor_gate_sequence.png">Open PNG</a> · <a href="../assets/diagrams/04_doctor_gate_sequence.mmd">Mermaid source</a></figcaption></figure>
+
+<h3 class="sub">5.5 AI budget states (built and tested)</h3>
+
+<figure class="diagram"><div class="mm" data-src="stateDiagram-v2
+  [*] --&gt; GREEN
+  GREEN: GREEN (under 70% of daily cap) all models allowed
+  AMBER: AMBER (70 to 90%) cheaper model, optional sub-agents skipped
+  RED: RED (over 90% or HTTP 402) template-only mode
+  GREEN --&gt; AMBER: spend reaches 70%
+  AMBER --&gt; RED: spend over 90%
+  GREEN --&gt; RED: provider spend-cap error
+  AMBER --&gt; GREEN: new day or cap raised
+  RED --&gt; GREEN: new day or top-up
+  note right of RED
+    Rules and approved templates still work.
+    The demo reserve stays locked.
+  end note"></div><img class="fallback" src="../assets/diagrams/05_budget_states.png" alt="budget states diagram" loading="lazy"><figcaption><a href="../assets/diagrams/05_budget_states.png">Open PNG</a> · <a href="../assets/diagrams/05_budget_states.mmd">Mermaid source</a></figcaption></figure>
+
+<p>Thresholds from <a href="../cm/core/budget.py"><code>cm/core/budget.py</code></a>: exactly 90% is AMBER; RED is strictly over 90%. The demo reserve is locked by shrinking the spendable daily cap.</p>
+<h3 class="sub">5.6 Main tables (ER overview)</h3>
+
+<figure class="diagram"><div class="mm" data-src="erDiagram
+  PERSONS ||--o| PATIENTS : &quot;is&quot;
+  PERSONS ||--o{ CHANNEL_BINDINGS : &quot;opts in&quot;
+  PERSONS ||--o{ CONSENTS : &quot;grants&quot;
+  PATIENTS ||--o{ EVENTS : &quot;has&quot;
+  PATIENTS ||--o{ APPROVALS : &quot;drafts about&quot;
+  APPROVALS ||--o| REVIEW_DECISIONS : &quot;decided by&quot;
+  APPROVALS ||--o{ OUTBOX : &quot;authorises&quot;
+  REVIEW_DECISIONS ||--o{ OUTBOX : &quot;authorises&quot;
+  TEMPLATES ||--o{ OUTBOX : &quot;or approved template&quot;
+  PATIENTS ||--o{ BELIEFS : &quot;memory&quot;
+  PATIENTS ||--o{ CONFLICTS : &quot;memory&quot;
+  PATIENTS ||--o{ RISK_SCORES : &quot;memory&quot;
+  TASK_RUNS ||--o{ APPROVALS : &quot;pauses&quot;
+
+  PERSONS {
+    uuid person_id PK
+    text role
+    text token &quot;pseudonym, no names&quot;
+  }
+  PATIENTS {
+    uuid patient_id PK
+    text phase
+    text status
+  }
+  EVENTS {
+    uuid event_id PK
+    text type
+    text source
+    timestamptz event_time
+    timestamptz recorded_at
+    text idempotency_key UK
+  }
+  APPROVALS {
+    uuid approval_id PK
+    text tier &quot;red amber green&quot;
+    text kind
+    jsonb evidence
+    text status
+  }
+  REVIEW_DECISIONS {
+    uuid decision_id PK
+    uuid approval_id FK
+    text action
+    text via &quot;console gmail sweeper&quot;
+  }
+  OUTBOX {
+    uuid outbox_id PK
+    uuid approval_id FK
+    uuid decision_id FK
+    uuid template_id FK
+    text dedup_key UK
+  }
+  TASK_RUNS {
+    text task_id PK
+    int attempt
+    numeric cost_usd
+  }"></div><img class="fallback" src="../assets/diagrams/06_er_overview.png" alt="er overview diagram" loading="lazy"><figcaption><a href="../assets/diagrams/06_er_overview.png">Open PNG</a> · <a href="../assets/diagrams/06_er_overview.mmd">Mermaid source</a></figcaption></figure>
+
+<h3 class="sub">5.7 Deployment</h3>
+
+<figure class="diagram"><div class="mm" data-src="flowchart LR
+  classDef built fill:#E6F2F0,stroke:#0F766E,color:#1F2933
+  classDef planned fill:#F1F5F9,stroke:#94A3B8,color:#475569,stroke-dasharray:5 4
+
+  subgraph LOCAL[&quot;Today: local demo&quot;]
+    L1[&quot;docker compose db&lt;br/&gt;pgvector/pg16, host port 5433&quot;]:::built
+    L2[&quot;uvicorn cm.api.main:app&lt;br/&gt;port 8080, TASKS_MODE=local&quot;]:::built
+    L3[&quot;Vite dev server&lt;br/&gt;port 5173&quot;]:::built
+    L4[&quot;ngrok tunnel for&lt;br/&gt;Telegram webhook&quot;]:::built
+    L3 --&gt; L2 --&gt; L1
+    L4 --&gt; L2
+  end
+
+  subgraph GCP[&quot;Target: GCP asia-south1 (planned)&quot;]
+    G1[&quot;Cloud Run cm-api&quot;]:::planned
+    G2[&quot;Cloud Run cm-worker&quot;]:::planned
+    G3[&quot;Cloud Run Jobs&lt;br/&gt;migrate, seed, nightly, sweeper&quot;]:::planned
+    G4[(&quot;Cloud SQL Postgres 16&lt;br/&gt;+ pgvector&quot;)]:::planned
+    G5[&quot;Cloud Tasks&lt;br/&gt;agent-runs, resumes, outbound&quot;]:::planned
+    G6[&quot;Pub/Sub Gmail push&quot;]:::planned
+    G7[&quot;Secret Manager&quot;]:::planned
+    G8[&quot;Cloud Scheduler&quot;]:::planned
+    G1 --&gt; G4
+    G2 --&gt; G4
+    G1 --&gt; G5 --&gt; G2
+    G6 --&gt; G1
+    G8 --&gt; G3 --&gt; G4
+    G7 -.-&gt; G1
+    G7 -.-&gt; G2
+  end
+
+  LOCAL -. &quot;infra/00..80 scripts + cloudbuild.yaml&quot; .-&gt; GCP"></div><img class="fallback" src="../assets/diagrams/07_deployment.png" alt="deployment diagram" loading="lazy"><figcaption><a href="../assets/diagrams/07_deployment.png">Open PNG</a> · <a href="../assets/diagrams/07_deployment.mmd">Mermaid source</a></figcaption></figure>
+
+<p>Earlier design diagrams (framework architecture, data flow, lanes) are in <a href="assets/diagrams/design/">docs/assets/diagrams/design/</a>.</p></section><section id="s6"><h2><span class="num">6</span>Tech stack and models</h2><div class="tw"><table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Technology</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&#9881;&#65039; Backend</td>
+<td>Python 3.12 (3.11+ supported), FastAPI, Pydantic v2 strict, psycopg 3, uvicorn</td>
+</tr>
+<tr>
+<td>&#129302; AI runtime</td>
+<td>LangChain v1 <code>init_chat_model</code>, LangGraph 1.2.x (<code>interrupt()</code>, Postgres checkpointer), deepagents 0.7.30</td>
+</tr>
+<tr>
+<td>&#128451;&#65039; Database</td>
+<td>Postgres 16 + pgvector (Docker image <code>pgvector/pgvector:pg16</code>; Cloud SQL target)</td>
+</tr>
+<tr>
+<td>&#128421;&#65039; Web</td>
+<td>React 18, Vite 5, TypeScript 5.6, Tailwind 3, TanStack Query, Recharts, Vitest</td>
+</tr>
+<tr>
+<td>&#128172; Channels</td>
+<td>Telegram Bot API (httpx), Gmail API + Pub/Sub push, Google Calendar</td>
+</tr>
+<tr>
+<td>&#9729;&#65039; Cloud (target)</td>
+<td>Cloud Run services and jobs, Cloud SQL, Cloud Tasks, Pub/Sub, Secret Manager, Cloud Scheduler, region asia-south1</td>
+</tr>
+<tr>
+<td>&#129504; Build-time memory</td>
+<td>OpenSpec 1.14.3 (every feature, removal and fix logged under <code>openspec/</code>)</td>
+</tr>
+<tr>
+<td>&#9989; Quality</td>
+<td>pytest, ruff, import-linter, banned-term scanner</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Model to task.</strong> Models are reached only through <code>cm.core.llm.get_model(role)</code>; names live in <code>.env</code>, never in code. Providers allowed at runtime: OpenAI or DeepSeek only (DeepSeek is refused when <code>CM_DATA_CLASS=real</code>). Names below were confirmed with the provider's <code>/models</code> call; prices are approximate and change, so the governor reads a price table from <code>CM_PRICE_TABLE_JSON</code>.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Model</th>
+<th>Used for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ORCHESTRATOR</code></td>
+<td><code>deepseek:deepseek-v4-pro</code></td>
+<td>Deep Agents orchestrator, narrator (memory card), investigator lead</td>
+</tr>
+<tr>
+<td><code>WORKER</code></td>
+<td><code>deepseek:deepseek-flash</code></td>
+<td>Drafts for patient/Supporter/doctor, Ask box, intake and curator sub-agents</td>
+</tr>
+<tr>
+<td><code>JUDGE</code></td>
+<td><code>deepseek:deepseek-flash</code></td>
+<td>Faithfulness judge in evaluation</td>
+</tr>
+<tr>
+<td><code>FALLBACK</code></td>
+<td><code>deepseek:deepseek-flash</code></td>
+<td>After repeated timeouts or 5xx (never after a spend-cap error)</td>
+</tr>
+<tr>
+<td><code>VISION</code></td>
+<td>off</td>
+<td>Lab reports come in as JSON/CSV for now</td>
+</tr>
+<tr>
+<td><code>EMBEDDING</code></td>
+<td>off</td>
+<td>Postgres full-text search fallback for now</td>
+</tr>
+</tbody>
+</table></div></section><section id="s7"><h2><span class="num">7</span>Safety and privacy</h2><ul>
+<li><strong>Mock data only.</strong> Every patient, phone number and record in this repo is synthetic. The seed is deterministic (seed 42).</li>
+<li><strong>Opt-in channels, consent per purpose.</strong> Consent is stored per person, channel and purpose (<code>daily_checkin</code>, <code>care_coordination</code>, <code>supporter_sharing</code>, <code>programme_monitoring</code>); <code>/stop</code> in Telegram withdraws consent and revokes the binding. Events without consent are refused by a table <code>CHECK</code>.</li>
+<li><strong>No disease or drug words reach patients.</strong> Patient and Supporter text never contains the disease name, its abbreviation or drug names. <code>cm/api/suppress.py</code> filters responses; <code>scripts/banned_terms.py</code> scans templates and patient/Supporter screens (clean on 24 Oct).</li>
+<li><strong>PII never goes to an LLM.</strong> <code>cm.core.tokenize.tokenize()</code> replaces identifiers before a prompt is built; <code>assert_clean()</code> blocks the call otherwise. People are stored as pseudonymous tokens; names sit in an <code>identity_vault</code> table.</li>
+<li><strong>Doctor approval for every AI output</strong>, enforced by the database (section 2). No diagnosis or dosing advice: CareMemory coordinates follow-up, the doctor decides.</li>
+<li><strong>Secrets</strong> live only in a git-ignored <code>.env</code> or Secret Manager. <code>.env.example</code> holds names and placeholders only.</li>
+</ul></section><section id="s8"><h2><span class="num">8</span>Repository map</h2><div class="tw"><table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Purpose</th>
+<th>Lane</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cm/contracts/</code></td>
+<td>Pydantic contracts, frozen at tag <code>contracts-v1</code> (changes only by RFC in <code>CHANGES.md</code>)</td>
+<td>L0</td>
+</tr>
+<tr>
+<td><code>cm/core/</code></td>
+<td>Config, DB pool, clock, ids, logging, task queue, budget governor, retry, LLM access, PII tokeniser</td>
+<td>A</td>
+</tr>
+<tr>
+<td><code>cm/store/</code></td>
+<td>Migrations and repositories (the only place with raw SQL, with <code>cm/memory/</code>)</td>
+<td>A</td>
+</tr>
+<tr>
+<td><code>cm/review/</code></td>
+<td><code>decide()</code>: the single doctor-decision transaction</td>
+<td>G</td>
+</tr>
+<tr>
+<td><code>cm/api/</code></td>
+<td>FastAPI app and routers</td>
+<td>G (B, J, K own some routers)</td>
+</tr>
+<tr>
+<td><code>cm/channels/</code></td>
+<td>Telegram, Supporter, Gmail, Calendar, consent flows, Postgres adapters</td>
+<td>F, M</td>
+</tr>
+<tr>
+<td><code>cm/router/</code></td>
+<td>Channel routing, quiet hours, banned-term check, templates</td>
+<td>F, K</td>
+</tr>
+<tr>
+<td><code>cm/agents/</code>, <code>cm/tools/</code>, <code>cm/validator/</code></td>
+<td>AI runtime, governed tools, cite-or-cut and injection checks</td>
+<td>E, N, D</td>
+</tr>
+<tr>
+<td><code>cm/memory/</code>, <code>cm/rules/</code>, <code>cm/identity/</code></td>
+<td>Memory engine, reconciler rules, identity matching (mostly planned)</td>
+<td>C, D</td>
+</tr>
+<tr>
+<td><code>cm/sim/</code>, <code>cm/eval/</code>, <code>cm/rag/</code></td>
+<td>Simulator, evaluation, guideline retrieval (planned)</td>
+<td>B, J, K</td>
+</tr>
+<tr>
+<td><code>cm/jobs/</code></td>
+<td>Command-line jobs: migrate, seed, reminders, outbox drainer, invites, webhook setup</td>
+<td>A, B, F</td>
+</tr>
+<tr>
+<td><code>web/</code></td>
+<td>React doctor console, patient app, Supporter view</td>
+<td>H1, H2</td>
+</tr>
+<tr>
+<td><code>tests/</code></td>
+<td><code>unit/</code>, <code>integration/</code> (needs Postgres), <code>contract/</code>, <code>redteam/</code>, <code>replay/</code></td>
+<td>all</td>
+</tr>
+<tr>
+<td><code>infra/</code></td>
+<td>Numbered GCP scripts, Cloud Build, env files, local Postgres init</td>
+<td>I</td>
+</tr>
+<tr>
+<td><code>scripts/</code></td>
+<td>Banned-term scanner, ngrok and Telegram webhook helpers</td>
+<td>I, K</td>
+</tr>
+<tr>
+<td><code>openspec/</code></td>
+<td>Build-time memory: one archived change per feature or fix</td>
+<td>all</td>
+</tr>
+<tr>
+<td><code>docs/</code></td>
+<td>This page as HTML, design docs, diagrams, screenshots</td>
+<td>docs</td>
+</tr>
+</tbody>
+</table></div></section><section id="s9"><h2><span class="num">9</span>How to run</h2><p>Prerequisites: Python 3.11+, Docker, Node 20.19+, Git Bash on Windows. Every command below exists in this repo; the ones marked with a tick were run on 24 Oct 2026.</p>
+<pre><code class="language-bash">cp .env.example .env                      # fill values locally; never commit .env. Set DB_PORT=5433 if 5432 is taken
+python -m venv .venv &amp;&amp; source .venv/Scripts/activate    # macOS/Linux: .venv/bin/activate
+pip install -r requirements-dev.txt
+docker compose up -d db                   # Postgres 16 + pgvector on host port ${DB_PORT:-5432}   (ticked: running on 5433)
+python -m cm.jobs.migrate                 # applies cm/store/migrations 0001..
+python -m cm.jobs.seed --reset            # deterministic seed 42 (--small for 6 patients); writes demo logins to .env
+python -m uvicorn cm.api.main:app --port 8080            # (ticked: GET /healthz returns {&quot;status&quot;:&quot;ok&quot;})
+cd web &amp;&amp; npm ci &amp;&amp; npm run dev           # http://localhost:5173 (VITE_USE_MOCK=false uses the real API)
+</code></pre>
+<p>Tests:</p>
+<pre><code class="language-bash">python -m pytest -m &quot;not live and not slow and not docs&quot; -q   # (ticked) unit + integration; DB tests use database caremem_test
+cd web &amp;&amp; npx vitest run                                       # (ticked)
+python scripts/banned_terms.py                                 # (ticked) prints &quot;banned-terms: clean&quot;
+</code></pre>
+<p>Telegram locally (owner step, needs a bot token in <code>.env</code>): <code>ngrok http 8080</code>, then <code>python scripts/tg_set_webhook.py</code>, <code>python -m cm.jobs.make_invite --patient PT-0142</code>, send <code>/start CODE</code> to the bot, <code>python -m cm.jobs.reminders --now</code> and <code>python -m cm.jobs.outbox_drainer --once</code>. Full steps: <a href="../cm/channels/NOTES_integration.md">cm/channels/NOTES_integration.md</a>.</p>
+<p>The <code>Makefile</code> wraps the same steps (<code>make up migrate seed</code>, <code>make test</code>, <code>make check</code>) for Git Bash or WSL. GCP deployment scripts are in <code>infra/</code> (run in numeric order after <code>source infra/vars.sh</code>); they have not been run against a live project yet.</p></section><section id="s10"><h2><span class="num">10</span>Environment variables (names only)</h2><p>Never put values in the repo. Full list with placeholders: <a href="../.env.example">.env.example</a>.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Names</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Runtime</td>
+<td><code>CM_ENV</code>, <code>CM_ROLE</code>, <code>CM_DATA_CLASS</code>, <code>CM_OFFLINE</code>, <code>DEMO_MODE</code>, <code>TZ</code>, <code>LOG_LEVEL</code>, <code>PORT</code>, <code>TASKS_MODE</code></td>
+</tr>
+<tr>
+<td>Database</td>
+<td><code>DB_CONNECT_MODE</code>, <code>DB_HOST</code>, <code>DB_PORT</code>, <code>DB_NAME</code>, <code>DB_USER</code>, <code>DB_PASSWORD</code>, <code>DB_USER_APP</code>, <code>DB_PASSWORD_APP</code>, <code>CLOUD_SQL_INSTANCE</code>, <code>CM_TEST_DB_NAME</code></td>
+</tr>
+<tr>
+<td>LLM</td>
+<td><code>OPENAI_API_KEY</code>, <code>DEEPSEEK_API_KEY</code>, <code>ORCHESTRATOR_MODEL</code>, <code>WORKER_MODEL</code>, <code>JUDGE_MODEL</code>, <code>FALLBACK_MODEL</code>, <code>VISION_MODEL</code>, <code>EMBEDDING_MODEL</code>, <code>LLM_TIMEOUT_S</code></td>
+</tr>
+<tr>
+<td>AI budget</td>
+<td><code>CM_BUDGET_DAILY_USD</code>, <code>CM_BUDGET_TASK_USD</code>, <code>CM_BUDGET_PATIENT_TOKENS</code>, <code>CM_BUDGET_RESERVE_USD</code>, <code>CM_BUDGET_RESERVE_UNLOCKED</code>, <code>CM_MAX_TOOL_CALLS</code>, <code>CM_MAX_SUBAGENT_DEPTH</code>, <code>CM_PRICE_TABLE_JSON</code>, <code>DAILY_COST_CAP_USD</code></td>
+</tr>
+<tr>
+<td>&#9992;&#65039; Telegram</td>
+<td><code>TELEGRAM_BOT_TOKEN</code>, <code>TELEGRAM_WEBHOOK_SECRET</code>, <code>TELEGRAM_PER_CHAT_RPS</code>, <code>TELEGRAM_GLOBAL_RPS</code>, <code>INBOUND_PER_CHAT_PER_MIN</code>, <code>PUBLIC_BASE_URL</code>, <code>FASTPATH_MISSED_THRESHOLD</code></td>
+</tr>
+<tr>
+<td>Gmail / Calendar</td>
+<td><code>GMAIL_OAUTH_CLIENT_JSON</code>, <code>GMAIL_REFRESH_TOKEN</code>, <code>GMAIL_MAILBOX</code>, <code>DOCTOR_EMAIL_ALLOWLIST</code>, <code>GMAIL_PUBSUB_TOPIC</code>, <code>PUBSUB_PUSH_AUDIENCE</code>, <code>GOOGLE_CALENDAR_ID</code></td>
+</tr>
+<tr>
+<td>Security</td>
+<td><code>JWT_SIGNING_KEY</code>, <code>JWT_TTL_MIN</code>, <code>PII_MASTER_KEY</code>, <code>DEMO_USER_PASSWORDS</code>, <code>LOGIN_PER_IP_PER_MIN</code>, <code>CORS_ORIGINS</code>, <code>COOKIE_SECURE</code></td>
+</tr>
+<tr>
+<td>GCP</td>
+<td><code>GCP_PROJECT</code>, <code>GCP_REGION</code>, <code>GCS_DOCS_BUCKET</code>, <code>WORKER_URL</code>, <code>TASKS_QUEUE_AGENT_RUNS</code>, <code>TASKS_QUEUE_RESUMES</code>, <code>TASKS_QUEUE_OUTBOUND</code></td>
+</tr>
+<tr>
+<td>&#128421;&#65039; Web</td>
+<td><code>VITE_USE_MOCK</code>, <code>VITE_API_BASE</code> (see <code>web/.env.example</code>)</td>
+</tr>
+</tbody>
+</table></div></section><section id="s11"><h2><span class="num">11</span>Testing</h2><p>Counts below were measured on 24 Oct 2026 in this working tree (two other lanes were still adding code, so later runs may show more tests).</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Suite</th>
+<th>Command</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Python unit</td>
+<td><code>pytest tests/unit -m "not live and not slow and not docs"</code></td>
+<td><strong>165 passed</strong></td>
+</tr>
+<tr>
+<td>Python integration (real Postgres)</td>
+<td><code>pytest tests/integration</code></td>
+<td><strong>41 passed</strong></td>
+</tr>
+<tr>
+<td>Smoke</td>
+<td><code>pytest tests/test_smoke.py</code></td>
+<td>1 passed</td>
+</tr>
+<tr>
+<td>Whole quick suite</td>
+<td><code>pytest -m "not live and not slow and not docs"</code></td>
+<td><strong>207 passed</strong> in 17 s</td>
+</tr>
+<tr>
+<td>&#128421;&#65039; Web</td>
+<td><code>npx vitest run</code></td>
+<td><strong>14 passed</strong> (HTTP mapping)</td>
+</tr>
+<tr>
+<td>&#128221; Content</td>
+<td><code>python scripts/banned_terms.py</code></td>
+<td>clean</td>
+</tr>
+<tr>
+<td>API boot</td>
+<td><code>uvicorn cm.api.main:app</code>, <code>GET /healthz</code></td>
+<td><code>{"status":"ok"}</code>; <code>GET /patients</code> without login returns 401</td>
+</tr>
+</tbody>
+</table></div>
+<p>What the integration tests cover: the decision transaction and the outbox doctor gate (<code>test_decide.py</code>), repositories (<code>test_repos.py</code>), seed idempotency (<code>test_seed.py</code>), the API end to end with login (<code>test_e2e_api.py</code>) and the Telegram path against Postgres (<code>test_telegram_pg.py</code>). Not yet covered: live LLM calls (<code>@pytest.mark.live</code>), red-team prompts, replay cassettes and the 60-day evaluation.</p></section><section id="s12"><h2><span class="num">12</span>Evaluation mapping</h2><p>Organisers' latest weighting: <strong>Round 1 = 40%, Round 2 = 60%</strong> (the older 15/35/50 plan is kept in <a href="design/EVALUATION_PLAN.md">docs/design/EVALUATION_PLAN.md</a>). Round 2 rubric, raw maximum 50, scaled to 60:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Criterion (raw max)</th>
+<th>Share of 100</th>
+<th>What we show</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td>Idea and solution presentation, repo progress tracker</td>
+<td>40</td>
+<td>This README, diagrams, <a href="../TRACKER.md">TRACKER.md</a>, one commit per feature slice</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Functionality and working demo (15)</td>
+<td>18</td>
+<td>Doctor approves a patient request and the patient app shows "doctor approved"; a Telegram tap becomes an event and a Red draft; Ask box answers with citations</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Technical depth and code quality (10)</td>
+<td>12</td>
+<td>DB-level doctor gate, single <code>decide()</code> transaction, budget governor, PII tokeniser, cite-or-cut, frozen contracts, 220+ tests, OpenSpec log</td>
+</tr>
+<tr>
+<td>3</td>
+<td>UI/UX and usability (5)</td>
+<td>6</td>
+<td>Responsive console and patient app (360 px to 1440 px), Telugu toggle, large text, empty states, keyboard shortcuts</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Completeness vs proposed scope (5)</td>
+<td>6</td>
+<td>Section 4 and TRACKER.md: honest done / partial / planned against the problem statement's expected outputs</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Viability and deployment readiness (5)</td>
+<td>6</td>
+<td>Spend caps with RED template-only mode, consent model, no PII to LLMs, Docker image, GCP scripts, cost per patient</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Q&amp;A handling and team contribution (5)</td>
+<td>6</td>
+<td>Lane ownership (section 8), OpenSpec change per feature, design docs in <code>docs/design/</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td>Final presentation and demo delivery (5)</td>
+<td>6</td>
+<td>Ravi's Day 3 vs Day 60 story, rehearsed demo path</td>
+</tr>
+</tbody>
+</table></div></section><section id="s13"><h2><span class="num">13</span>Roadmap</h2><p><strong>Before the final round (next hours)</strong>
+1. Finish the AI runtime: orchestrator, narrator memory card, cite-or-cut, nightly job (change <code>add-ai-runtime</code>).
+2. Memory engine v1 and rules R1 to R6, so Memory Lens and the risk range come from real data.
+3. Live Telegram demo with the owner's bot; Gmail on the real API if time allows.
+4. Deploy to Cloud Run (scripts ready) with min instances 1; keep the local stack as the offline backup.</p>
+<p><strong>After the hackathon</strong>
+1. Pilot with one private clinic on synthetic-then-consented data, with a native-speaker review of every Telugu template.
+2. 60-day evaluation on held-out seeds with calibration plots; red-team suite for prompt injection.
+3. Move to an India-region provider with zero data retention before any real patient data (<code>CM_DATA_CLASS=real</code> already refuses DeepSeek).</p></section><section id="s14"><h2><span class="num">14</span>Team</h2><p><strong>The Sentience Circuit</strong>, JNTU Anantapur Innovators Conclave 2026.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Member</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Manobiram (Rammanobi)</td>
+<td>Product owner, architecture, integration</td>
+</tr>
+<tr>
+<td>Idris</td>
+<td>Team member</td>
+</tr>
+<tr>
+<td>Abhishek</td>
+<td>Team member</td>
+</tr>
+</tbody>
+</table></div>
+<p>Built with parallel AI coding agents, one lane each, coordinated through frozen contracts and OpenSpec; every lane's changes are logged under <a href="../openspec/changes/archive/">openspec/changes/archive/</a>.</p>
+<hr />
+<p><sub>CareMemory coordinates follow-up. It does not diagnose or give dosing advice; the doctor decides.</sub></p></section>
+</main>
+<footer><div class="wrap">CareMemory coordinates follow-up. It does not diagnose or give dosing advice; the doctor decides. All data shown is synthetic.</div></footer>
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs';
+mermaid.initialize({startOnLoad:false, theme:'base', securityLevel:'strict',
+  themeVariables:{fontFamily:'Segoe UI, Arial, sans-serif', fontSize:'15px', lineColor:'#475569', background:'#ffffff'},
+  flowchart:{htmlLabels:false, curve:'basis'}});
+let i = 0;
+for (const el of document.querySelectorAll('.mm')) {
+  try {
+    const { svg } = await mermaid.render('mmd' + (i++), el.dataset.src);
+    el.innerHTML = svg;
+    el.closest('figure').classList.add('rendered');
+  } catch (e) { el.remove(); }
+}
+</script>
+</body>
+</html>

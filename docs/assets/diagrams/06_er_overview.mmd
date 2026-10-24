@@ -1,0 +1,58 @@
+erDiagram
+  PERSONS ||--o| PATIENTS : "is"
+  PERSONS ||--o{ CHANNEL_BINDINGS : "opts in"
+  PERSONS ||--o{ CONSENTS : "grants"
+  PATIENTS ||--o{ EVENTS : "has"
+  PATIENTS ||--o{ APPROVALS : "drafts about"
+  APPROVALS ||--o| REVIEW_DECISIONS : "decided by"
+  APPROVALS ||--o{ OUTBOX : "authorises"
+  REVIEW_DECISIONS ||--o{ OUTBOX : "authorises"
+  TEMPLATES ||--o{ OUTBOX : "or approved template"
+  PATIENTS ||--o{ BELIEFS : "memory"
+  PATIENTS ||--o{ CONFLICTS : "memory"
+  PATIENTS ||--o{ RISK_SCORES : "memory"
+  TASK_RUNS ||--o{ APPROVALS : "pauses"
+
+  PERSONS {
+    uuid person_id PK
+    text role
+    text token "pseudonym, no names"
+  }
+  PATIENTS {
+    uuid patient_id PK
+    text phase
+    text status
+  }
+  EVENTS {
+    uuid event_id PK
+    text type
+    text source
+    timestamptz event_time
+    timestamptz recorded_at
+    text idempotency_key UK
+  }
+  APPROVALS {
+    uuid approval_id PK
+    text tier "red amber green"
+    text kind
+    jsonb evidence
+    text status
+  }
+  REVIEW_DECISIONS {
+    uuid decision_id PK
+    uuid approval_id FK
+    text action
+    text via "console gmail sweeper"
+  }
+  OUTBOX {
+    uuid outbox_id PK
+    uuid approval_id FK
+    uuid decision_id FK
+    uuid template_id FK
+    text dedup_key UK
+  }
+  TASK_RUNS {
+    text task_id PK
+    int attempt
+    numeric cost_usd
+  }

@@ -1,0 +1,57 @@
+flowchart TB
+  classDef opus fill:#F3E8FF,stroke:#7C3AED,color:#1F2933
+  classDef son fill:#E3EEF9,stroke:#2563EB,color:#1F2933
+  classDef hai fill:#E1F3E5,stroke:#15803D,color:#1F2933
+
+  subgraph FOUND["Foundation"]
+    L0["L0 Contracts and schema<br/>Opus, 4 h"]:::opus
+    A["A Data core: events, repos, clock<br/>Sonnet, 11 h"]:::son
+    I["I Infra, Docker, deploy scripts<br/>Haiku plus owner, 7.5 h"]:::hai
+  end
+
+  subgraph ENG["Engines"]
+    C["C Memory engine: features, beliefs, risk<br/>Sonnet, 12.5 h"]:::son
+    D["D Rules R1 to R6, validator, identity<br/>Sonnet, 9.5 h"]:::son
+    E["E Runtime, doctor gate, tools<br/>Sonnet, 10 h"]:::son
+    N["N Narrator and sub-agents<br/>Sonnet, 9 h"]:::son
+  end
+
+  subgraph CHAN["Channels and content"]
+    F["F Telegram, Supporter, router, household<br/>Sonnet, 16.5 h"]:::son
+    M["M Gmail, consent, calendar<br/>Sonnet, 11.5 h"]:::son
+    K["K Templates, mock feeds, guideline seed<br/>Haiku, 8.5 h"]:::hai
+  end
+
+  subgraph IFACE["Interfaces"]
+    G["G Core API and decide()<br/>Sonnet, 12.5 h"]:::son
+    B["B Mock world generator, console backend<br/>Sonnet, 12.5 h"]:::son
+    H1["H1 Doctor console, queue, Lens<br/>Sonnet, 19.5 h"]:::son
+    H2["H2 District, demo, admin screens<br/>Haiku, 14 h"]:::hai
+  end
+
+  subgraph QUAL["Quality"]
+    J["J Evaluation, replay, offline demo<br/>Haiku, 10.5 h"]:::hai
+    INT["Integration: merges and tests<br/>Opus, 8 plus h"]:::opus
+  end
+
+  L0 --> A
+  L0 --> G
+  L0 --> H1
+  A --> C
+  A --> E
+  A --> B
+  C --> N
+  D --> N
+  D --> E
+  G --> H1
+  H1 --> H2
+  B --> J
+  C --> J
+  A --> F
+  A --> M
+  F --> INT
+  M --> INT
+  N --> INT
+  E --> INT
+  H1 --> INT
+  J --> INT

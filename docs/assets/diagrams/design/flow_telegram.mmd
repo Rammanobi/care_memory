@@ -1,0 +1,28 @@
+flowchart LR
+  classDef lc fill:#DCFCE7,stroke:#15803D,stroke-width:2.5px,color:#14301F
+  classDef lg fill:#DBEAFE,stroke:#1D4ED8,stroke-width:2.5px,color:#10244F
+  classDef da fill:#EDE9FE,stroke:#7C3AED,stroke-width:2.5px,color:#2E1065
+  classDef py fill:#CCFBF1,stroke:#0F766E,stroke-width:2.5px,color:#0B3B36
+  classDef gc fill:#F3F4F6,stroke:#6B7280,stroke-width:2.5px,color:#1F2933
+  classDef hu fill:#FEF3C7,stroke:#D97706,stroke-width:2.5px,color:#451A03
+
+  subgraph I["A · A TAP COMES IN"]
+    direction LR
+    T1["1 · RAVI TAPS MISSED<br/>on the daily check-in<br/>(Supporter can tap for him)"]:::hu
+    T2["2 · TELEGRAM CALLS US<br/>the webhook, with a<br/>secret-token header"]:::gc
+    T3["3 · CHECK AND SAVE<br/>Plain Python: verify, save the<br/>dose event now, reply in 1 s"]:::py
+    T4["4 · QUEUE A TASK<br/>named tg-update_id so a<br/>repeat is ignored"]:::gc
+    T5["5 · FAST PATH<br/>Plain Python: rules for<br/>misses and red symptoms"]:::py
+    T6["6 · PATTERN FOUND?<br/>hand over to the AI path<br/>(shared core below)"]:::lg
+    T1 --> T2 --> T3 --> T4 --> T5 --> T6
+  end
+
+  subgraph O["B · A REMINDER GOES OUT"]
+    direction LR
+    R1["1 · SCHEDULER FIRES<br/>Cloud Scheduler calls<br/>the worker at 07:50"]:::gc
+    R2["2 · PICK THE MESSAGE<br/>approved template, consent<br/>check, quiet hours, no TB word"]:::py
+    R3["3 · OUTBOX ROW<br/>routine check-ins need no<br/>doctor approval, dedup_key set"]:::py
+    R4["4 · DRAINER SENDS<br/>Telegram Bot API, 1 message<br/>a second per chat"]:::py
+    R5["5 · PROMPT RECORDED<br/>so a missing reply can<br/>be measured later"]:::py
+    R1 --> R2 --> R3 --> R4 --> R5
+  end

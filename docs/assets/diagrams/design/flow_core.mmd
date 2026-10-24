@@ -1,0 +1,18 @@
+flowchart LR
+  classDef lc fill:#DCFCE7,stroke:#15803D,stroke-width:2.5px,color:#14301F
+  classDef lg fill:#DBEAFE,stroke:#1D4ED8,stroke-width:2.5px,color:#10244F
+  classDef da fill:#EDE9FE,stroke:#7C3AED,stroke-width:2.5px,color:#2E1065
+  classDef py fill:#CCFBF1,stroke:#0F766E,stroke-width:2.5px,color:#0B3B36
+  classDef gc fill:#F3F4F6,stroke:#6B7280,stroke-width:2.5px,color:#1F2933
+  classDef hu fill:#FEF3C7,stroke:#D97706,stroke-width:2.5px,color:#451A03
+
+  K1["1 · EVENT SAVED<br/>append-only log with<br/>two timestamps"]:::gc
+  K2["2 · MEMORY REBUILT<br/>Plain Python features, beliefs,<br/>risk, rules R1 to R6"]:::py
+  K3["3 · ORCHESTRATOR PLANS<br/>DEEP AGENTS plans and calls<br/>sub-agents inside a LANGGRAPH run"]:::da
+  K4["4 · NARRATOR DRAFTS<br/>LANGCHAIN model and Pydantic<br/>writes the cited card"]:::lc
+  K5["5 · CITE-OR-CUT<br/>Plain Python validator<br/>cuts uncited sentences"]:::py
+  K6["6 · DOCTOR GATE PAUSES<br/>LANGGRAPH interrupt(),<br/>approvals row saved"]:::lg
+  K7["7 · DOCTOR DECIDES<br/>decide(): decision and<br/>outbox rows together"]:::py
+  K8["8 · OUTBOX DRAINER SENDS<br/>approved messages only:<br/>Telegram, Gmail, Calendar"]:::py
+  K9["9 · PEOPLE ANSWER<br/>Supporter or patient replies:<br/>a new event, so it loops"]:::hu
+  K1 --> K2 --> K3 --> K4 --> K5 --> K6 --> K7 --> K8 --> K9

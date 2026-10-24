@@ -1,0 +1,72 @@
+flowchart LR
+  classDef lc fill:#DCFCE7,stroke:#15803D,stroke-width:2.5px,color:#14301F
+  classDef lg fill:#DBEAFE,stroke:#1D4ED8,stroke-width:2.5px,color:#10244F
+  classDef da fill:#EDE9FE,stroke:#7C3AED,stroke-width:2.5px,color:#2E1065
+  classDef py fill:#CCFBF1,stroke:#0F766E,stroke-width:2.5px,color:#0B3B36
+  classDef gc fill:#F3F4F6,stroke:#6B7280,stroke-width:2.5px,color:#1F2933
+  classDef hu fill:#FEF3C7,stroke:#D97706,stroke-width:2.5px,color:#451A03
+  classDef llm fill:#FCE7F3,stroke:#BE185D,stroke-width:2.5px,color:#500724
+
+  subgraph A["1 · INTAKE (cm-api, Cloud Run)"]
+    direction TB
+    S1["STEP 1 · EVENT ARRIVES<br/>Telegram tap, Gmail reply,<br/>chemist CSV, lab file"]:::hu
+    S2["STEP 2 · CHECK AND SAVE<br/>FastAPI: verify the secret, save the<br/>event, answer in under 1 s"]:::py
+    S3["STEP 3 · QUEUE A TASK<br/>Cloud Tasks: name = task_id,<br/>so duplicates are ignored"]:::gc
+    S1 --> S2 --> S3
+  end
+
+  subgraph B["2 · AI WORK (cm-worker, Cloud Run)"]
+    direction TB
+    S4["STEP 4 · dispatch()<br/>Plain Python: taps and red symptoms<br/>take the fast path, no LLM"]:::py
+    S5["STEP 5 · START A GRAPH RUN<br/>LANGGRAPH: thread_id, PostgresSaver<br/>saves state at every step"]:::lg
+    S6["STEP 6 · PLAN AND DELEGATE<br/>DEEP AGENTS: orchestrator,<br/>write_todos, task tool"]:::da
+    S7["STEP 7 · READ AND DRAFT<br/>LANGCHAIN: init_chat_model and<br/>structured output into Pydantic"]:::lc
+    S8["STEP 8 · CALL GOVERNED TOOLS<br/>LANGCHAIN tools, read-only<br/>by default"]:::lc
+    S9["STEP 9 · ENGINES DECIDE<br/>Plain Python: rules R1 to R6,<br/>detectors, risk, identity (no LLM)"]:::py
+    S10["STEP 10 · CHECK THE DRAFT<br/>Plain Python cite-or-cut validator<br/>cuts uncited sentences"]:::py
+    S4 --> S5 --> S6 --> S7 --> S8 --> S9 --> S10
+  end
+
+  subgraph C["3 · DOCTOR GATE"]
+    direction TB
+    S11["STEP 11 · PAUSE FOR THE DOCTOR<br/>LANGGRAPH interrupt(), set by Deep<br/>Agents interrupt_on. approvals row saved"]:::lg
+    S12["STEP 12 · DOCTOR DECIDES<br/>Console or Gmail reply. decide() writes<br/>decision and outbox rows together"]:::py
+    S13["STEP 13 · RESUME THE SAME THREAD<br/>LANGGRAPH Command(resume=...)<br/>continues the agent"]:::lg
+    S11 --> S12 --> S13
+  end
+
+  subgraph D["4 · SEND AND LEARN"]
+    direction TB
+    S14["STEP 14 · SEND APPROVED ONLY<br/>Outbox drainer: Telegram,<br/>Gmail, Calendar"]:::py
+    S15["STEP 15 · PEOPLE ANSWER<br/>Supporter taps Witnessed, patient<br/>replies: a new event, back to step 1"]:::hu
+    S14 --> S15
+  end
+
+  subgraph E["5 · BACKGROUND JOBS (Cloud Run Jobs)"]
+    direction TB
+    J1["NIGHTLY · REBUILD MEMORY<br/>LANGGRAPH graph with plain-Python<br/>engines, no LLM"]:::lg
+    J2["EVERY 5 MIN · SWEEPER<br/>Plain Python: re-run stuck tasks,<br/>escalate late approvals"]:::py
+  end
+
+  LLM["OpenAI or DeepSeek<br/>(model provider)"]:::llm
+  STORE["CLOUD SQL POSTGRES 16 + pgvector<br/>event log · features, beliefs, memory cards · approvals<br/>outbox · LangGraph checkpoints and Store · task_runs · vectors"]:::gc
+
+  A ==>|"queued task starts the worker"| B
+  B ==>|"draft ready for review"| C
+  C ==>|"approved"| D
+  D -.->|"new event"| A
+  C -.->|"resume the same thread"| B
+  E -.->|"starts the AI path"| B
+  B -.->|"model calls"| LLM
+  A -.->|"events"| STORE
+  B -.->|"state, memory, checkpoints"| STORE
+  C -.->|"approvals, outbox"| STORE
+
+  subgraph TOOLS["WHAT EACH FRAMEWORK GIVES US, AND WHERE IT IS USED"]
+    direction LR
+    T1["LANGCHAIN (green)<br/>init_chat_model: OpenAI or DeepSeek<br/>structured output into Pydantic<br/>governed tools · model fallback<br/>PII guard · embeddings, text splitters<br/>LangSmith tracing<br/>USED IN STEPS 7 AND 8"]:::lc
+    T2["LANGGRAPH (blue)<br/>graph runtime · PostgresSaver<br/>PostgresStore · interrupt and resume<br/>RetryPolicy and error_handler<br/>task for safe side effects<br/>own graphs: narrator, review, nightly<br/>USED IN STEPS 5, 11, 13 AND NIGHTLY"]:::lg
+    T3["DEEP AGENTS (purple)<br/>create_deep_agent orchestrator<br/>write_todos planning<br/>task tool for sub-agents<br/>virtual files /memories per patient<br/>interrupt_on for the doctor gate<br/>USED IN STEPS 6 AND 11"]:::da
+    T4["PLAIN PYTHON (teal), NO FRAMEWORK<br/>all the deciding: rules, detectors,<br/>risk, identity, validator, decide()<br/>outbox drainer, FastAPI, Telegram, Gmail<br/>USED IN STEPS 2, 4, 9, 10, 12, 14"]:::py
+  end
+  B ~~~ TOOLS

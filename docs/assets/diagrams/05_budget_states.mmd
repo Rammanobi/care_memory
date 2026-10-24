@@ -1,0 +1,14 @@
+stateDiagram-v2
+  [*] --> GREEN
+  GREEN: GREEN (under 70% of daily cap) all models allowed
+  AMBER: AMBER (70 to 90%) cheaper model, optional sub-agents skipped
+  RED: RED (over 90% or HTTP 402) template-only mode
+  GREEN --> AMBER: spend reaches 70%
+  AMBER --> RED: spend over 90%
+  GREEN --> RED: provider spend-cap error
+  AMBER --> GREEN: new day or cap raised
+  RED --> GREEN: new day or top-up
+  note right of RED
+    Rules and approved templates still work.
+    The demo reserve stays locked.
+  end note

@@ -1,0 +1,36 @@
+flowchart TB
+  classDef det fill:#E6F2F0,stroke:#0F766E,color:#1F2933
+  classDef ai fill:#EDE7F6,stroke:#7C3AED,color:#1F2933
+  classDef human fill:#FDF1D6,stroke:#B45309,color:#1F2933
+
+  IN["Task arrives<br/>tap, email, nightly run, Ask box"] --> DISP{"dispatch()"}
+  DISP -->|"button tap, red symptom,<br/>known CSV"| FAST["Plain-code fast path<br/>no LLM"]:::det
+  DISP -->|"everything else"| ORCH["Deep Agents orchestrator<br/>ORCHESTRATOR model, write_todos"]:::ai
+
+  subgraph SUBS["Sub-agents"]
+    INT["intake<br/>parse free text"]:::ai
+    IDN["identity<br/>match patient"]:::det
+    CUR["memory curator"]:::ai
+    INV["investigator<br/>ORCHESTRATOR model"]:::ai
+    NAR["narrator<br/>ORCHESTRATOR model"]:::ai
+    DRA["drafter<br/>patient, Supporter, doctor"]:::ai
+  end
+
+  ORCH --> INT
+  ORCH --> IDN
+  ORCH --> CUR
+  ORCH --> INV
+  ORCH --> NAR
+  ORCH --> DRA
+
+  TOOLS["Governed tools, read-only by default<br/>as_of reads, detectors, rules R1-R6"]:::det
+  CUR --> TOOLS
+  INV --> TOOLS
+  NAR --> VAL["Cite-or-cut validator<br/>number check, uncited sentences cut"]:::det
+  DRA --> VAL
+  VAL --> SUB["submit_for_review"]:::human
+  SUB --> INTR["LangGraph interrupt()<br/>thread paused, state in Postgres"]:::human
+  INTR --> APR["approvals row<br/>doctor decides"]:::human
+  APR --> DEC["decide()<br/>decision + outbox rows, one transaction"]:::det
+  DEC -->|"resume with Command"| ORCH
+  FAST --> APR

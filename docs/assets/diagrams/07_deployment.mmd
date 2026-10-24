@@ -1,0 +1,32 @@
+flowchart LR
+  classDef built fill:#E6F2F0,stroke:#0F766E,color:#1F2933
+  classDef planned fill:#F1F5F9,stroke:#94A3B8,color:#475569,stroke-dasharray:5 4
+
+  subgraph LOCAL["Today: local demo"]
+    L1["docker compose db<br/>pgvector/pg16, host port 5433"]:::built
+    L2["uvicorn cm.api.main:app<br/>port 8080, TASKS_MODE=local"]:::built
+    L3["Vite dev server<br/>port 5173"]:::built
+    L4["ngrok tunnel for<br/>Telegram webhook"]:::built
+    L3 --> L2 --> L1
+    L4 --> L2
+  end
+
+  subgraph GCP["Target: GCP asia-south1 (planned)"]
+    G1["Cloud Run cm-api"]:::planned
+    G2["Cloud Run cm-worker"]:::planned
+    G3["Cloud Run Jobs<br/>migrate, seed, nightly, sweeper"]:::planned
+    G4[("Cloud SQL Postgres 16<br/>+ pgvector")]:::planned
+    G5["Cloud Tasks<br/>agent-runs, resumes, outbound"]:::planned
+    G6["Pub/Sub Gmail push"]:::planned
+    G7["Secret Manager"]:::planned
+    G8["Cloud Scheduler"]:::planned
+    G1 --> G4
+    G2 --> G4
+    G1 --> G5 --> G2
+    G6 --> G1
+    G8 --> G3 --> G4
+    G7 -.-> G1
+    G7 -.-> G2
+  end
+
+  LOCAL -. "infra/00..80 scripts + cloudbuild.yaml" .-> GCP

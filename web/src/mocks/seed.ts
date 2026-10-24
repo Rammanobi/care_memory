@@ -148,6 +148,20 @@ export function makeSeed(): CareState {
     rq("rq-7", "PT-0322", "Reminder time", "Please move my reminder to 8 pm.", "2 days ago", "Your reminder is now 8 pm.", "approved", 0, ["E-0409"]),
     rq("rq-8", "PT-0310", "Other", "Can I skip this week?", "2 days ago", "Please call the clinic so we can talk about it.", "declined", 0),
     rq("rq-9", "PT-0345", "Other", "Where is the lab?", "3 days ago", "The lab is on the ground floor, next to the pharmacy.", "approved", 0),
+    // Patient questions with research (add-doctor-question-ui): ready, pending and failed, so the screen can be demoed offline.
+    rq("rq-q1", "PT-0213", "Question", "Can I take my tablets together with paracetamol for my headache?", "today 09:30", "Thank you for asking. Please do not add anything new on your own. A nurse will call you today and tell you what is safe.", "waiting", 90, [], {
+      origin: { channel: "telegram", excerpt: "Can I take my tablets together with paracetamol for my headache?" },
+      research: { status: "ready", category: "medicine", priority: "high", confidence: "medium", model: "sample", costUsd: 0.0021, suggestedReply: "Thank you for asking. Please do not add anything new on your own. A nurse will call you today and tell you what is safe.",
+        brief: [{ text: "The patient reported a headache twice this week.", refs: ["E-0431"] }, { text: "No missed doses in the last 7 days.", refs: ["B-0104"] }, { text: "No medicine change is on record since the last visit.", refs: [] }] },
+    }),
+    rq("rq-q2", "PT-0142", "Question", "Which foods should I eat to get stronger?", "today 09:41", "", "waiting", 200, [], {
+      origin: { channel: "portal", excerpt: "Which foods should I eat to get stronger?" },
+      research: { status: "pending", category: "food", priority: "normal", brief: [], suggestedReply: "" },
+    }),
+    rq("rq-q3", "PT-0254", "Question", "I have a bad cough with blood since last night and I feel very weak.", "today 09:48", "Please go to the nearest clinic or call the emergency number now. A nurse will also call you.", "waiting", 20, [], {
+      origin: { channel: "telegram", excerpt: "I have a bad cough with blood since last night and I feel very weak." },
+      research: { status: "failed", category: "symptom", priority: "urgent", brief: [], suggestedReply: "Please go to the nearest clinic or call the emergency number now. A nurse will also call you.", reason: "the record search timed out" },
+    }),
     rq("rq-0", "PT-0142", "Reminder time", "Can you remind me at 7 pm?", "last week", "Reminder now 7 pm", "approved", 0, [], { archived: true }),
   ];
 

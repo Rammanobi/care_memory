@@ -51,7 +51,7 @@ export function applyAction(s: CareState, a: Action): CareState {
 }
 
 function decide(s: CareState, key: "requests" | "approvals", ids: string[], decision: "approved" | "declined", text?: string): CareState {
-  const list = s[key] as { id: string; patientCode: string; status: string; draft: string; title?: string; kind?: string }[];
+  const list = s[key] as { id: string; patientCode: string; status: string; draft: string; title?: string; kind?: string; origin?: { channel: string } }[];
   const hit = list.filter((x) => ids.includes(x.id) && x.status === "waiting");
   if (hit.length === 0) return s;
   const at = `today ${clock()}`;
@@ -67,7 +67,7 @@ function decide(s: CareState, key: "requests" | "approvals", ids: string[], deci
     const edited = body !== x.draft;
     const version = edited ? 2 : 1;
     if (decision === "approved") {
-      messages.unshift({ id: `m-${x.id}-${Date.now()}`, srcId: x.id, code: x.patientCode, at, channel: key === "requests" ? "Patient app" : "Telegram", text: body, approvedBy: ACTOR, version, status: "sent" });
+      messages.unshift({ id: `m-${x.id}-${Date.now()}`, srcId: x.id, code: x.patientCode, at, channel: x.origin ? (x.origin.channel === "telegram" ? "Telegram" : "Patient app") : key === "requests" ? "Patient app" : "Telegram", text: body, approvedBy: ACTOR, version, status: "sent" });
     }
     audit.unshift({ id: `au-${x.id}-${Date.now()}`, code: x.patientCode, at, actor: ACTOR, action: decision === "declined" ? "Declined draft" : edited ? "Edited then approved" : "Approved draft", srcId: x.id, version, note: x.title ?? x.kind });
   });

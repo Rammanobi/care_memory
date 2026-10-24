@@ -7,6 +7,8 @@ import type { Action, CareState } from "./types";
 interface Ctx {
   state: CareState | null; // null while loading
   dispatch: (a: Action) => void;
+  /** Like dispatch but no optimistic change and no generic toast: resolves when the server accepted, rejects with the server's error. */
+  dispatchAsync: (a: Action) => Promise<void>;
   reset: () => void;
   loadDetail: (id: string) => void;
 }
@@ -80,6 +82,10 @@ export function CareProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const dispatchAsync = useCallback(async (a: Action) => {
+    setState(await api.dispatch(a));
+  }, []);
+
   const reset = useCallback(() => {
     api.reset().then(setState).catch(() => undefined);
   }, []);
@@ -88,7 +94,7 @@ export function CareProvider({ children }: { children: ReactNode }) {
     api.loadDetail?.(id).then(setState).catch(() => undefined);
   }, []);
 
-  const value = useMemo(() => ({ state, dispatch, reset, loadDetail }), [state, dispatch, reset, loadDetail]);
+  const value = useMemo(() => ({ state, dispatch, dispatchAsync, reset, loadDetail }), [state, dispatch, dispatchAsync, reset, loadDetail]);
   return (
     <CareCtx.Provider value={value}>
       <Banner onRetry={refetch} loadErrors={state?.loadErrors} />

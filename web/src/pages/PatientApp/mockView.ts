@@ -4,6 +4,7 @@ import type { Action, CareState } from "../../api/types";
 import { setExtras, type Extras } from "../../api/patientExtras";
 import { patientProfile as P } from "../../mocks/data";
 import { HISTORY60, MESSAGES, MISS_REASON, PAST, PAST_REQUESTS, SUPPORTER, UPCOMING, lastDays } from "./sampleData";
+import { excerpt } from "../../api/questions";
 import { idxDate, type PView } from "./portalTypes";
 
 export function buildMockView(state: CareState | null | undefined, ex: Extras, dispatch: (a: Action) => unknown): PView {
@@ -11,11 +12,13 @@ export function buildMockView(state: CareState | null | undefined, ex: Extras, d
   const mine = (state?.requests ?? []).filter((r) => r.patientCode === P.code);
   const approved = [...ex.remReqs].reverse().find((rr) => mine.some((r) => r.id === rr.id && r.status === "approved"));
   const pending = ex.remReqs.find((rr) => mine.some((r) => r.id === rr.id && r.status === "waiting"));
+  // answered questions appear in Messages as replies, threaded under the question they answer
+  const answers = mine.filter((r) => r.status === "approved" && r.reply && r.origin).map((r) => ({ id: `ans-${r.id}`, daysAgo: 0, title: "Reply from your doctor", text: r.reply ?? "", inReplyTo: { excerpt: excerpt(r.text) } }));
   return {
     live: false, empty: ex.empty, name: P.name, code: P.code, clinic: P.clinic, day: 60, supporter: SUPPORTER,
     history60: HISTORY60, recordReady: true, reasonAt: (i) => MISS_REASON[i], dateAt: idxDate,
     streak: P.streak + (today === "taken" ? 1 : 0),
-    messages: ex.empty ? [] : MESSAGES,
+    messages: ex.empty ? [] : [...answers, ...MESSAGES],
     isRead: (id) => ex.read.includes(id),
     markRead: (id) => { if (!ex.read.includes(id)) setExtras({ read: [...ex.read, id] }); },
     upcoming: UPCOMING, past: PAST, nextVisitText: UPCOMING[0].when,

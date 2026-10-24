@@ -26,6 +26,23 @@ export interface Patient {
 
 export type Decision = "waiting" | "approved" | "declined";
 
+/** A patient question (Telegram or app): what the research step prepared for the doctor. Doctor side only, never shown to patients. */
+export type QCategory = "medicine" | "food" | "symptom" | "visit" | "admin" | "other";
+export type QPriority = "normal" | "high" | "urgent";
+export interface ResearchItem { text: string; refs: string[] }
+export interface Research {
+  status: "pending" | "ready" | "failed";
+  category: QCategory;
+  priority: QPriority;
+  brief: ResearchItem[];
+  suggestedReply: string;
+  confidence?: "low" | "medium" | "high";
+  model?: string;
+  costUsd?: number;
+  reason?: string;
+}
+export interface Origin { channel: "telegram" | "portal"; excerpt: string }
+
 export interface PatientRequest {
   id: string;
   patientCode: string;
@@ -39,6 +56,8 @@ export interface PatientRequest {
   createdAt?: number; // epoch ms
   dueMin?: number; // review deadline, minutes after the seed time (or createdAt)
   refs?: string[]; // evidence ids behind the draft
+  research?: Research; // doctor side: patient questions only
+  origin?: Origin;
 }
 
 export interface Approval {
@@ -52,6 +71,8 @@ export interface Approval {
   dueMin?: number; // minutes after the seed time
   refs?: string[];
   why?: string; // one plain line: why the assistant wrote this
+  research?: Research;
+  origin?: Origin;
 }
 
 export interface Dose {
@@ -122,7 +143,7 @@ export interface Settings { notifyRed: boolean; notifyRequests: boolean; digest:
 
 /** Patient or Supporter data read from /portal/*. Absent in mock mode (the screens then use the mock data, see pages/PatientApp/mockView.ts). */
 export interface PortalAppt { id: string; kind: "visit" | "lab"; title: string; when: string; place: string; note?: string }
-export interface PortalMsg { id: string; title: string; text: string; at: string; read: boolean; forSupporter: boolean }
+export interface PortalMsg { id: string; title: string; text: string; at: string; read: boolean; forSupporter: boolean; inReplyTo?: { approvalId: string; excerpt: string } }
 export interface PortalDoc { id: string; title: string; kind: string; date: string; summary: string }
 export interface PortalMed { id: string; label: string; when: string; note: string | null }
 export interface PortalSlice {

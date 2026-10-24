@@ -8,7 +8,7 @@ export const dayDate = (daysAgo: number) => { const d = new Date(); d.setHours(1
 /** index 0..59 (59 = today) to Date */
 export const idxDate = (i: number) => dayDate(TOTAL_DAYS - 1 - i);
 
-export interface Msg { id: string; daysAgo: number; title: string; text: string; forSupporter?: boolean; date?: Date }
+export interface Msg { id: string; daysAgo: number; title: string; text: string; forSupporter?: boolean; date?: Date; inReplyTo?: { excerpt: string } }
 export interface Appt { id: string; kind: "visit" | "lab"; title: string; when: string; place: string; daysAgo?: number; note?: string }
 export type ReqState = "waiting" | "approved" | "declined";
 export interface PastReq { id: string; text: string; when: string; status: ReqState; reply?: string }

@@ -128,3 +128,48 @@
 .doc button.ev.rc.unk{background:#fff;color:var(--mute);border-style:dashed}
 .doc .abstain{background:#F3F5F6;border:1px solid var(--line);border-left:4px solid var(--mute);border-radius:10px;padding:12px 14px;margin:8px 0;display:grid;gap:2px;color:var(--ink)}
 @media (max-width:720px){.doc button.ev.rc{min-height:40px;padding:0 10px}}
+
+/* ---- patient questions (add-doctor-question-ui) ---- */
+.doc .qhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:8px}
+.doc .qhead .sla{margin-left:0}
+.doc .qwhen{margin-left:auto}
+.doc .qcode{font-weight:700;margin-right:4px}
+.doc .qchip{display:inline-flex;align-items:center;border-radius:999px;border:1px solid var(--line);background:#fff;padding:2px 10px;font-size:12px;font-weight:700;color:var(--mute);min-height:22px}
+.doc .qchip.ch-telegram{background:#E8F4FD;color:#0B5A8C;border-color:#b9daf0}
+.doc .qchip.ch-portal{background:var(--tealbg,#E6F4F1);color:var(--teal)}
+.doc .qchip.pr-high{background:var(--safbg);color:#92580A;border-color:#f0d19a}
+.doc .qchip.pr-urgent{background:var(--redbg);color:var(--red);border-color:#efc2c2}
+.doc .qcard.urgent{border-color:var(--red)}
+.doc .qcard.qfocus{box-shadow:0 0 0 3px var(--blue)}
+.doc .qres{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0 10px}
+.doc .qres h4{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);margin:0 0 6px;display:flex;align-items:center;gap:8px}
+.doc .qconf{text-transform:none;letter-spacing:0;border-radius:999px;padding:1px 9px;font-size:12px;background:var(--safbg);color:#92580A}
+.doc .qconf.c-high{background:var(--grnbg);color:var(--green)}
+.doc .qbrief{margin:0 0 6px 18px;padding:0}.doc .qbrief li{margin-bottom:4px;overflow-wrap:anywhere}
+.doc .qnote{font-weight:600;font-size:13px;margin:4px 0 0}
+.doc .qfail{background:var(--safbg);color:#6B4400;border-radius:8px;padding:8px 10px;margin:0}
+.doc .qmeta{font-size:12px;color:var(--mute);margin-top:4px}
+.doc .skel-line{height:12px;border-radius:6px;margin:6px 0;background:linear-gradient(90deg,#e6ecf0 25%,#f3f6f8 50%,#e6ecf0 75%);background-size:200% 100%;animation:qsk 1.4s linear infinite}
+.doc .skel-line.short{width:60%}
+@keyframes qsk{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.doc .skel-line{animation:none}}
+.doc .qlabel{display:block;font-weight:700;font-size:13px;margin:6px 0 4px}
+.doc .qbox{width:100%;min-height:96px;resize:vertical;font:inherit}
+.doc .qhelp{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;font-size:12px;color:var(--mute);margin:4px 0}
+.doc .qwarn{color:#92580A;font-weight:600;font-size:13px;margin:4px 0}
+.doc .qerr{background:var(--redbg);color:var(--red);border-radius:8px;padding:8px 10px;margin:6px 0;font-size:14px}
+.doc .qhint{margin-top:6px}
+.doc .qsound{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);margin-left:auto;min-height:40px}
+.doc .qcard .btns .btn{min-height:40px}
+.qtoasts{position:fixed;top:64px;right:16px;z-index:80;display:flex;flex-direction:column;gap:8px;width:min(360px,calc(100vw - 32px))}
+.qtoast{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line,#d8e0e6);border-left:6px solid var(--blue,#2563c9);border-radius:12px;padding:10px 12px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.qtoast.high{border-left-color:#d58a1f}
+.qtoast.urgent{border-left-color:#b3261e;background:#FFF5F4}
+.qtoast .qt-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.qtoast .qt-chips{display:flex;gap:6px;flex-wrap:wrap}
+.qtoast .qchip{display:inline-flex;border-radius:999px;border:1px solid #d8e0e6;padding:1px 9px;font-size:12px;font-weight:700;color:#4a5b66;background:#fff}
+.qtoast .qchip.pr-high{background:#FFF1D6;color:#92580A}.qtoast .qchip.pr-urgent{background:#FBE4E2;color:#b3261e}
+.qtoast button{min-height:40px;min-width:40px;border-radius:8px;border:2px solid #1f2937;background:transparent;font:700 14px "Segoe UI",Arial,sans-serif;cursor:pointer;padding:0 12px}
+.qtoast .qt-open{background:#1f2937;color:#fff}
+.qtoast .qt-x{border-color:transparent;font-size:16px}
+@media (max-width:760px){.qtoasts{top:56px;right:8px;left:8px;width:auto}}

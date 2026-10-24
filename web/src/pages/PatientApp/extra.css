@@ -62,3 +62,7 @@
  .pat .card{break-inside:avoid;border:1px solid #999}.pat .printonly{display:block}
  .pat .cal .o,.pat .cal .m,.pat .cal .f{print-color-adjust:exact;-webkit-print-color-adjust:exact}
 }
+.pat .inrep{font-size:13.5px;color:var(--mute);font-style:italic;overflow-wrap:anywhere;margin-top:4px}
+.pat .inrep.thread{border-left:3px solid var(--line);padding-left:10px;margin:6px 0 8px}
+.pat .item .tx .inrep{border-left:3px solid var(--line);padding-left:8px;margin:0 0 4px}
+.pat .btn.ghost{min-height:44px}

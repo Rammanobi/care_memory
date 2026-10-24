@@ -7,6 +7,7 @@ import { useLang, type Key } from "../../components/i18n";
 import { Icon } from "../../components/ui";
 import { USE_MOCK } from "../../api";
 import { type ReqState } from "./portalTypes";
+import { excerpt } from "../../api/questions";
 
 export const ME = patientProfile.code;
 
@@ -127,16 +128,25 @@ function Steps({ status }: { status: PatientRequest["status"] }) {
 export function StatusChip({ s }: { s: ReqState }) {
   const { t } = useLang();
   // text label plus symbol, never colour alone
-  return s === "waiting" ? <span className="badge w">◔ {t("stWait")}</span> : s === "approved" ? <span className="badge a">✓ {t("stAns")}</span> : <span className="badge c">☎ {t("stCall")}</span>;
+  return s === "waiting" ? <span className="badge w">◔ {t("waiting")}</span> : s === "approved" ? <span className="badge a">✓ {t("docReplied")}</span> : <span className="badge c">☎ {t("stCall")}</span>;
 }
 
 export function RequestList({ limit }: { limit?: number }) {
   const { t } = useLang();
+  const { state } = useCare();
   const mine = useMyRequests();
   const v = usePortal();
   const live = mine.filter((r) => !r.archived).map((r) => ({ id: r.id, text: r.text, when: r.when, status: r.status as ReqState, reply: r.reply, live: true }));
   const all = v.empty ? [] : [...live, ...v.pastRequests.map((r) => ({ ...r, live: false }))];
   const shown = limit ? all.slice(0, limit) : all;
+  if (shown.length === 0 && state?.loadErrors?.includes("requests")) {
+    return (
+      <div className="empty" role="alert" style={{ padding: 16 }}>
+        <b>{t("qLoadErr")}</b>{t("qLoadErrS")}
+        <div><button type="button" className="btn ghost" style={{ marginTop: 8 }} onClick={() => window.dispatchEvent(new Event("cm-session"))}>{t("tryAgain")}</button></div>
+      </div>
+    );
+  }
   if (shown.length === 0) return <div className="empty" style={{ padding: 16 }}><b>{t("noReq")}</b></div>;
   return (
     <div aria-live="polite">
@@ -144,8 +154,9 @@ export function RequestList({ limit }: { limit?: number }) {
         <div key={r.id} className={r.status === "waiting" ? "wait" : r.status === "approved" ? "ok" : "no"} style={{ overflowWrap: "anywhere" }}>
           <div className="row"><StatusChip s={r.status} /><span className="s">{r.when}</span></div>
           <div style={{ marginTop: 4 }}>"{r.text}"</div>
-          {r.status === "approved" && r.reply && <div style={{ marginTop: 4 }}><b>{t("reply")}:</b> {r.reply}</div>}
+          {r.status === "approved" && r.reply && <div style={{ marginTop: 4 }}><b>{t("reply")}:</b> {r.reply}<div className="s inrep">{t("inReplyTo")} "{excerpt(r.text)}"</div></div>}
           {r.status === "declined" && <div style={{ marginTop: 4 }}>{t("stCallS")}</div>}
+          {r.status === "waiting" && <div className="s" style={{ marginTop: 4 }}>{t("waitingS")}</div>}
           {r.status === "waiting" && <Steps status={r.status} />}
         </div>
       ))}

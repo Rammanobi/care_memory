@@ -93,7 +93,7 @@ function Drawer({ id, snippet, onClose }: { id: string; snippet?: CiteSnippet; o
 interface Toast { msg: string; undo?: () => void; key: number }
 const ToastCtx = createContext<(msg: string, undo?: () => void) => void>(() => {});
 
-const KEYS: [string, string][] = [["J", "Next item in the list"], ["K", "Previous item"], ["Enter", "Open the highlighted patient"], ["A", "Approve the highlighted draft"], ["E", "Edit the highlighted draft"], ["D", "Decline the highlighted draft"], ["?", "Show or hide this help"], ["Esc", "Close a panel"]];
+const KEYS: [string, string][] = [["J", "Next item in the list"], ["K", "Previous item"], ["Enter", "Open the highlighted patient"], ["A", "Approve a draft, or send the reply to a patient question"], ["E", "Edit the highlighted draft or reply"], ["D", "Decline the highlighted draft or question"], ["Ctrl+Enter", "Send from the reply box"], ["?", "Show or hide this help"], ["Esc", "Close a panel"]];
 
 export function DoctorKit({ children }: { children: ReactNode }) {
   const [ev, setEv] = useState<{ id: string; snippet?: CiteSnippet } | null>(null);

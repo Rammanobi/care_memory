@@ -4,7 +4,7 @@ import { dayFromIso } from "../../api/mapping";
 import type { Action, PortalMsg, PortalSlice } from "../../api/types";
 import { idxDate, type Msg, type PView } from "./portalTypes";
 
-export const msgFromWire = (m: PortalMsg): Msg => ({ id: m.id, daysAgo: 0, title: m.title, text: m.text, forSupporter: m.forSupporter, date: new Date(m.at) });
+export const msgFromWire = (m: PortalMsg): Msg => ({ id: m.id, daysAgo: 0, title: m.title, text: m.text, forSupporter: m.forSupporter, date: new Date(m.at), ...(m.inReplyTo ? { inReplyTo: { excerpt: m.inReplyTo.excerpt } } : {}) });
 
 export function buildLiveView(p: PortalSlice | undefined, dispatch: (a: Action) => unknown): PView {
   const me = p?.me;

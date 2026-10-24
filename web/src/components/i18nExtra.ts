@@ -126,4 +126,11 @@ export const EXTRA = {
   spNotAllowed: ["{n} has not allowed sharing yet.", "{n} ఇంకా పంచుకోవడానికి అనుమతించలేదు."],
   spNoWeek: ["Nothing to show yet", "చూపడానికి ఇంకా ఏమీ లేదు"],
   spNoMsgs: ["No messages for you yet", "మీకు ఇంకా సందేశాలు లేవు"],
+  // add-doctor-question-ui: question status and replies. Telugu wording NEEDS native-speaker review (same as the rest of this file).
+  docReplied: ["Your doctor replied", "మీ డాక్టర్ జవాబు ఇచ్చారు"],
+  inReplyTo: ["In reply to your question:", "మీ ప్రశ్నకు జవాబు:"],
+  qLoadErr: ["Could not load your questions", "మీ ప్రశ్నలను చూపించలేకపోయాము"],
+  qLoadErrS: ["Please check your internet and try again.", "దయచేసి ఇంటర్నెట్ చూసి మళ్లీ ప్రయత్నించండి."],
+  tryAgain: ["Try again", "మళ్లీ ప్రయత్నించండి"],
+  waitingS: ["We will tell you here as soon as your doctor replies.", "మీ డాక్టర్ జవాబు ఇవ్వగానే ఇక్కడ తెలియజేస్తాము."],
 } as const;

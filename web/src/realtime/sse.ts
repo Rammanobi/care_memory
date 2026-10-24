@@ -6,7 +6,16 @@ export const POLL_DOWN_MS = 5000; // polling while SSE is not connected
 export const POLL_UP_MS = 30000; // safety net while SSE is connected
 export const backoffMs = (attempt: number) => Math.min(30000, 1000 * 2 ** attempt);
 
-export interface LiveEvent { type?: string; topic?: string; ref?: string | null; patient_id?: string | null }
+export interface LiveEvent {
+  type?: string; topic?: string; ref?: string | null; patient_id?: string | null;
+  /** 'review' topic, kind 'patient_question': */
+  kind?: string; approval_id?: string; patient_code?: string; category?: string; priority?: string;
+}
+
+/** Every parsed event is published here at once (not debounced), so no notification is lost when two events arrive together. */
+const listeners = new Set<(e: LiveEvent) => void>();
+export const onLiveEvent = (l: (e: LiveEvent) => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
+export const emitLiveEvent = (e: LiveEvent) => listeners.forEach((l) => l(e));
 
 /** Parse one SSE message. Returns null for heartbeats and malformed data (a refetch is still safe, so callers treat null as "something changed"). */
 export function parseLive(data: unknown, fallbackTopic = ""): LiveEvent | null {
@@ -33,6 +42,7 @@ export function startLive(onEvent: (e: LiveEvent | null) => void, enabled: () =>
   let stopped = false;
 
   const fire = (e: LiveEvent | null) => {
+    if (e) emitLiveEvent(e);
     if (debounce) clearTimeout(debounce);
     debounce = setTimeout(() => onEvent(e), 150);
   };

@@ -6,6 +6,7 @@ import { counts } from "../api/derive";
 import { LogoutLink } from "../auth/session";
 import { Icon, LiveDot, MockBadge } from "./ui";
 import { DoctorKit } from "./doctorKit";
+import { QuestionNotify, useQuestionNotify } from "./QuestionNotify";
 import "../styles/doctor.css";
 import "../styles/doctor2.css";
 
@@ -23,7 +24,12 @@ const ITEMS = [
 const MORE = ["/doctor/more", "/doctor/ask", "/doctor/lens", "/doctor/district", "/doctor/admin", "/doctor/settings"];
 
 export function DoctorShell() {
+  return <QuestionNotify><ShellInner /></QuestionNotify>;
+}
+
+function ShellInner() {
   const { state } = useCare();
+  const { unread } = useQuestionNotify();
   const loc = useLocation();
   const nav = useNavigate();
   const [params] = useSearchParams();
@@ -35,6 +41,7 @@ export function DoctorShell() {
   const isOn = (to: string) => (to === "/doctor" ? loc.pathname === "/doctor" || loc.pathname.startsWith("/doctor/patients") : loc.pathname === to);
   const badge = (b?: string) => {
     if (!c || !b) return null;
+    if (b === "r" && unread > 0) return <span className="badge" aria-label={`${unread} new patient ${unread === 1 ? "question" : "questions"}`}>{unread}</span>;
     const n = b === "a" ? c.pendingApprovals : c.pendingRequests;
     return n > 0 ? <span className={b === "r" ? "badge blue" : "badge"} aria-label={`${n} waiting`}>{n}</span> : null;
   };

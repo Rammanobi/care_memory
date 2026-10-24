@@ -28,6 +28,7 @@ export default function Messages() {
         <button type="button" className="link" style={{ paddingLeft: 0 }} onClick={() => setOpen(null)}>‹ {t("backList")}</button>
         <article className="card msg" aria-labelledby="mt">
           <small>{t("fromTeam")} · {fmtMsgDay(m, lang)}</small>
+          {m.inReplyTo && <div className="inrep thread">{t("inReplyTo")} "{m.inReplyTo.excerpt}"</div>}
           <h1 id="mt" style={{ fontSize: 22 }}>{m.title}</h1>
           <p style={{ margin: "8px 0", fontSize: 18 }}>{m.text}</p>
           <span className="badge a">✓ {t("apprBy")}</span>
@@ -49,7 +50,7 @@ export default function Messages() {
             return (
               <button key={x.id} type="button" role="listitem" className={`item${r ? "" : " unread"}`} onClick={() => setOpen(x.id)} aria-label={`${r ? "" : t("unread") + ". "}${x.title}`}>
                 <span className={`dot${r ? " r" : ""}`} aria-hidden="true" />
-                <span className="tx"><b>{x.title}</b><span>{fmtMsgDay(x, lang)} · {x.text}</span></span>
+                <span className="tx">{x.inReplyTo && <span className="inrep">{t("inReplyTo")} "{x.inReplyTo.excerpt}"</span>}<b>{x.title}</b><span>{fmtMsgDay(x, lang)} · {x.text}</span></span>
                 {!r && <span className="badge u">{t("unread")}</span>}
               </button>
             );

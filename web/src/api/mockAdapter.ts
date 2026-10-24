@@ -2,7 +2,7 @@ import { makeEmpty, makeSeed } from "../mocks/seed";
 import { applyAction } from "./reducer";
 import type { CareApi, CareState } from "./types";
 
-const KEY = "cm_mock_db_v2";
+const KEY = "cm_mock_db_v3";
 const seed = () => (location.search.includes("empty") ? makeEmpty() : makeSeed());
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 

@@ -1,5 +1,6 @@
 // Pure functions: backend wire shapes (cm/api/portal_models.py, cm/contracts) -> the UI shapes in types.ts.
 import type { District, Approval, AuditEntry, Decision, Evidence, EvKind, LensSnap, Message, Patient, PatientRequest, PortalAppt, PortalMsg, PortalSlice, ServerSettings, Template, Usage } from "./types";
+import { mapOrigin, mapQuestionStatus, mapResearch, type WireQuestionData } from "./questions";
 import { isAbstain, snippetsFrom, type CiteSnippet } from "./citations";
 
 export interface WireReviewItem {
@@ -10,6 +11,7 @@ export interface WireReviewItem {
   status: "pending" | "approved" | "edited" | "rejected" | "expired" | "manual";
   drivers?: { label: string }[];
   due_at: string;
+  data?: WireQuestionData | null;
 }
 export interface WireReviewDetail extends WireReviewItem {
   proposal?: { body?: string };
@@ -23,6 +25,7 @@ export interface WireUiPatient {
 export interface WireRequest {
   id: string; patient_code: string; kind: string; text: string; when: string; draft: string;
   status: Decision; reply?: string | null; due_at: string; refs?: string[]; archived?: boolean;
+  data?: WireQuestionData | null; // patient questions: research, origin and the question text
 }
 export interface WireMessage {
   id: string; src_id?: string | null; code: string; at: string; channel: string; text: string;
@@ -66,6 +69,8 @@ export function mapApproval(it: WireReviewItem, detail: WireReviewDetail | undef
     dueMin: Math.round((Date.parse(it.due_at) - nowMs) / 60000),
     refs: (detail?.citations ?? []).map((c) => c.ref ?? c.id ?? "").filter(Boolean),
     why: it.drivers?.[0]?.label,
+    ...(it.data?.research ? { research: mapResearch(it.data.research) } : {}),
+    ...(it.data?.origin ? { origin: mapOrigin(it.data.origin) } : {}),
     ...(status === "approved" ? { reply: draft } : {}),
   };
 }
@@ -77,8 +82,11 @@ export const mapPatient = (p: WireUiPatient): Patient => ({
 });
 
 export function mapRequest(r: WireRequest, nowMs: number): PatientRequest {
+  const research = mapResearch(r.data?.research);
+  const origin = mapOrigin(r.data?.origin);
   return {
-    id: r.id, patientCode: r.patient_code, kind: r.kind, text: r.text, when: fmtWhen(r.when), draft: r.draft,
+    id: r.id, patientCode: r.patient_code, kind: r.kind, text: r.text || r.data?.text || "", when: fmtWhen(r.when), draft: r.draft || research?.suggestedReply || "",
+    ...(research ? { research } : {}), ...(origin ? { origin } : {}),
     status: r.status, reply: r.reply ?? undefined, archived: r.archived, createdAt: Date.parse(r.when),
     dueMin: Math.round((Date.parse(r.due_at) - nowMs) / 60000), refs: r.refs,
   };
@@ -161,14 +169,17 @@ export interface WireRecord {
   days: { date: string; status: "taken" | "missed" | "none"; reason?: string | null }[];
   upcoming?: PortalAppt[]; past?: PortalAppt[];
 }
-export interface WirePortalMsg { id: string; title: string; text: string; created_at: string; read: boolean; for_supporter?: boolean }
+export interface WirePortalMsg { id: string; title: string; text: string; created_at: string; read: boolean; for_supporter?: boolean; in_reply_to?: { approval_id: string; question_excerpt?: string | null } | null }
 export interface WireSupporterView {
   patient_code: string; patient_name: string; supporter_name: string; relation?: string | null; allowed: boolean;
   today: "none" | "taken" | "missed"; marked_by?: "self" | "supporter" | null; week: string; messages: WirePortalMsg[];
 }
-export interface WirePortalRequest { id: string; text: string; kind: string; when: string; status: Decision; reply?: string | null }
+/** status is waiting|answered on the new server; approved|declined from older rows. */
+export interface WirePortalRequest { id: string; text: string; kind: string; when: string; status: Decision | "answered"; reply?: string | null }
 
-export const mapPortalMsg = (m: WirePortalMsg): PortalMsg => ({ id: m.id, title: m.title, text: m.text, at: m.created_at, read: m.read, forSupporter: !!m.for_supporter });
+export const mapPortalMsg = (m: WirePortalMsg): PortalMsg => ({ id: m.id, title: m.title, text: m.text, at: m.created_at, read: m.read, forSupporter: !!m.for_supporter,
+  ...(m.in_reply_to?.approval_id ? { inReplyTo: { approvalId: m.in_reply_to.approval_id, excerpt: m.in_reply_to.question_excerpt ?? "" } } : {}),
+});
 
 const apptOf = (a: PortalAppt): PortalAppt => ({ id: a.id, kind: a.kind, title: a.title, when: a.when, place: a.place, ...(a.note ? { note: a.note } : {}) });
 export const mapRecord = (r: WireRecord): NonNullable<PortalSlice["record"]> => ({
@@ -193,7 +204,7 @@ export const mapSupporterView = (v: WireSupporterView): NonNullable<PortalSlice[
 
 /** A patient's own request (portal view): the patient code is the signed-in patient. */
 export const mapPortalRequest = (r: WirePortalRequest, code: string): PatientRequest => ({
-  id: r.id, patientCode: code, kind: r.kind, text: r.text, when: fmtWhen(r.when), draft: "", status: r.status,
+  id: r.id, patientCode: code, kind: r.kind, text: r.text, when: fmtWhen(r.when), draft: "", status: mapQuestionStatus(r.status),
   reply: r.reply ?? undefined, createdAt: Date.parse(r.when),
 });
 

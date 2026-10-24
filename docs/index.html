@@ -70,6 +70,7 @@ figure.diagram figcaption a{color:#0F766E}
 footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);color:var(--mute);font-size:14px}
 @media (max-width:640px){body{font-size:15.5px}.bar-row{grid-template-columns:34px 1fr 84px}.bar-row .bar{grid-column:1/-1;order:4}header.hero{padding-top:32px}th,td{padding:8px 9px;font-size:13.5px}.shot img{height:150px}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+.deploy{max-width:78ch;background:var(--safbg);border:1px solid var(--saf);border-radius:12px;padding:10px 14px;margin:0 0 18px}
 </style>
 </head>
 <body>
@@ -78,16 +79,17 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
   <h1>CareMemory</h1>
   <p class="pitch">A care memory that a doctor approves.</p>
   <p class="tag">Day 3, it reminds. Day 60, it understands. Team The Sentience Circuit: Manobiram, Idris, Abhishek.</p>
+  <p class="deploy"><b>Deployment to Google Cloud (Cloud Run, asia-south1, one domain with several hostnames) is planned for 2026-10-25 and has NOT happened.</b> Everything runs locally today. Plan: <a href="deploy/DEPLOY_PLAN.md">docs/deploy/DEPLOY_PLAN.md</a>.</p>
   <div class="cta"><a class="primary" href="tracker.html">&#128202; Visual progress tracker</a><a href="../TRACKER.md">TRACKER.md</a><a href="../README.md">README</a><a href="design/">Design docs</a><a href="design/EVALUATION_PLAN.md">Evaluation plan</a></div>
 </div></header>
-<nav class="top" aria-label="Sections"><div class="wrap"><a href="tracker.html" style="font-weight:700;color:var(--teal)">&#128202; Tracker</a><a href="#progress">Progress</a><a href="#s1">The problem</a><a href="#s2">What is different</a><a href="#s3">Screenshots</a><a href="#s4">Features and honest status</a><a href="#s5">Architecture</a><a href="#s6">Tech stack and models</a><a href="#s7">Safety and privacy</a><a href="#s8">Repository map</a><a href="#s9">How to run</a><a href="#s10">Environment variables</a><a href="#s11">Testing</a><a href="#s12">Evaluation mapping</a><a href="#s13">Roadmap</a><a href="#s14">Team</a></div></nav>
+<nav class="top" aria-label="Sections"><div class="wrap"><a href="tracker.html" style="font-weight:700;color:var(--teal)">&#128202; Tracker</a><a href="#progress">Progress</a><a href="#s1">The problem</a><a href="#s2">What is different</a><a href="#s3">Screenshots</a><a href="#s4">Features and honest status</a><a href="#s5">Architecture</a><a href="#s6">Tech stack and models</a><a href="#s7">Safety and privacy</a><a href="#s8">Repository map</a><a href="#s9">How to run</a><a href="#s10">Environment variables</a><a href="#s11">Testing</a><a href="#s12">Evaluation mapping</a><a href="#s13">Roadmap</a><a href="#s14">Team</a><a href="#s15">Known limitations</a></div></nav>
 <main class="wrap">
   <div class="progress" id="progress">
     <h2>Build progress</h2>
-    <p class="muted" style="margin:0">12 of 16 feature slices done, 3 partial, 1 in progress (AI runtime). 207 Python tests and 14 web tests pass; the doctor gate is enforced by a database constraint. Still to land: AI runtime, memory engine, rules R1-R6, cloud deploy.</p>
-    <div class="overall"><b>88%</b><span class="bar"><span class="fill" style="width:88%"></span></span></div>
-    <p class="muted" style="margin:0 0 10px;font-size:14px">12 of 16 slices done. Weighted: done 100%, partial 60%, in progress 35%. Details and commit plan in <a href="../TRACKER.md">TRACKER.md</a>.</p>
-    <div class="bar-row"><span class="bar-id">F01</span><span class="bar-name">Project scaffold</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F02</span><span class="bar-name">Contracts and skeletons</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F03</span><span class="bar-name">Infra and GCP scripts</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F04</span><span class="bar-name">Data core and event store</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F05</span><span class="bar-name">Doctor decision service</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F06</span><span class="bar-name">Core API and seed</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F07</span><span class="bar-name">AI budget governor</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F08</span><span class="bar-name">Templates and banned terms</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F09</span><span class="bar-name">Telegram lane</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F10</span><span class="bar-name">Gmail lane</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F11</span><span class="bar-name">Telegram live wiring</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F12</span><span class="bar-name">Doctor console</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F13</span><span class="bar-name">Patient app and Supporter</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F14</span><span class="bar-name">Web on the real API</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F15</span><span class="bar-name">AI runtime</span><span class="bar"><span class="fill inprogress" style="width:35%"></span></span><span class="badge inprogress">in progress</span></div><div class="bar-row"><span class="bar-id">F16</span><span class="bar-name">Documentation</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div>
+    <p class="muted" style="margin:0">21 of 26 feature slices done, 5 partial, 0 in progress, 0 planned (25 Oct 2026, 00:45 IST). Backend: 1296 tests passed, 0 failed, 2 expected failures (known gaps), 1 skipped. Web: 132 tests, typecheck and build pass. The doctor gate is enforced by a database constraint.</p>
+    <div class="overall"><b>92%</b><span class="bar"><span class="fill" style="width:92%"></span></span></div>
+    <p class="muted" style="margin:0 0 10px;font-size:14px">21 of 26 slices done, 5 partial. Weighted: done 100%, partial 60%, in progress 35%. Details and commit plan in <a href="../TRACKER.md">TRACKER.md</a>.</p>
+    <div class="bar-row"><span class="bar-id">F01</span><span class="bar-name">Project scaffold</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F02</span><span class="bar-name">Contracts and skeletons</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F03</span><span class="bar-name">Infra and GCP scripts</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F04</span><span class="bar-name">Data core and event store</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F05</span><span class="bar-name">Doctor decision service</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F06</span><span class="bar-name">Core API and seed</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F07</span><span class="bar-name">AI budget governor</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F08</span><span class="bar-name">Templates and banned terms</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F09</span><span class="bar-name">Telegram lane</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F10</span><span class="bar-name">Gmail lane</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F11</span><span class="bar-name">Telegram live wiring</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F12</span><span class="bar-name">Doctor console</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F13</span><span class="bar-name">Patient app and Supporter</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F14</span><span class="bar-name">Web on the real API</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F15</span><span class="bar-name">AI runtime</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F16</span><span class="bar-name">Documentation</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F17</span><span class="bar-name">Rules R1-R6</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F18</span><span class="bar-name">Memory engine and nightly</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F19</span><span class="bar-name">AI eval suite and guards</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F20</span><span class="bar-name">Edge-case bug fixes</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F21</span><span class="bar-name">Vision extraction drafts</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F22</span><span class="bar-name">Gmail and Calendar adapter</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F23</span><span class="bar-name">Patient memory RAG</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F24</span><span class="bar-name">Live-mode patient app</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F25</span><span class="bar-name">Demo accounts 3/30/60</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F26</span><span class="bar-name">Production image, Cloud Tasks</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div>
   </div>
   <section id="s1"><h2><span class="num">1</span>The problem</h2><p><em>Problem statement IC26-03-10, as filed (this section names the clinical domain; nothing patient-facing does).</em></p>
 <p>Patients on long tuberculosis (TB) treatment often drop out, take the wrong medicines, or miss support they are entitled to. Six parties each hold one piece of the patient's journey: the patient, the private doctor, the lab, the chemist, the treatment Supporter and the national programme portal. Over six months or more of daily treatment, nobody joins these pieces.</p>
@@ -123,7 +125,7 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
 </tr>
 </tbody>
 </table></div>
-<p><strong>Expected output (from the problem statement):</strong> opt-in multi-channel check-ins and a Supporter workflow, a doctor review queue, a patient memory timeline with a Day 3 vs Day 60 comparison, contradiction and risk flags with cited evidence, a district dashboard and a 60-day synthetic-data evaluation. Full text: <a href="design/CAREMEMORY_PROBLEM_STATEMENT.md">docs/design/CAREMEMORY_PROBLEM_STATEMENT.md</a>. Story: <a href="design/CAREMEMORY_STORY_AND_FEATURES.md">docs/design/CAREMEMORY_STORY_AND_FEATURES.md</a>.</p></section><section id="s2"><h2><span class="num">2</span>What is different</h2><div class="cards"><div class="card"><div class="card-top"><h3>&#129489;&#8205;&#9877;&#65039; Memory a doctor approves</h3><span class="badge done">done</span></div><p>Every AI-written message becomes an approval item. Nothing reaches a patient until a doctor approves, edits or rejects it.</p></div><div class="card"><div class="card-top"><h3>&#128274; Gate in the database</h3><span class="badge done">done</span></div><p>A CHECK constraint and trigger on the outbox refuse any send without a doctor decision or an approved template.</p></div><div class="card"><div class="card-top"><h3>&#127919; One decision function</h3><span class="badge done">done</span></div><p>Console, Gmail and the sweeper all call decide(): one transaction writes the decision and the outbox rows.</p></div><div class="card"><div class="card-top"><h3>&#128208; Rules decide, AI explains</h3><span class="badge partial">partial</span></div><p>Numbers come from Python and SQL. The LLM only parses and narrates, through a governed get_model().</p></div><div class="card"><div class="card-top"><h3>&#128206; Cite or cut</h3><span class="badge partial">partial</span></div><p>Every sentence cites an event or belief id; uncited sentences and wrong numbers are cut. The Ask box already checks numbers.</p></div><div class="card"><div class="card-top"><h3>&#128267; Degrades, never dies</h3><span class="badge done">done</span></div><p>A budget governor moves GREEN to AMBER to RED; in RED only rules and approved templates run.</p></div></div><div class="tw"><table>
+<p><strong>Expected output (from the problem statement):</strong> opt-in multi-channel check-ins and a Supporter workflow, a doctor review queue, a patient memory timeline with a Day 3 vs Day 60 comparison, contradiction and risk flags with cited evidence, a district dashboard and a 60-day synthetic-data evaluation. Full text: <a href="design/CAREMEMORY_PROBLEM_STATEMENT.md">docs/design/CAREMEMORY_PROBLEM_STATEMENT.md</a>. Story: <a href="design/CAREMEMORY_STORY_AND_FEATURES.md">docs/design/CAREMEMORY_STORY_AND_FEATURES.md</a>.</p></section><section id="s2"><h2><span class="num">2</span>What is different</h2><div class="cards"><div class="card"><div class="card-top"><h3>&#129489;&#8205;&#9877;&#65039; Memory a doctor approves</h3><span class="badge done">done</span></div><p>Every AI-written message becomes an approval item. Nothing reaches a patient until a doctor approves, edits or rejects it.</p></div><div class="card"><div class="card-top"><h3>&#128274; Gate in the database</h3><span class="badge done">done</span></div><p>A CHECK constraint and trigger on the outbox refuse any send without a doctor decision or an approved template.</p></div><div class="card"><div class="card-top"><h3>&#127919; One decision function</h3><span class="badge done">done</span></div><p>Console, Gmail and the sweeper all call decide(): one transaction writes the decision and the outbox rows.</p></div><div class="card"><div class="card-top"><h3>&#128208; Rules decide, AI explains</h3><span class="badge done">done</span></div><p>Numbers come from Python and SQL. The LLM only parses and narrates, through a governed get_model().</p></div><div class="card"><div class="card-top"><h3>&#128206; Cite or cut</h3><span class="badge done">done</span></div><p>Every sentence cites an event or belief id; uncited sentences and wrong numbers are cut. The Ask box already checks numbers.</p></div><div class="card"><div class="card-top"><h3>&#128267; Degrades, never dies</h3><span class="badge done">done</span></div><p>A budget governor moves GREEN to AMBER to RED; in RED only rules and approved templates run.</p></div></div><div class="tw"><table>
 <thead>
 <tr>
 <th>Idea</th>
@@ -220,15 +222,15 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
 </tr>
 <tr>
 <td>&#128268; API</td>
-<td>Ask box: answers built from DB rows with numbered citations and a number check</td>
-<td><span class="badge done">done</span> (rule-based)</td>
-<td><code>cm/api/routers/query.py</code>; LLM version in progress (below)</td>
+<td>Ask box: answers built from DB rows with numbered citations and a number check; LLM version with guards (F15, F19)</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/api/routers/query.py</code>, <code>tests/unit/ai/</code>, AI eval suite</td>
 </tr>
 <tr>
 <td>&#128268; API</td>
-<td>Live updates (SSE <code>/stream</code>), district endpoint, dose undo, documents</td>
-<td><span class="badge partial">partial</span> (in progress today, lane G)</td>
-<td><code>cm/api/routers/stream.py</code>; web falls back to 5 s polling</td>
+<td>Live updates (SSE <code>/stream</code>), district endpoint, dose undo, documents, admin usage merge, channel status route, nightly trigger</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/api/routers/stream.py</code>, <code>tests/integration/test_gaps*.py</code>; web falls back to 5 s polling</td>
 </tr>
 <tr>
 <td>&#127793; Seed</td>
@@ -262,33 +264,57 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
 </tr>
 <tr>
 <td>&#129302; AI</td>
-<td>Deep Agents orchestrator, narrator and drafter sub-agents, LangGraph <code>interrupt()</code> at <code>submit_for_review</code></td>
-<td><span class="badge partial">partial</span> (being built today, change <code>add-ai-runtime</code>)</td>
-<td><code>cm/agents/</code>, <code>cm/tools/</code>, <code>cm/validator/</code></td>
+<td>Deep Agents orchestrator, narrator and drafter sub-agents, LangGraph <code>interrupt()</code> at <code>submit_for_review</code>, live run on mock data with DeepSeek</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/agents/</code>, <code>cm/tools/</code>, <code>cm/validator/</code>, <code>tests/unit/ai/</code></td>
 </tr>
 <tr>
 <td>&#129302; AI</td>
-<td>Cite-or-cut validator</td>
-<td><span class="badge partial">partial</span> (being built today)</td>
-<td><code>cm/validator/cite_or_cut.py</code></td>
+<td>Cite-or-cut validator and narrator / Ask-box guards with a shared banned-term lexicon</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/validator/cite_or_cut.py</code>, AI eval suite (97 offline cases)</td>
+</tr>
+<tr>
+<td>&#129302; AI</td>
+<td>AI eval suite (97 offline cases)</td>
+<td><span class="badge done">done</span> (2 expected failures are known gaps)</td>
+<td><code>cm/eval/ai_eval.py</code>, <a href="design/AI_EVAL_REPORT.md">AI_EVAL_REPORT.md</a></td>
 </tr>
 <tr>
 <td>&#129302; AI</td>
 <td>Intake, identity, curator, investigator sub-agents</td>
-<td><span class="badge planned">planned</span></td>
-<td>stubs in <code>cm/agents/subagents/</code></td>
+<td><span class="badge partial">partial</span> (code present; not separately evidenced here)</td>
+<td><code>cm/agents/subagents/</code></td>
+</tr>
+<tr>
+<td>&#129302; AI</td>
+<td>Vision: DeepSeek document extraction into drafts for doctor review (mock data only)</td>
+<td><span class="badge done">done</span></td>
+<td><code>openspec/specs/vision-extract/</code></td>
 </tr>
 <tr>
 <td>&#129504; Memory</td>
-<td>Beliefs, weekday pattern detector, per-reporter trust, drift alarm, calibrated risk with interval</td>
-<td><span class="badge planned">planned</span></td>
-<td>schema exists (<code>0003_memory.sql</code>); stubs in <code>cm/memory/</code></td>
+<td>Memory engine v1: features, detectors, belief lifecycle, conflicts, risk with interval, nightly pipeline with persistence</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/memory/</code>, <code>tests/unit/memory/</code></td>
+</tr>
+<tr>
+<td>&#129504; Memory</td>
+<td>Risk model uses fixed documented weights (not trained; training deferred, no fine-tuning planned, RAG is the memory layer); calibration is poor (ECE 0.22 at day 60)</td>
+<td><span class="badge partial">partial</span></td>
+<td><code>cm/memory/risk.py</code>, <a href="design/AI_EVAL_REPORT.md">AI_EVAL_REPORT.md</a></td>
 </tr>
 <tr>
 <td>&#128208; Rules</td>
-<td>Reconciler rules R1 to R6 (refill vs self-report, payment mismatch, danger symptom, silence, household contacts)</td>
-<td><span class="badge planned">planned</span> (only the Telegram fast path runs today)</td>
-<td>stubs in <code>cm/rules/</code></td>
+<td>Reconciler rules R1 to R6 (refill vs self-report, payment mismatch, danger symptom, silence, household contact screening) with red-team tests</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/rules/</code>, <code>tests/redteam/</code></td>
+</tr>
+<tr>
+<td>&#128269; RAG</td>
+<td>Patient memory RAG: OpenAI <code>text-embedding-3-small</code> (1536d), hybrid BM25 + vector with RRF, MMR, no rerank, cite-or-cut <code>D-</code> citations; web citation chips</td>
+<td><span class="badge done">done</span> (measured on mock data, see section 11)</td>
+<td><code>cm/rag/</code>, <code>cm/eval/rag_eval.py</code>, <a href="design/RAG_STRATEGY_v2.md">RAG_STRATEGY_v2.md</a></td>
 </tr>
 <tr>
 <td>&#9992;&#65039; Telegram</td>
@@ -328,9 +354,9 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
 </tr>
 <tr>
 <td>&#9993;&#65039; Gmail</td>
-<td>Real Google API client, OIDC check on Pub/Sub push</td>
-<td><span class="badge planned">planned</span></td>
-<td><code>cm/channels/NOTES_gmail.md</code></td>
+<td>Real Gmail and Calendar adapter with Pub/Sub push verification, tested offline</td>
+<td><span class="badge partial">partial</span> (live Google verification pending)</td>
+<td><code>cm/channels/</code>, <code>openspec/specs/gmail-lane/</code></td>
 </tr>
 <tr>
 <td>&#128421;&#65039; Web</td>
@@ -358,30 +384,48 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
 </tr>
 <tr>
 <td>&#128421;&#65039; Web</td>
+<td>Citation chips and patient-page Ask; honest live-mode patient app (no fake data in live mode)</td>
+<td><span class="badge done">done</span></td>
+<td><code>web/src/</code>, 132 web tests</td>
+</tr>
+<tr>
+<td>&#128421;&#65039; Web</td>
 <td>Memory Lens and District on real memory data</td>
 <td><span class="badge partial">partial</span></td>
-<td>screens exist; backed by sample data until the memory engine lands</td>
+<td>screens exist; the memory engine now exists, but this tracker records no live check of these two screens against it</td>
+</tr>
+<tr>
+<td>&#127917; Demo</td>
+<td>Deterministic demo accounts at 3, 30 and 60 days</td>
+<td><span class="badge done">done</span></td>
+<td><code>openspec/specs/demo-accounts/</code></td>
 </tr>
 <tr>
 <td>&#128200; Eval</td>
-<td>60-day synthetic simulator, eval harness, LLM judge, cassette replay for offline demo</td>
+<td>Seeded 60-day simulator, Day 3 vs 30 vs 60 evaluation (AUROC, Brier, ECE), RAG live eval with LLM judge</td>
+<td><span class="badge done">done</span> (results in section 11)</td>
+<td><code>cm/sim/</code>, <code>cm/eval/</code>, <code>openspec/specs/simulator-eval/</code></td>
+</tr>
+<tr>
+<td>&#128200; Eval</td>
+<td>Cassette replay for offline demo</td>
 <td><span class="badge planned">planned</span></td>
-<td>stubs in <code>cm/sim/</code>, <code>cm/eval/</code></td>
+<td><code>cm/sim/cassette.py</code>, <code>replay.py</code> are still stubs</td>
 </tr>
 <tr>
 <td>&#128640; Deploy</td>
 <td>Dockerfile, docker-compose (pgvector/pg16), numbered GCP scripts, Cloud Build</td>
-<td><span class="badge partial">partial</span> (written, not yet deployed)</td>
+<td><span class="badge partial">partial</span> (written, NOT deployed)</td>
 <td><code>infra/00_project.sh</code> to <code>80_webhooks.sh</code>, <code>infra/cloudbuild.yaml</code></td>
 </tr>
 <tr>
 <td>&#128640; Deploy</td>
-<td>Cloud Tasks mode for the task queue</td>
-<td><span class="badge planned">planned</span></td>
-<td>local in-process queue only (<code>TASKS_MODE=local</code>)</td>
+<td>Production image, Cloud Tasks mode, task auth and deploy scripts</td>
+<td><span class="badge partial">partial</span> (local only, NOT deployed; Google Cloud deployment planned for 2026-10-25, see <a href="deploy/DEPLOY_PLAN.md">DEPLOY_PLAN.md</a>)</td>
+<td><code>openspec/specs/cloud-tasks/</code>, <code>openspec/specs/deployment/</code>, <code>TASKS_MODE</code></td>
 </tr>
 </tbody>
-</table></div></section><section id="s5"><h2><span class="num">5</span>Architecture</h2><p>PNG copies of every diagram are in <a href="assets/diagrams/">docs/assets/diagrams/</a> (rendered with Mermaid 11.4.1). Colour key: teal = done, amber = partial, grey dashed = planned.</p>
+</table></div></section><section id="s5"><h2><span class="num">5</span>Architecture</h2><p>PNG copies of every diagram are in <a href="assets/diagrams/">docs/assets/diagrams/</a> (rendered with Mermaid 11.4.1). Colour key: teal = done, amber = partial, grey dashed = planned. The diagrams were drawn on 24 Oct 2026; since then rules R1-R6, the memory engine and the AI runtime have landed, so the status table in section 4 is the authority where a colour differs.</p>
 <h3 class="sub">5.1 System architecture</h3>
 
 <figure class="diagram"><div class="mm" data-src="flowchart TB
@@ -474,7 +518,7 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
   T5 --&gt; DB
   G4 --&gt; DB"></div><img class="fallback" src="../assets/diagrams/02_data_flow.png" alt="data flow diagram" loading="lazy"><figcaption><a href="../assets/diagrams/02_data_flow.png">Open PNG</a> · <a href="../assets/diagrams/02_data_flow.mmd">Mermaid source</a></figcaption></figure>
 
-<h3 class="sub">5.3 Agent graph (target design; orchestrator and narrator are being built today)</h3>
+<h3 class="sub">5.3 Agent graph (orchestrator and narrator are built; see the status table in section 4)</h3>
 
 <figure class="diagram"><div class="mm" data-src="flowchart TB
   classDef det fill:#E6F2F0,stroke:#0F766E,color:#1F2933
@@ -616,7 +660,7 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
     numeric cost_usd
   }"></div><img class="fallback" src="../assets/diagrams/06_er_overview.png" alt="er overview diagram" loading="lazy"><figcaption><a href="../assets/diagrams/06_er_overview.png">Open PNG</a> · <a href="../assets/diagrams/06_er_overview.mmd">Mermaid source</a></figcaption></figure>
 
-<h3 class="sub">5.7 Deployment</h3>
+<h3 class="sub">5.7 Deployment (not deployed: Google Cloud deployment is planned for 2026-10-25)</h3>
 
 <figure class="diagram"><div class="mm" data-src="flowchart LR
   classDef built fill:#E6F2F0,stroke:#0F766E,color:#1F2933
@@ -693,7 +737,7 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
 </tr>
 </tbody>
 </table></div>
-<p><strong>Model to task.</strong> Models are reached only through <code>cm.core.llm.get_model(role)</code>; names live in <code>.env</code>, never in code. Providers allowed at runtime: OpenAI or DeepSeek only (DeepSeek is refused when <code>CM_DATA_CLASS=real</code>). Names below were confirmed with the provider's <code>/models</code> call; prices are approximate and change, so the governor reads a price table from <code>CM_PRICE_TABLE_JSON</code>.</p>
+<p><strong>Model to task.</strong> Models are reached only through <code>cm.core.llm.get_model(role)</code>; names live in <code>.env</code>, never in code. Providers allowed at runtime: OpenAI or DeepSeek only. DeepSeek and OpenAI are used on mock data only (<code>CM_DATA_CLASS=mock</code>); DeepSeek is refused when <code>CM_DATA_CLASS=real</code>. Names below were confirmed with the provider's <code>/models</code> call; prices are approximate and change, so the governor reads a price table from <code>CM_PRICE_TABLE_JSON</code>.</p>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -725,13 +769,13 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
 </tr>
 <tr>
 <td><code>VISION</code></td>
-<td>off</td>
-<td>Lab reports come in as JSON/CSV for now</td>
+<td>DeepSeek (see <code>.env</code>)</td>
+<td>Document extraction into drafts for doctor review (mock data only)</td>
 </tr>
 <tr>
 <td><code>EMBEDDING</code></td>
-<td>off</td>
-<td>Postgres full-text search fallback for now</td>
+<td><code>openai:text-embedding-3-small</code> (1536 dimensions)</td>
+<td>Patient memory RAG (hybrid with BM25)</td>
 </tr>
 </tbody>
 </table></div></section><section id="s7"><h2><span class="num">7</span>Safety and privacy</h2><ul>
@@ -792,12 +836,12 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
 </tr>
 <tr>
 <td><code>cm/memory/</code>, <code>cm/rules/</code>, <code>cm/identity/</code></td>
-<td>Memory engine, reconciler rules, identity matching (mostly planned)</td>
+<td>Memory engine, reconciler rules R1-R6, identity matching</td>
 <td>C, D</td>
 </tr>
 <tr>
 <td><code>cm/sim/</code>, <code>cm/eval/</code>, <code>cm/rag/</code></td>
-<td>Simulator, evaluation, guideline retrieval (planned)</td>
+<td>Simulator, AI and RAG evaluation, patient memory RAG (cassette replay is still a stub)</td>
 <td>B, J, K</td>
 </tr>
 <tr>
@@ -852,7 +896,7 @@ cd web &amp;&amp; npx vitest run                                       # (ticked
 python scripts/banned_terms.py                                 # (ticked) prints &quot;banned-terms: clean&quot;
 </code></pre>
 <p>Telegram locally (owner step, needs a bot token in <code>.env</code>): <code>ngrok http 8080</code>, then <code>python scripts/tg_set_webhook.py</code>, <code>python -m cm.jobs.make_invite --patient PT-0142</code>, send <code>/start CODE</code> to the bot, <code>python -m cm.jobs.reminders --now</code> and <code>python -m cm.jobs.outbox_drainer --once</code>. Full steps: <a href="../cm/channels/NOTES_integration.md">cm/channels/NOTES_integration.md</a>.</p>
-<p>The <code>Makefile</code> wraps the same steps (<code>make up migrate seed</code>, <code>make test</code>, <code>make check</code>) for Git Bash or WSL. GCP deployment scripts are in <code>infra/</code> (run in numeric order after <code>source infra/vars.sh</code>); they have not been run against a live project yet.</p></section><section id="s10"><h2><span class="num">10</span>Environment variables (names only)</h2><p>Never put values in the repo. Full list with placeholders: <a href="../.env.example">.env.example</a>.</p>
+<p>The <code>Makefile</code> wraps the same steps (<code>make up migrate seed</code>, <code>make test</code>, <code>make check</code>) for Git Bash or WSL. GCP deployment scripts are in <code>infra/</code> (run in numeric order after <code>source infra/vars.sh</code>); they have not been run against a live project. Deployment is planned for 2026-10-25 and has not happened: <a href="deploy/DEPLOY_PLAN.md">docs/deploy/DEPLOY_PLAN.md</a>.</p></section><section id="s10"><h2><span class="num">10</span>Environment variables (names only)</h2><p>Never put values in the repo. Full list with placeholders: <a href="../.env.example">.env.example</a>.</p>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -898,54 +942,41 @@ python scripts/banned_terms.py                                 # (ticked) prints
 <td><code>VITE_USE_MOCK</code>, <code>VITE_API_BASE</code> (see <code>web/.env.example</code>)</td>
 </tr>
 </tbody>
-</table></div></section><section id="s11"><h2><span class="num">11</span>Testing</h2><p>Counts below were measured on 24 Oct 2026 in this working tree (two other lanes were still adding code, so later runs may show more tests).</p>
+</table></div></section><section id="s11"><h2><span class="num">11</span>Testing</h2><p>Final verified numbers as of 2026-10-25 00:45 IST (earlier figures from 24 Oct are superseded).</p>
 <div class="tw"><table>
-<thead>
-<tr>
-<th>Suite</th>
-<th>Command</th>
-<th>Result</th>
-</tr>
-</thead>
+<thead><tr><th>Suite</th><th>Result</th></tr></thead>
 <tbody>
-<tr>
-<td>Python unit</td>
-<td><code>pytest tests/unit -m "not live and not slow and not docs"</code></td>
-<td><strong>165 passed</strong></td>
-</tr>
-<tr>
-<td>Python integration (real Postgres)</td>
-<td><code>pytest tests/integration</code></td>
-<td><strong>41 passed</strong></td>
-</tr>
-<tr>
-<td>Smoke</td>
-<td><code>pytest tests/test_smoke.py</code></td>
-<td>1 passed</td>
-</tr>
-<tr>
-<td>Whole quick suite</td>
-<td><code>pytest -m "not live and not slow and not docs"</code></td>
-<td><strong>207 passed</strong> in 17 s</td>
-</tr>
-<tr>
-<td>&#128421;&#65039; Web</td>
-<td><code>npx vitest run</code></td>
-<td><strong>14 passed</strong> (HTTP mapping)</td>
-</tr>
-<tr>
-<td>&#128221; Content</td>
-<td><code>python scripts/banned_terms.py</code></td>
-<td>clean</td>
-</tr>
-<tr>
-<td>API boot</td>
-<td><code>uvicorn cm.api.main:app</code>, <code>GET /healthz</code></td>
-<td><code>{"status":"ok"}</code>; <code>GET /patients</code> without login returns 401</td>
-</tr>
+<tr><td>Backend (pytest)</td><td><strong>1296 passed, 0 failed</strong>, 2 expected failures (known gaps), 1 skipped</td></tr>
+<tr><td>&#128421;&#65039; Web (vitest)</td><td><strong>132 tests passed</strong>; typecheck and build pass</td></tr>
+<tr><td>AI eval suite (offline)</td><td><strong>97 cases</strong></td></tr>
+<tr><td>&#128221; Content</td><td><code>python scripts/banned_terms.py</code> prints "banned-terms: clean" (last recorded 24 Oct)</td></tr>
 </tbody>
 </table></div>
-<p>What the integration tests cover: the decision transaction and the outbox doctor gate (<code>test_decide.py</code>), repositories (<code>test_repos.py</code>), seed idempotency (<code>test_seed.py</code>), the API end to end with login (<code>test_e2e_api.py</code>) and the Telegram path against Postgres (<code>test_telegram_pg.py</code>). Not yet covered: live LLM calls (<code>@pytest.mark.live</code>), red-team prompts, replay cassettes and the 60-day evaluation.</p></section><section id="s12"><h2><span class="num">12</span>Evaluation mapping</h2><p>Organisers' latest weighting: <strong>Round 1 = 40%, Round 2 = 60%</strong> (the older 15/35/50 plan is kept in <a href="design/EVALUATION_PLAN.md">docs/design/EVALUATION_PLAN.md</a>). Round 2 rubric, raw maximum 50, scaled to 60:</p>
+<p>Commands: <code>python -m pytest -m "not live and not slow and not docs" -q</code> and <code>cd web &amp;&amp; npx vitest run</code>. DB tests use the database <code>caremem_test</code>. Live-model tests are marked <code>@pytest.mark.live</code>.</p>
+<p><strong>RAG live eval</strong> (66 questions across day 3, 30 and 60 on PT-0142), measured with DeepSeek flash on mock data:</p>
+<div class="tw"><table>
+<thead><tr><th>Metric</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>Abstain accuracy</td><td>98.5%</td></tr>
+<tr><td>Groundedness</td><td>96.4%</td></tr>
+<tr><td>Judge pass</td><td>95.5%</td></tr>
+<tr><td>Temporal leakage</td><td>0</td></tr>
+<tr><td>Citation validity</td><td>1.0</td></tr>
+<tr><td>Retrieval recall@10 (day 3 / 30 / 60)</td><td>1.0 / 1.0 / 0.97</td></tr>
+</tbody>
+</table></div>
+<p>Caveats: 3 misses were model-side. The database-backend check disagrees with the in-memory harness by up to 0.106 on abstain accuracy because of rendering differences. Details: <a href="design/RAG_EVAL_PLAN.md">RAG_EVAL_PLAN.md</a>, <a href="design/RAG_RESEARCH_NOTES.md">RAG_RESEARCH_NOTES.md</a>.</p>
+<p><strong>Simulator, Day 3 to Day 30 to Day 60</strong> (seeded, mock data):</p>
+<div class="tw"><table>
+<thead><tr><th>Day</th><th>AUROC</th><th>Brier</th></tr></thead>
+<tbody>
+<tr><td>3</td><td>0.645</td><td>0.261</td></tr>
+<tr><td>30</td><td>0.703</td><td>0.249</td></tr>
+<tr><td>60</td><td>0.796</td><td>0.197</td></tr>
+</tbody>
+</table></div>
+<p>Calibration is poor: ECE at day 60 is 0.22. The risk model uses fixed documented weights; it is not trained (training is deferred, no fine-tuning is planned, RAG is the memory layer). The two expected failures in the backend suite are known gaps; see <a href="design/AI_EVAL_REPORT.md">AI_EVAL_REPORT.md</a>.</p>
+<p>The bug-finding work behind F20 used property, concurrency, contract and edge-case suites and found 19 real bugs, all fixed. Not covered: live Google (Gmail, Calendar) calls and the Cloud deployment.</p></section><section id="s12"><h2><span class="num">12</span>Evaluation mapping</h2><p>Organisers' latest weighting: <strong>Round 1 = 40%, Round 2 = 60%</strong> (the older 15/35/50 plan is kept in <a href="design/EVALUATION_PLAN.md">docs/design/EVALUATION_PLAN.md</a>). Round 2 rubric, raw maximum 50, scaled to 60:</p>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -972,7 +1003,7 @@ python scripts/banned_terms.py                                 # (ticked) prints
 <td>2</td>
 <td>Technical depth and code quality (10)</td>
 <td>12</td>
-<td>DB-level doctor gate, single <code>decide()</code> transaction, budget governor, PII tokeniser, cite-or-cut, frozen contracts, 220+ tests, OpenSpec log</td>
+<td>DB-level doctor gate, single <code>decide()</code> transaction, budget governor, PII tokeniser, cite-or-cut, frozen contracts, 1296 backend and 132 web tests, OpenSpec log</td>
 </tr>
 <tr>
 <td>3</td>
@@ -1005,15 +1036,20 @@ python scripts/banned_terms.py                                 # (ticked) prints
 <td>Ravi's Day 3 vs Day 60 story, rehearsed demo path</td>
 </tr>
 </tbody>
-</table></div></section><section id="s13"><h2><span class="num">13</span>Roadmap</h2><p><strong>Before the final round (next hours)</strong>
-1. Finish the AI runtime: orchestrator, narrator memory card, cite-or-cut, nightly job (change <code>add-ai-runtime</code>).
-2. Memory engine v1 and rules R1 to R6, so Memory Lens and the risk range come from real data.
-3. Live Telegram demo with the owner's bot; Gmail on the real API if time allows.
-4. Deploy to Cloud Run (scripts ready) with min instances 1; keep the local stack as the offline backup.</p>
-<p><strong>After the hackathon</strong>
-1. Pilot with one private clinic on synthetic-then-consented data, with a native-speaker review of every Telugu template.
-2. 60-day evaluation on held-out seeds with calibration plots; red-team suite for prompt injection.
-3. Move to an India-region provider with zero data retention before any real patient data (<code>CM_DATA_CLASS=real</code> already refuses DeepSeek).</p></section><section id="s14"><h2><span class="num">14</span>Team</h2><p><strong>The Sentience Circuit</strong>, JNTU Anantapur Innovators Conclave 2026.</p>
+</table></div></section><section id="s13"><h2><span class="num">13</span>Roadmap</h2><p><strong>Next (planned, not done)</strong></p>
+<ol>
+<li><strong>Deploy to Google Cloud (Cloud Run, asia-south1, one domain with several hostnames): planned for 2026-10-25, NOT yet done.</strong> Plan: <a href="deploy/DEPLOY_PLAN.md">docs/deploy/DEPLOY_PLAN.md</a>. The local stack stays as the offline backup.</li>
+<li>Verify the Gmail and Calendar adapter against real Google (tested offline only so far).</li>
+<li>Live Telegram bot run with the owner's bot; record a backup video.</li>
+<li>Native-speaker review of Telugu templates and answers; Hindi.</li>
+</ol>
+<p><strong>After the hackathon</strong></p>
+<ol>
+<li>Per-clinic scoping of doctor reads (today doctors see every clinic's patients).</li>
+<li>Better risk calibration (ECE 0.22 at day 60); training is deferred.</li>
+<li>Pilot with one private clinic on synthetic-then-consented data.</li>
+<li>Move to an India-region provider with zero data retention before any real patient data (<code>CM_DATA_CLASS=real</code> already refuses DeepSeek).</li>
+</ol></section><section id="s14"><h2><span class="num">14</span>Team</h2><p><strong>The Sentience Circuit</strong>, JNTU Anantapur Innovators Conclave 2026.</p>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -1037,8 +1073,17 @@ python scripts/banned_terms.py                                 # (ticked) prints
 </tbody>
 </table></div>
 <p>Built with parallel AI coding agents, one lane each, coordinated through frozen contracts and OpenSpec; every lane's changes are logged under <a href="../openspec/changes/archive/">openspec/changes/archive/</a>.</p>
+</section><section id="s15"><h2><span class="num">15</span>Known limitations</h2><ul>
+<li>Doctors can read all clinics' patients: access is district-wide by design; per-clinic scoping is not built.</li>
+<li>The append-only event store can be bypassed for erasure through <code>SET LOCAL cm.allow_erasure</code>.</li>
+<li>Risk calibration is poor: ECE 0.22 at day 60. The risk model uses fixed documented weights and is not trained.</li>
+<li>Telugu answer text is mostly English, and the Telugu templates need a native-speaker review.</li>
+<li>The simulator clock is one day ahead of the real date in the seeded data.</li>
+<li>The Gmail live path and the Cloud deployment are not yet verified against real Google.</li>
+<li>DeepSeek and OpenAI are used on mock data only (<code>CM_DATA_CLASS=mock</code>; DeepSeek is refused for real data). There is no real patient data.</li>
+</ul></section>
 <hr />
-<p><sub>CareMemory coordinates follow-up. It does not diagnose or give dosing advice; the doctor decides.</sub></p></section>
+<p><sub>CareMemory coordinates follow-up. It does not diagnose or give dosing advice; the doctor decides.</sub></p>
 </main>
 <footer><div class="wrap">CareMemory coordinates follow-up. It does not diagnose or give dosing advice; the doctor decides. All data shown is synthetic.</div></footer>
 <script type="module">

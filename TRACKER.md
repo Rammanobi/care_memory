@@ -1,10 +1,10 @@
 # CareMemory: GitHub Repository Progress Tracker
 
-**Progress summary (24 Oct 2026):** 12 of 16 feature slices done, 3 partial, 1 in progress (AI runtime). 207 Python tests and 14 web tests pass; the doctor gate is enforced by a database constraint. Still to land: AI runtime, memory engine, rules R1-R6, cloud deploy.
+**Progress summary (25 Oct 2026, 00:45 IST):** 21 of 26 feature slices done, 5 partial, 0 in progress, 0 planned. Backend 1296 tests passed, 0 failed, 2 expected failures (known gaps), 1 skipped; web 132 tests, typecheck and build pass; the doctor gate is enforced by a database constraint. Deployment to Google Cloud is planned for 2026-10-25 and has NOT happened. Plan: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md).
 
 Back to the [README](README.md) · Web version: [docs/index.html](docs/index.html) · Rubric: [docs/design/EVALUATION_PLAN.md](docs/design/EVALUATION_PLAN.md)
 
-Status words: **done** = code plus an automated test or a recorded check · **partial** = code exists, a piece is missing or only tested against fakes · **in progress** = another lane is building it today · **planned** = designed, not built.
+Status words: **done** = code plus an automated test or a recorded check · **partial** = code exists, a piece is missing or only tested against fakes or not yet verified live · **in progress** = another lane is building it right now (none at the moment) · **planned** = designed, not built.
 
 ---
 
@@ -16,25 +16,37 @@ Points use the organisers' latest split: Round 1 = 40, Round 2 = 60 (rubric raw 
 |---|---|---|---|---|---|---|---|
 | F01 | Project scaffold | Python and Node tooling, lint and test config, agent rules, OpenSpec setup, dependency pin fix | `pyproject.toml`, `requirements*.txt`, `Makefile`, `CLAUDE.md`, `MEMORY.md`, `.claude/`, `openspec/config.yaml` | `tests/test_smoke.py` passes; archived `fix-tenacity-pin-conflict` | done | Q&A and team | 1 |
 | F02 | Contracts and module skeletons | Frozen Pydantic contracts (`contracts-v1`) shared by every lane; empty modules for memory, rules, sim, eval, RAG | `cm/contracts/`, stubs in `cm/memory/`, `cm/rules/`, `cm/sim/`, `cm/eval/`, `cm/rag/` | contracts import in every test run | done (skeleton modules are planned features) | Technical depth | 2 |
-| F03 | Infra | Docker image, local Postgres 16 + pgvector compose, numbered GCP scripts, Cloud Build | `Dockerfile`, `docker-compose.yml`, `infra/`, `.env.example` | `docker compose up -d db` running on port 5433 | partial (GCP not deployed) | Viability | 2 |
+| F03 | Infra | Docker image, local Postgres 16 + pgvector compose, numbered GCP scripts, Cloud Build | `Dockerfile`, `docker-compose.yml`, `infra/`, `.env.example` | `docker compose up -d db` running on port 5433 | partial (GCP not deployed; production image is F26) | Viability | 2 |
 | F04 | Data core and event store | Config, DB pool, sim-aware clock, ids, logging; 7 migrations; append-only events; repositories | `cm/core/` (base), `cm/store/`, `cm/jobs/migrate.py` | `tests/unit/core`, `tests/integration/test_repos.py` | done | Functionality, Technical depth | 4 |
 | F05 | Doctor decision service | `decide()`: one transaction for decision plus outbox rows; DB doctor-gate `CHECK` and trigger enforced | `cm/review/decide.py`, `0002_reliability.sql` | `tests/integration/test_decide.py` | done | Functionality, Technical depth, Viability | 7 |
-| F06 | Core API and seed | Auth (scrypt, JWT cookie, rate limits), review queue, bulk decision, patients, timeline, portal routes, dashboard, admin, banned-term response filter, deterministic seed 42; backend gaps (SSE stream, district, dose undo, documents) | `cm/api/`, `cm/jobs/seed*.py` | `tests/integration/test_e2e_api.py`, `test_seed.py`, `tests/unit/api`; `GET /healthz` ok | done (gaps work in progress today) | Functionality, Technical depth, Completeness | 7 |
-| F07 | AI budget governor | GREEN/AMBER/RED states, demo reserve, circuit breaker, retry with retry-after, governed `get_model`, PII tokeniser | `cm/core/budget.py`, `budget_pg.py`, `llm.py`, `retry.py`, `tokenize.py` | `tests/unit/core_ai/test_ai.py` | done (not tested against live providers) | Technical depth, Viability | 4 |
+| F06 | Core API and seed | Auth (scrypt, JWT cookie, rate limits), review queue, bulk decision, patients, timeline, portal routes, dashboard, admin, banned-term response filter, deterministic seed 42; backend gaps (SSE stream, district, dose undo, documents) | `cm/api/`, `cm/jobs/seed*.py` | `tests/integration/test_e2e_api.py`, `test_seed.py`, `tests/unit/api`; `GET /healthz` ok | done (backend gaps closed; later fixes in F20) | Functionality, Technical depth, Completeness | 7 |
+| F07 | AI budget governor | GREEN/AMBER/RED states, demo reserve, circuit breaker, retry with retry-after, governed `get_model`, PII tokeniser | `cm/core/budget.py`, `budget_pg.py`, `llm.py`, `retry.py`, `tokenize.py` | `tests/unit/core_ai/test_ai.py` | done (live provider runs on mock data are recorded under F15, F19 and F23) | Technical depth, Viability | 4 |
 | F08 | Content | 12 approved EN/TE templates, text bank, banned-term scanner | `cm/router/templates/`, `fixtures/text_bank.json`, `scripts/banned_terms.py` | `tests/unit/content/`; scanner clean | done (Telugu needs native review) | UI/UX, Viability | 2 |
 | F09 | Telegram lane | Webhook (secret, dedupe, event first), fast path to Red draft, router, quiet hours, gated sender | `cm/channels/tg_*.py`, `cm/router/` | `tests/unit/channels/` (23 tests) | done (against fakes) | Functionality, Completeness | 4 |
 | F10 | Gmail lane | Digest, "approve 1" reply parser, single-use tokens, consent flows, calendar visits, channel fallback | `cm/channels/gmail*.py`, `calendar.py`, `consent_flows.py` | `tests/unit/gmail/` | partial (no real Google client yet) | Functionality, Completeness | 2 |
 | F11 | Telegram live wiring | Postgres adapters, httpx client, `/webhooks/telegram`, outbox drainer, daily reminders, invite codes, local task queue | `cm/channels/adapters_pg.py`, `tg_http.py`, `cm/jobs/outbox_drainer.py`, `reminders.py` | `tests/integration/test_telegram_pg.py` | partial (live bot run is an owner step) | Functionality | 2 |
 | F12 | Doctor console | Today, Patients, patient page, Approvals with SLA and bulk approve, Requests, Ask, Memory Lens, District, Admin caps, Settings | `web/src/pages/`, `web/src/components/` | screenshots in `docs/assets/ui/` | done (screens; Lens and District on sample data) | Functionality, UI/UX, Completeness | 6 |
 | F13 | Patient app and Supporter view | Welcome and consent, home, record, messages, ask, me, help, privacy; Telugu; Supporter tap | `web/src/pages/PatientApp/`, `web/src/pages/Supporter/` | screenshots; banned-term scan of these folders | done (screens) | UI/UX, Completeness | 3 |
-| F14 | Web on the real API | HTTP adapter, real login, role guards, SSE with polling fallback, offline banner, portal data | `web/src/api/`, `web/src/realtime/` | `web/src/api/mapping.test.ts` (14 tests) | done (adapter round 3 in progress today) | Functionality | 1 |
-| F15 | AI runtime | Deep Agents orchestrator, narrator and drafter, `interrupt()` at `submit_for_review`, cite-or-cut, LLM Ask box, nightly job | `cm/agents/`, `cm/tools/`, `cm/validator/`, `cm/api/routers/query.py` | change `add-ai-runtime` open; tests being written in `tests/unit/ai/` | in progress | Technical depth, Completeness | 2 |
+| F14 | Web on the real API | HTTP adapter, real login, role guards, SSE with polling fallback, offline banner, portal data | `web/src/api/`, `web/src/realtime/` | `web/src/api/mapping.test.ts` (14 tests) | done (typecheck and build pass; 132 web tests) | Functionality | 1 |
+| F15 | AI runtime | Deep Agents orchestrator, narrator and drafter, `interrupt()` at `submit_for_review`, cite-or-cut, LLM Ask box, nightly job | `cm/agents/`, `cm/tools/`, `cm/validator/`, `cm/api/routers/query.py` | `tests/unit/ai/`; live run on mock data with DeepSeek (commit f3a9663) | done (mock data only) | Technical depth, Completeness | 2 |
 | F16 | Documentation | README, this tracker, web page, design docs, diagrams, screenshots | `README.md`, `TRACKER.md`, `docs/` | diagrams render with Mermaid 11.4.1; page screenshot checked | done | Round 1, Q&A and team, Presentation | 14 |
-| | **Total tied to slices** | | | | | | **63** |
+| F17 | Rules R1-R6 reconciler | Rules R1 to R6 including household contact screening, with red-team tests | `cm/rules/`, `tests/redteam/` | `tests/unit/rules/`, red-team tests (commit 3836d3b) | done | Functionality, Technical depth | n/a |
+| F18 | Memory engine v1, nightly pipeline, conflicts | Features, detectors, belief lifecycle, risk interval; nightly memory pipeline, conflicts and persistence | `cm/memory/` | `tests/unit/memory/` (commits 909dddd, 5b073e6) | done (risk uses fixed documented weights, ECE 0.22 at day 60) | Technical depth, Functionality | n/a |
+| F19 | AI eval suite and guards | AI eval suite (97 offline cases), narrator and Ask-box guards, shared banned-term lexicon | `cm/eval/`, `cm/validator/` | `docs/design/AI_EVAL_REPORT.md` (commit 55d29d3) | done (2 expected failures are known gaps) | Technical depth, Viability | n/a |
+| F20 | Edge-case and invariant fixes | 19 real bugs found by property, concurrency, contract and edge-case suites, all fixed | across `cm/`, `tests/` | property, concurrency, contract and edge-case tests (commit 82bd17f) | done | Technical depth | n/a |
+| F21 | Vision document extraction | DeepSeek vision extraction of documents into drafts for doctor review (mock data only) | see `openspec/specs/vision-extract/` | `openspec/specs/vision-extract/` (commit 650152a) | done (mock data only) | Functionality | n/a |
+| F22 | Real Gmail and Calendar adapter | Real Gmail and Calendar adapter with push verification | `cm/channels/` | tested offline (commit d7aafb1); live Google verification pending | partial | Functionality, Completeness | n/a |
+| F23 | Patient memory RAG | OpenAI `text-embedding-3-small` (1536d), hybrid BM25 + vector with RRF, MMR, no rerank, cite-or-cut `D-` citations; web citation chips | `cm/rag/`, `cm/eval/`, `web/src/` | RAG live eval: 66 questions, abstain accuracy 98.5%, groundedness 96.4%, judge pass 95.5%, 0 temporal leakage, citation validity 1.0 (commits e625106, f89639f) | done (DeepSeek flash, mock data; 3 model-side misses) | Technical depth, Functionality | n/a |
+| F24 | Honest live-mode patient app | Patient app and patient-page Ask that show real data in live mode, with citation chips | `web/src/pages/PatientApp/` | web tests (commits 9d1bedd, bfe8f7a) | done | UI/UX, Functionality | n/a |
+| F25 | Demo accounts | Deterministic demo accounts at 3, 30 and 60 days | see `openspec/specs/demo-accounts/` | `openspec/specs/demo-accounts/` (commit 8db6687) | done | Functionality | n/a |
+| F26 | Production image and Cloud Tasks mode | Production image, Cloud Tasks mode, task auth and deploy scripts (local only, NOT deployed) | `Dockerfile`, `infra/`, `cm/core/tasks.py` | `openspec/specs/cloud-tasks/`, `openspec/specs/deployment/` (commit a46c2f3) | partial (not deployed) | Viability | n/a |
+| | **Total tied to slices F01-F16** | | | | | | **63** |
 
-Not built yet (no slice until they land): memory engine (beliefs, detectors, risk with interval), rules R1 to R6, identity matcher, RAG guidelines, simulator and 60-day evaluation, sweeper, Cloud Tasks mode, GCP deployment. See (c).
+Points for F17-F26 were not re-estimated (shown as n/a); the 63 covers F01-F16. Not done: Google Cloud deployment (planned for 2026-10-25, NOT happened; see [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md)), live Google verification of Gmail and Calendar, cassette replay (stubs), risk training (deferred). See (c) and (e).
 
 ## (b) Git commit plan: one commit per slice
+
+F01 to F16 below were committed as planned. F17 to F26 map to the 17 newest commits, which are local (not pushed); they are listed in the table after the F16 block.
 
 Rules for the person committing:
 - Run from `caremem/`, in the order below (dependency order). Commits are made today with real timestamps; never rewrite or fake dates.
@@ -147,6 +159,25 @@ git add -- ':(glob)openspec/changes/archive/*-add-readme-and-tracker/**' 2>/dev/
 git commit -m "docs: add README, progress tracker, design docs, diagrams and screenshots"
 ```
 
+#### F17 to F26: actual local commits (git log, 25 Oct 2026)
+
+| Slice | Commit | Message |
+|---|---|---|
+| F17 | 3836d3b | feat(rules): add R1-R6 reconciler with household screening and red-team tests |
+| F18 | 909dddd | feat(memory): add memory engine v1 features, detectors, belief lifecycle and risk interval |
+| F18 | 5b073e6 | feat(memory): wire nightly memory pipeline, conflicts and persistence |
+| F19 | 55d29d3 | feat(ai): add AI eval suite, narrator and Ask-box guards, shared banned-term lexicon |
+| F20 | 82bd17f | fix: close edge-case and invariant bugs with property, concurrency and contract tests |
+| F21 | 650152a | feat(vision): add DeepSeek document extraction drafts for doctor review |
+| F22 | d7aafb1 | feat(gmail): add real Gmail and Calendar adapter with push verification, tested offline |
+| F23 | f89639f | docs(design): add RAG strategy v2 for patient memory retrieval |
+| F23 | e625106 | feat(rag): add patient memory RAG with hybrid search, citations and live eval |
+| F24 | 9d1bedd | feat(web): citation chips, patient-page Ask and honest live-mode patient app |
+| F25 | 8db6687 | feat(demo): add deterministic 3-day, 30-day and 60-day demo accounts |
+| F26 | a46c2f3 | build(deploy): production image, Cloud Tasks mode, task auth and deploy scripts (local only) |
+
+Other commits in the same range, not given their own slice: f3a9663 feat(ai): finish AI runtime live run, budget alerts and run notes (F15); bfe8f7a fix(web): live-mode defects (undo, request volume, raw strings, logged-out 401s, channel status); c3ca863 fix(api): admin usage merge, channel status route, nightly trigger, next-step and audit fixes, safer Telegram tests; d2b472c chore: harden .gitignore for cloud credentials, tokens and key files; 3c2992c chore: sync remaining specs, fixtures and docs.
+
 ### Must NOT be committed
 
 All of these are already covered by `.gitignore`; check `git status` anyway.
@@ -165,18 +196,37 @@ All of these are already covered by `.gitignore`; check `git status` anyway.
 
 | Priority | Item | Owner lane | Why it matters for Round 2 |
 |---|---|---|---|
-| P0 | Finish and archive `add-ai-runtime`: narrator card, cite-or-cut, orchestrator `interrupt()`, LLM Ask box | E, N, D | Functionality 18 and technical depth 12 |
-| P0 | Fix the TypeScript error in `web/src/api/httpAdapter.ts` (bulk result type) seen on 24 Oct; adapter round 3 is open | H1 | `npm run build` must pass for the demo |
+| P0 | Deploy to Google Cloud (Cloud Run, asia-south1, one domain with several hostnames): planned for 2026-10-25, NOT done. Plan: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md) | I | Viability and deployment readiness |
 | P0 | Rehearse the core loop on the real stack: patient request, doctor approves, patient sees "doctor approved"; Telegram tap to Red draft | all | Working demo |
-| P1 | Memory engine v1 (missed-dose features, weekday pattern, refill gap) feeding Memory Lens and patient rows | C | Day 3 vs Day 60 claim from real data |
-| P1 | Rules R1 to R6 reconciler, including household contact screening | D | Contradiction flags with cited evidence |
+| P1 | Verify the Gmail and Calendar adapter against real Google (tested offline only) | M | Second channel |
 | P1 | Live Telegram bot run with the owner's token; record a backup video | F | Integration evidence |
-| P1 | Deploy to Cloud Run with min instances 1 | I | Viability and deployment readiness |
-| P2 | Real Gmail client and OIDC check on Pub/Sub push | M | Second channel |
-| P2 | Simulator plus 60-day evaluation with calibration plot | B, J | Expected output in the problem statement |
-| P2 | Red-team prompt-injection suite, replay cassettes for offline demo | D, J | Safety story |
-| P3 | Native-speaker review of Telugu templates; Hindi | K | Usability |
+| P2 | Native-speaker review of Telugu templates and answers (answer text is mostly English); Hindi | K | Usability |
+| P2 | Risk calibration (ECE 0.22 at day 60); training is deferred | C | Honest risk numbers |
+| P2 | Per-clinic scoping of doctor reads (district-wide today) | G | Privacy |
+| P3 | Cassette replay for an offline demo (stubs today) | J | Offline backup |
+
+Done since the last tracker: AI runtime, memory engine v1, rules R1-R6, simulator and Day 3 / 30 / 60 evaluation, the TypeScript build error (build now passes).
 
 ## (d) One-line progress
 
-12 of 16 feature slices done, 3 partial, 1 in progress (AI runtime). 207 Python tests and 14 web tests pass; the doctor gate is enforced by a database constraint. Still to land: AI runtime, memory engine, rules R1-R6, cloud deploy.
+21 of 26 feature slices done, 5 partial, 0 in progress, 0 planned (25 Oct 2026, 00:45 IST). Backend 1296 tests passed, 0 failed, 2 expected failures (known gaps), 1 skipped; web 132 tests, typecheck and build pass; the doctor gate is enforced by a database constraint. Deployment to Google Cloud is planned for 2026-10-25 and has NOT happened.
+
+## (e) Verified results (as of 2026-10-25 00:45 IST)
+
+- Backend: 1296 passed, 0 failed, 2 expected failures (known gaps), 1 skipped. Web: 132 tests, typecheck and build pass. AI eval suite: 97 offline cases.
+- RAG live eval, 66 questions across day 3, 30 and 60 on PT-0142 (DeepSeek flash, mock data): abstain accuracy 98.5%, groundedness 96.4%, judge pass 95.5%, 0 temporal leakage, citation validity 1.0; retrieval recall@10 1.0 / 1.0 / 0.97 at days 3 / 30 / 60. Caveats: 3 model-side misses; the database-backend check disagrees with the in-memory harness within 0.106 on abstain accuracy because of rendering differences.
+- Simulator Day 3 to 30 to 60: AUROC 0.645, 0.703, 0.796; Brier 0.261, 0.249, 0.197. ECE at day 60 is poor (0.22). The risk model uses fixed documented weights (not trained; training deferred, no fine-tuning planned, RAG is the memory layer).
+
+## (f) Known limitations
+
+- Doctors can read all clinics' patients (district-wide by design; per-clinic scoping not built).
+- Append-only erase bypass via `SET LOCAL cm.allow_erasure`.
+- Risk calibration: ECE 0.22 at day 60.
+- Telugu answer text is mostly English; Telugu templates need native-speaker review.
+- The simulator clock is one day ahead of the real date in the seeded data.
+- Gmail live path and Cloud deployment are not yet verified against real Google.
+- DeepSeek and OpenAI are used on mock data only (`CM_DATA_CLASS=mock`; DeepSeek refused for real data). No real patient data.
+
+## (g) Team
+
+Manobiram (product owner, architecture, integration) · Idris (team member) · Abhishek (team member). Roles for Idris and Abhishek are to be confirmed.

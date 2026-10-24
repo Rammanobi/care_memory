@@ -11,7 +11,8 @@ Innovators Conclave 2026, JNTU Anantapur · Track IC26-03-10 Open Health Innovat
 
 </div>
 
-> **Progress (24 Oct 2026):** 12 of 16 feature slices done, 3 partial, 1 in progress (AI runtime). 207 Python tests and 14 web tests pass; the doctor gate is enforced by a database constraint. Still to land: AI runtime, memory engine, rules R1-R6, cloud deploy.
+> **Progress (25 Oct 2026, 00:45 IST):** 21 of 26 feature slices done, 5 partial, 0 in progress, 0 planned. Backend: 1296 tests passed, 0 failed, 2 expected failures (known gaps), 1 skipped. Web: 132 tests, typecheck and build pass. The doctor gate is enforced by a database constraint.
+> **Deployment to Google Cloud (Cloud Run, asia-south1, one domain with several hostnames) is planned for 2026-10-25 and has NOT happened yet.** Everything runs locally today. Plan: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md).
 > Status words in this README are strict: **done** means code plus an automated test or a recorded check; **partial** means code exists but a piece is missing or only tested against fakes; **planned** means designed, not built.
 
 ---
@@ -31,6 +32,7 @@ Innovators Conclave 2026, JNTU Anantapur · Track IC26-03-10 Open Health Innovat
 12. [Evaluation mapping](#12-evaluation-mapping)
 13. [Roadmap](#13-roadmap)
 14. [Team](#14-team)
+15. [Known limitations](#15-known-limitations)
 
 ---
 
@@ -95,37 +97,44 @@ All screens use mock data (badge **MOCK DATA** in mock mode). More in [docs/asse
 | API | Doctor routes: review queue, bulk decision, patients, timeline, requests, dashboard, settings | **done** | `cm/api/routers/`, `tests/integration/test_e2e_api.py` |
 | API | Patient portal routes: today, dose, record, inbox, requests, consents, Supporter check-in | **done** | `cm/api/routers/portal.py`, e2e tests |
 | API | Banned-term filter on every patient and Supporter response | **done** | `cm/api/suppress.py`, `tests/unit/api/test_suppress.py` |
-| API | Ask box: answers built from DB rows with numbered citations and a number check | **done** (rule-based) | `cm/api/routers/query.py`; LLM version in progress (below) |
-| API | Live updates (SSE `/stream`), district endpoint, dose undo, documents | **partial** (in progress today, lane G) | `cm/api/routers/stream.py`; web falls back to 5 s polling |
+| API | Ask box: answers built from DB rows with numbered citations and a number check; LLM version with guards (F15, F19) | **done** | `cm/api/routers/query.py`, `tests/unit/ai/`, AI eval suite |
+| API | Live updates (SSE `/stream`), district endpoint, dose undo, documents, admin usage merge, channel status route, nightly trigger | **done** | `cm/api/routers/stream.py`, `tests/integration/test_gaps*.py`; web falls back to 5 s polling |
 | Seed | Deterministic seed 42 (same sample content as the UI), idempotent | **done** | `cm/jobs/seed.py`, `tests/integration/test_seed.py` |
 | Content | 12 approved message templates, English + Telugu (Telugu flagged for native review) | **done** | `cm/router/templates/*.yaml`, `tests/unit/content/` |
 | Content | Banned-term scanner over templates and patient/Supporter UI | **done** | `scripts/banned_terms.py` (clean on 24 Oct) |
 | AI | Budget governor GREEN/AMBER/RED, demo reserve, circuit breaker, retry with retry-after, no retry on 402/auth | **done** | `cm/core/budget.py`, `retry.py`, `tests/unit/core_ai/test_ai.py` |
 | AI | Governed `get_model(role)`, PII tokenise + `assert_clean()` before any LLM call | **done** | `cm/core/llm.py`, `tokenize.py`, unit tests |
-| AI | Deep Agents orchestrator, narrator and drafter sub-agents, LangGraph `interrupt()` at `submit_for_review` | **partial** (being built today, change `add-ai-runtime`) | `cm/agents/`, `cm/tools/`, `cm/validator/` |
-| AI | Cite-or-cut validator | **partial** (being built today) | `cm/validator/cite_or_cut.py` |
-| AI | Intake, identity, curator, investigator sub-agents | **planned** | stubs in `cm/agents/subagents/` |
-| Memory | Beliefs, weekday pattern detector, per-reporter trust, drift alarm, calibrated risk with interval | **planned** | schema exists (`0003_memory.sql`); stubs in `cm/memory/` |
-| Rules | Reconciler rules R1 to R6 (refill vs self-report, payment mismatch, danger symptom, silence, household contacts) | **planned** (only the Telegram fast path runs today) | stubs in `cm/rules/` |
+| AI | Deep Agents orchestrator, narrator and drafter sub-agents, LangGraph `interrupt()` at `submit_for_review`, live run on mock data with DeepSeek | **done** | `cm/agents/`, `cm/tools/`, `cm/validator/`, `tests/unit/ai/` |
+| AI | Cite-or-cut validator and narrator / Ask-box guards with a shared banned-term lexicon | **done** | `cm/validator/cite_or_cut.py`, AI eval suite (97 offline cases) |
+| AI | AI eval suite (97 offline cases) | **done** (2 expected failures are known gaps) | `cm/eval/ai_eval.py`, [docs/design/AI_EVAL_REPORT.md](docs/design/AI_EVAL_REPORT.md) |
+| AI | Intake, identity, curator, investigator sub-agents | **partial** (code present in `cm/agents/subagents/`; not separately evidenced here) | `cm/agents/subagents/` |
+| AI | Vision: DeepSeek document extraction into drafts for doctor review (mock data only) | **done** | `openspec/specs/vision-extract/` |
+| Memory | Memory engine v1: features, detectors, belief lifecycle, conflicts, risk with interval, nightly pipeline with persistence | **done** | `cm/memory/`, `tests/unit/memory/`, change F18 |
+| Memory | Risk model uses fixed documented weights (not trained; training deferred, no fine-tuning planned, RAG is the memory layer); calibration is poor (ECE 0.22 at day 60) | **partial** | `cm/memory/risk.py`, [AI_EVAL_REPORT.md](docs/design/AI_EVAL_REPORT.md) |
+| Rules | Reconciler rules R1 to R6 (refill vs self-report, payment mismatch, danger symptom, silence, household contact screening) with red-team tests | **done** | `cm/rules/`, `tests/redteam/` |
+| RAG | Patient memory RAG: OpenAI `text-embedding-3-small` (1536d), hybrid BM25 + vector with RRF, MMR, no rerank, cite-or-cut `D-` citations; web citation chips | **done** (measured on mock data, see section 11) | `cm/rag/`, `cm/eval/rag_eval.py`, [RAG_STRATEGY_v2.md](docs/design/RAG_STRATEGY_v2.md) |
 | Telegram | Webhook: secret check, dedupe on `update_id`, tap saved as event first, ack under 1 s | **done** (tested with fakes and Postgres) | `cm/channels/tg_inbound.py`, `tests/unit/channels/`, `tests/integration/test_telegram_pg.py` |
 | Telegram | Fast path: 3 missed in 3 days or a danger symptom creates a Red draft (fixed text, no LLM) | **done** | `cm/channels/adapters_pg.py`, integration test |
 | Telegram | Outbox sender: approved rows only, quiet hours 21:00 to 07:00, 1 msg/s per chat, 3 per day, retry-after | **done** | `cm/channels/tg_sender.py`, `cm/jobs/outbox_drainer.py` |
 | Telegram | Live bot run | **partial** | needs the owner's bot token and ngrok; steps in `cm/channels/NOTES_integration.md` |
 | Telegram | Onboarding wizard with itemised consent, free-text intake, Supporter proxy taps | **planned** | listed in `cm/channels/NOTES.md` |
 | Gmail | Digest builder, reply parser ("approve 1, reject 2 reason"), single-use token check, consent flows, calendar visits, channel fallback | **partial** (tested against fakes only) | `cm/channels/gmail*.py`, `tests/unit/gmail/` |
-| Gmail | Real Google API client, OIDC check on Pub/Sub push | **planned** | `cm/channels/NOTES_gmail.md` |
+| Gmail | Real Gmail and Calendar adapter with Pub/Sub push verification, tested offline | **partial** (live Google verification pending) | `cm/channels/`, `openspec/specs/gmail-lane/` |
 | Web | Doctor console: Today, Patients, patient page with tabs, Approvals with SLA countdown and bulk approve, Requests, Ask, Memory Lens, District, Admin usage caps, Settings, keyboard shortcuts, undo toast | **done** (screens) | `web/src/pages/`, screenshots above |
 | Web | Patient app: welcome and consent, home, record, messages, ask, me (consent revoke, large text), help, privacy; English/Telugu | **done** (screens) | `web/src/pages/PatientApp/` |
 | Web | Supporter view | **done** (screens) | `web/src/pages/Supporter/` |
 | Web | Real HTTP adapter (cookie session, 401 to login, GET-only retry, optimistic update with rollback), SSE with polling fallback | **done** | `web/src/api/httpAdapter.ts`, `mapping.test.ts` (14 tests) |
-| Web | Memory Lens and District on real memory data | **partial** | screens exist; backed by sample data until the memory engine lands |
-| Eval | 60-day synthetic simulator, eval harness, LLM judge, cassette replay for offline demo | **planned** | stubs in `cm/sim/`, `cm/eval/` |
-| Deploy | Dockerfile, docker-compose (pgvector/pg16), numbered GCP scripts, Cloud Build | **partial** (written, not yet deployed) | `infra/00_project.sh` to `80_webhooks.sh`, `infra/cloudbuild.yaml` |
-| Deploy | Cloud Tasks mode for the task queue | **planned** | local in-process queue only (`TASKS_MODE=local`) |
+| Web | Citation chips and patient-page Ask; honest live-mode patient app (no fake data in live mode) | **done** | `web/src/`, 132 web tests |
+| Web | Memory Lens and District on real memory data | **partial** | screens exist; the memory engine now exists, but this tracker records no live check of these two screens against it |
+| Demo | Deterministic demo accounts at 3, 30 and 60 days | **done** | `openspec/specs/demo-accounts/` |
+| Eval | Seeded 60-day simulator, Day 3 vs 30 vs 60 evaluation (AUROC, Brier, ECE), RAG live eval with LLM judge | **done** (results in section 11) | `cm/sim/`, `cm/eval/`, `openspec/specs/simulator-eval/` |
+| Eval | Cassette replay for offline demo | **planned** | `cm/sim/cassette.py`, `replay.py` are still stubs |
+| Deploy | Dockerfile, docker-compose (pgvector/pg16), numbered GCP scripts, Cloud Build | **partial** (written, NOT deployed) | `infra/00_project.sh` to `80_webhooks.sh`, `infra/cloudbuild.yaml` |
+| Deploy | Production image, Cloud Tasks mode, task auth and deploy scripts | **partial** (local only, NOT deployed; Google Cloud deployment planned for 2026-10-25, see [DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md)) | `openspec/specs/cloud-tasks/`, `openspec/specs/deployment/`, `TASKS_MODE` |
 
 ## 5. Architecture
 
-PNG copies of every diagram are in [docs/assets/diagrams/](docs/assets/diagrams/) (rendered with Mermaid 11.4.1). Colour key: teal = done, amber = partial, grey dashed = planned.
+PNG copies of every diagram are in [docs/assets/diagrams/](docs/assets/diagrams/) (rendered with Mermaid 11.4.1). Colour key: teal = done, amber = partial, grey dashed = planned. The diagrams were drawn on 24 Oct 2026; since then rules R1-R6, the memory engine and the AI runtime have landed, so the status table in section 4 is the authority where a colour differs.
 
 ### 5.1 System architecture
 
@@ -223,7 +232,7 @@ flowchart TB
   G4 --> DB
 ```
 
-### 5.3 Agent graph (target design; orchestrator and narrator are being built today)
+### 5.3 Agent graph (orchestrator and narrator are built; see the status table in section 4)
 
 ```mermaid
 flowchart TB
@@ -374,7 +383,7 @@ erDiagram
   }
 ```
 
-### 5.7 Deployment
+### 5.7 Deployment (not deployed: Google Cloud deployment is planned for 2026-10-25)
 
 ```mermaid
 flowchart LR
@@ -426,7 +435,7 @@ Earlier design diagrams (framework architecture, data flow, lanes) are in [docs/
 | Build-time memory | OpenSpec 1.14.3 (every feature, removal and fix logged under `openspec/`) |
 | Quality | pytest, ruff, import-linter, banned-term scanner |
 
-**Model to task.** Models are reached only through `cm.core.llm.get_model(role)`; names live in `.env`, never in code. Providers allowed at runtime: OpenAI or DeepSeek only (DeepSeek is refused when `CM_DATA_CLASS=real`). Names below were confirmed with the provider's `/models` call; prices are approximate and change, so the governor reads a price table from `CM_PRICE_TABLE_JSON`.
+**Model to task.** Models are reached only through `cm.core.llm.get_model(role)`; names live in `.env`, never in code. Providers allowed at runtime: OpenAI or DeepSeek only. DeepSeek and OpenAI are used on mock data only (`CM_DATA_CLASS=mock`); DeepSeek is refused when `CM_DATA_CLASS=real`. Names below were confirmed with the provider's `/models` call; prices are approximate and change, so the governor reads a price table from `CM_PRICE_TABLE_JSON`.
 
 | Role | Model | Used for |
 |---|---|---|
@@ -434,8 +443,8 @@ Earlier design diagrams (framework architecture, data flow, lanes) are in [docs/
 | `WORKER` | `deepseek:deepseek-flash` | Drafts for patient/Supporter/doctor, Ask box, intake and curator sub-agents |
 | `JUDGE` | `deepseek:deepseek-flash` | Faithfulness judge in evaluation |
 | `FALLBACK` | `deepseek:deepseek-flash` | After repeated timeouts or 5xx (never after a spend-cap error) |
-| `VISION` | off | Lab reports come in as JSON/CSV for now |
-| `EMBEDDING` | off | Postgres full-text search fallback for now |
+| `VISION` | DeepSeek (see `.env`) | Document extraction into drafts for doctor review (mock data only) |
+| `EMBEDDING` | `openai:text-embedding-3-small` (1536 dimensions) | Patient memory RAG (hybrid with BM25) |
 
 ## 7. Safety and privacy
 
@@ -458,8 +467,8 @@ Earlier design diagrams (framework architecture, data flow, lanes) are in [docs/
 | `cm/channels/` | Telegram, Supporter, Gmail, Calendar, consent flows, Postgres adapters | F, M |
 | `cm/router/` | Channel routing, quiet hours, banned-term check, templates | F, K |
 | `cm/agents/`, `cm/tools/`, `cm/validator/` | AI runtime, governed tools, cite-or-cut and injection checks | E, N, D |
-| `cm/memory/`, `cm/rules/`, `cm/identity/` | Memory engine, reconciler rules, identity matching (mostly planned) | C, D |
-| `cm/sim/`, `cm/eval/`, `cm/rag/` | Simulator, evaluation, guideline retrieval (planned) | B, J, K |
+| `cm/memory/`, `cm/rules/`, `cm/identity/` | Memory engine, reconciler rules R1-R6, identity matching | C, D |
+| `cm/sim/`, `cm/eval/`, `cm/rag/` | Simulator, AI and RAG evaluation, patient memory RAG (cassette replay is still a stub) | B, J, K |
 | `cm/jobs/` | Command-line jobs: migrate, seed, reminders, outbox drainer, invites, webhook setup | A, B, F |
 | `web/` | React doctor console, patient app, Supporter view | H1, H2 |
 | `tests/` | `unit/`, `integration/` (needs Postgres), `contract/`, `redteam/`, `replay/` | all |
@@ -493,7 +502,7 @@ python scripts/banned_terms.py                                 # (ticked) prints
 
 Telegram locally (owner step, needs a bot token in `.env`): `ngrok http 8080`, then `python scripts/tg_set_webhook.py`, `python -m cm.jobs.make_invite --patient PT-0142`, send `/start CODE` to the bot, `python -m cm.jobs.reminders --now` and `python -m cm.jobs.outbox_drainer --once`. Full steps: [cm/channels/NOTES_integration.md](cm/channels/NOTES_integration.md).
 
-The `Makefile` wraps the same steps (`make up migrate seed`, `make test`, `make check`) for Git Bash or WSL. GCP deployment scripts are in `infra/` (run in numeric order after `source infra/vars.sh`); they have not been run against a live project yet.
+The `Makefile` wraps the same steps (`make up migrate seed`, `make test`, `make check`) for Git Bash or WSL. GCP deployment scripts are in `infra/` (run in numeric order after `source infra/vars.sh`); they have not been run against a live project. Deployment is planned for 2026-10-25 and has not happened: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md).
 
 ## 10. Environment variables (names only)
 
@@ -513,19 +522,41 @@ Never put values in the repo. Full list with placeholders: [.env.example](.env.e
 
 ## 11. Testing
 
-Counts below were measured on 24 Oct 2026 in this working tree (two other lanes were still adding code, so later runs may show more tests).
+Final verified numbers as of 2026-10-25 00:45 IST (earlier figures from 24 Oct are superseded).
 
-| Suite | Command | Result |
+| Suite | Result |
+|---|---|
+| Backend (pytest) | **1296 passed, 0 failed**, 2 expected failures (known gaps), 1 skipped |
+| Web (vitest) | **132 tests passed**; typecheck and build pass |
+| AI eval suite (offline) | **97 cases** |
+| Content | `python scripts/banned_terms.py` prints "banned-terms: clean" (last recorded 24 Oct) |
+
+Commands: `python -m pytest -m "not live and not slow and not docs" -q` and `cd web && npx vitest run`. DB tests use the database `caremem_test`. Live-model tests are marked `@pytest.mark.live`.
+
+**RAG live eval** (66 questions across day 3, 30 and 60 on PT-0142), measured with DeepSeek flash on mock data:
+
+| Metric | Result |
+|---|---|
+| Abstain accuracy | 98.5% |
+| Groundedness | 96.4% |
+| Judge pass | 95.5% |
+| Temporal leakage | 0 |
+| Citation validity | 1.0 |
+| Retrieval recall@10 (day 3 / 30 / 60) | 1.0 / 1.0 / 0.97 |
+
+Caveats: 3 misses were model-side. The database-backend check disagrees with the in-memory harness by up to 0.106 on abstain accuracy because of rendering differences. Details: [RAG_EVAL_PLAN.md](docs/design/RAG_EVAL_PLAN.md), [RAG_RESEARCH_NOTES.md](docs/design/RAG_RESEARCH_NOTES.md).
+
+**Simulator, Day 3 to Day 30 to Day 60** (seeded, mock data):
+
+| Day | AUROC | Brier |
 |---|---|---|
-| Python unit | `pytest tests/unit -m "not live and not slow and not docs"` | **165 passed** |
-| Python integration (real Postgres) | `pytest tests/integration` | **41 passed** |
-| Smoke | `pytest tests/test_smoke.py` | 1 passed |
-| Whole quick suite | `pytest -m "not live and not slow and not docs"` | **207 passed** in 17 s |
-| Web | `npx vitest run` | **14 passed** (HTTP mapping) |
-| Content | `python scripts/banned_terms.py` | clean |
-| API boot | `uvicorn cm.api.main:app`, `GET /healthz` | `{"status":"ok"}`; `GET /patients` without login returns 401 |
+| 3 | 0.645 | 0.261 |
+| 30 | 0.703 | 0.249 |
+| 60 | 0.796 | 0.197 |
 
-What the integration tests cover: the decision transaction and the outbox doctor gate (`test_decide.py`), repositories (`test_repos.py`), seed idempotency (`test_seed.py`), the API end to end with login (`test_e2e_api.py`) and the Telegram path against Postgres (`test_telegram_pg.py`). Not yet covered: live LLM calls (`@pytest.mark.live`), red-team prompts, replay cassettes and the 60-day evaluation.
+Calibration is poor: ECE at day 60 is 0.22. The risk model uses fixed documented weights; it is not trained (training is deferred, no fine-tuning is planned, RAG is the memory layer). The two expected failures in the backend suite are known gaps; see [AI_EVAL_REPORT.md](docs/design/AI_EVAL_REPORT.md).
+
+The bug-finding work behind F20 used property, concurrency, contract and edge-case suites and found 19 real bugs, all fixed. Not covered: live Google (Gmail, Calendar) calls and the Cloud deployment.
 
 ## 12. Evaluation mapping
 
@@ -535,7 +566,7 @@ Organisers' latest weighting: **Round 1 = 40%, Round 2 = 60%** (the older 15/35/
 |---|---|---|---|
 | R1 | Idea and solution presentation, repo progress tracker | 40 | This README, diagrams, [TRACKER.md](TRACKER.md), one commit per feature slice |
 | 1 | Functionality and working demo (15) | 18 | Doctor approves a patient request and the patient app shows "doctor approved"; a Telegram tap becomes an event and a Red draft; Ask box answers with citations |
-| 2 | Technical depth and code quality (10) | 12 | DB-level doctor gate, single `decide()` transaction, budget governor, PII tokeniser, cite-or-cut, frozen contracts, 220+ tests, OpenSpec log |
+| 2 | Technical depth and code quality (10) | 12 | DB-level doctor gate, single `decide()` transaction, budget governor, PII tokeniser, cite-or-cut, frozen contracts, 1296 backend and 132 web tests, OpenSpec log |
 | 3 | UI/UX and usability (5) | 6 | Responsive console and patient app (360 px to 1440 px), Telugu toggle, large text, empty states, keyboard shortcuts |
 | 4 | Completeness vs proposed scope (5) | 6 | Section 4 and TRACKER.md: honest done / partial / planned against the problem statement's expected outputs |
 | 5 | Viability and deployment readiness (5) | 6 | Spend caps with RED template-only mode, consent model, no PII to LLMs, Docker image, GCP scripts, cost per patient |
@@ -544,16 +575,17 @@ Organisers' latest weighting: **Round 1 = 40%, Round 2 = 60%** (the older 15/35/
 
 ## 13. Roadmap
 
-**Before the final round (next hours)**
-1. Finish the AI runtime: orchestrator, narrator memory card, cite-or-cut, nightly job (change `add-ai-runtime`).
-2. Memory engine v1 and rules R1 to R6, so Memory Lens and the risk range come from real data.
-3. Live Telegram demo with the owner's bot; Gmail on the real API if time allows.
-4. Deploy to Cloud Run (scripts ready) with min instances 1; keep the local stack as the offline backup.
+**Next (planned, not done)**
+1. **Deploy to Google Cloud (Cloud Run, asia-south1, one domain with several hostnames): planned for 2026-10-25, NOT yet done.** Plan: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md). The local stack stays as the offline backup.
+2. Verify the Gmail and Calendar adapter against real Google (tested offline only so far).
+3. Live Telegram bot run with the owner's bot; record a backup video.
+4. Native-speaker review of Telugu templates and answers; Hindi.
 
 **After the hackathon**
-1. Pilot with one private clinic on synthetic-then-consented data, with a native-speaker review of every Telugu template.
-2. 60-day evaluation on held-out seeds with calibration plots; red-team suite for prompt injection.
-3. Move to an India-region provider with zero data retention before any real patient data (`CM_DATA_CLASS=real` already refuses DeepSeek).
+1. Per-clinic scoping of doctor reads (today doctors see every clinic's patients).
+2. Better risk calibration (ECE 0.22 at day 60); training is deferred.
+3. Pilot with one private clinic on synthetic-then-consented data.
+4. Move to an India-region provider with zero data retention before any real patient data (`CM_DATA_CLASS=real` already refuses DeepSeek).
 
 ## 14. Team
 
@@ -566,6 +598,16 @@ Organisers' latest weighting: **Round 1 = 40%, Round 2 = 60%** (the older 15/35/
 | Abhishek | Team member |
 
 Built with parallel AI coding agents, one lane each, coordinated through frozen contracts and OpenSpec; every lane's changes are logged under [openspec/changes/archive/](openspec/changes/archive/).
+
+## 15. Known limitations
+
+- Doctors can read all clinics' patients: access is district-wide by design; per-clinic scoping is not built.
+- The append-only event store can be bypassed for erasure through `SET LOCAL cm.allow_erasure`.
+- Risk calibration is poor: ECE 0.22 at day 60. The risk model uses fixed documented weights and is not trained.
+- Telugu answer text is mostly English, and the Telugu templates need a native-speaker review.
+- The simulator clock is one day ahead of the real date in the seeded data.
+- The Gmail live path and the Cloud deployment are not yet verified against real Google.
+- DeepSeek and OpenAI are used on mock data only (`CM_DATA_CLASS=mock`; DeepSeek is refused for real data). There is no real patient data.
 
 ---
 

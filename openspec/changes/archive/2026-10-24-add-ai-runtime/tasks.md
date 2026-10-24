@@ -6,4 +6,4 @@
 - [x] 1.5 `cm/agents/orchestrator.py` + tests/unit/ai/test_orchestrator.py, tests/integration/test_ai_orchestrator.py (unit done; integration covered by tests/integration/test_ai_nightly.py)
 - [x] 1.6 `cm/jobs/nightly.py`, `cm/jobs/ai_smoke.py`
 - [x] 1.7 `cm/api/routers/query.py` + tests/unit/ai/test_query_llm.py (tests/integration/test_ai_query.py)
-- [ ] 1.8 One live run for PT-0142; record numbers in cm/agents/NOTES.md (NOT DONE: cm/agents/NOTES.md missing, no live run recorded)
+- [x] 1.8 One live run for PT-0142; numbers recorded in cm/agents/NOTES.md; budget alerts on GET /admin/usage/caps (cm/api/routers/ops.py, tests/unit/ai/test_caps_alerts.py)

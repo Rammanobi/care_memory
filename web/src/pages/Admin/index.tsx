@@ -3,6 +3,7 @@ import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Toolt
 import { useCare } from "../../api/CareProvider";
 import type { UsageMode } from "../../api";
 import { Skeleton } from "../../components/ui";
+import { USE_MOCK } from "../../api";
 
 const MODES: { m: UsageMode; cls: string; title: string; text: string }[] = [
   { m: "GREEN", cls: "g", title: "GREEN under 70%", text: "Full AI: planning, drafting, Ask box." },
@@ -25,8 +26,9 @@ export default function AdminPage() {
   }, []);
   if (!state) return <main className="main wide"><h1>Admin and demo control</h1><div style={{ marginTop: 14 }}><Skeleton h={120} n={3} /></div></main>;
   const u = state.usage;
-  const pct = Math.round((u.todaySpend / u.todayCap) * 100);
-  const bpct = Math.round((u.budgetUsed / u.budget) * 100);
+  const pct = u.todayCap ? Math.round((u.todaySpend / u.todayCap) * 100) : 0;
+  const bpct = u.budget ? Math.round((u.budgetUsed / u.budget) * 100) : 0;
+  const usageFailed = !USE_MOCK && !!state.loadErrors?.includes("usage");
   const prov = Math.min(99, u.providerPct + (jitter % 4) - 1);
   const cls = u.mode === "GREEN" ? "g" : u.mode === "AMBER" ? "a" : "r";
   return (
@@ -56,8 +58,9 @@ export default function AdminPage() {
 
       <div className="two">
         <section className="card"><div className="k">Spend by task type today</div>
-          {u.tasks.map((t) => (
-            <div key={t.name} className="trow"><span>{t.name}</span><div className={`bar ${t.flag === "watch" ? "a" : "g"}`}><i style={{ width: `${t.pct}%` }} /></div><span>{usd(t.spend)}</span><span className={`tag ${t.flag === "watch" ? "t-amb" : "t-grn"}`}>{t.flag}</span></div>
+          {usageFailed && <div className="empty"><b>Could not load usage</b>The server did not answer for /admin/usage.</div>}
+          {u.tasks.map((t, n) => (
+            <div key={`${t.name}-${n}`} className="trow"><span>{t.name}</span><div className={`bar ${t.flag === "watch" ? "a" : "g"}`}><i style={{ width: `${t.pct}%` }} /></div><span>{usd(t.spend)}</span><span className={`tag ${t.flag === "watch" ? "t-amb" : "t-grn"}`}>{t.flag}</span></div>
           ))}
         </section>
         <section className="card"><div className="k">Safety stops</div>
@@ -104,9 +107,12 @@ export default function AdminPage() {
         </section>
         <section className="card">
           <div className="k">Channel status</div>
+          {state.channels.length === 0 && <div className="sm">Not connected: the server reported no channel state.</div>}
           {state.channels.map((c) => (
             <div key={c.name} className="trow two"><span><b>{c.name}</b><div className="sm">{c.detail}</div></span>
-              <button type="button" className={`pill${c.connected ? " on" : ""}`} aria-pressed={c.connected} onClick={() => dispatch({ t: "channel", name: c.name, connected: !c.connected })}>{c.connected ? "● Connected" : "○ Not connected"}</button></div>
+              {USE_MOCK
+                ? <button type="button" className={`pill${c.connected ? " on" : ""}`} aria-pressed={c.connected} onClick={() => dispatch({ t: "channel", name: c.name, connected: !c.connected })}>{c.connected ? "● Connected" : "○ Not connected"}</button>
+                : <span className={`pill${c.connected ? " on" : ""}`}>{c.connected ? "● Connected" : "○ Not connected"}</span>}</div>
           ))}
         </section>
       </div>

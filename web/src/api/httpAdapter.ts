@@ -1,59 +1,102 @@
 import { makeEmpty } from "../mocks/seed";
 import { startLive } from "../realtime/sse";
-import { ApiError, http } from "./http";
+import { ApiError, forgetSession, getMe, http } from "./http";
 import { status } from "./status";
 import {
-  bulkFailures, decisionBody, mapDistrict, mapDocument, mapMedicine, type WireBulkItem, type WireDistrict, mapApproval, mapAudit, mapConsents, mapMessage, mapPatient, mapPortalMe, mapPortalMsg, mapPortalRequest, mapRecord, mapRequest, mapServerSettings, mapSupporterView, mapTemplate, mapUsage, toApiToken,
+  bulkFailures, decisionBody, mapDistrict, mapDocument, mapMedicine, type WireBulkItem, type WireDistrict, mapApproval, mapAudit, mapChannels, mapConsents, mapMessage, mapPatient, mapPortalMe, mapPortalMsg, mapPortalRequest, mapRecord, mapRequest, mapServerSettings, mapSupporterView, mapTemplate, mapUsage, toApiToken,
   type WireAudit, type WirePortalMe, type WirePortalMsg, type WirePortalRequest, type WireRecord, type WireSupporterView, type WireToday, type WireMessage, type WireRequest, type WireReviewDetail, type WireReviewItem, type WireTemplate, type WireUiPatient, type WireUsage,
 } from "./mapping";
 import { applyAction } from "./reducer";
 import type { Action, CareApi, CareState, Evidence, LensSnap, Note } from "./types";
 
-let cache: CareState = makeEmpty();
-let role = "";
+/** Live mode starts from an honestly empty state: no sample patients, usage, clinics or channels. */
+function makeLiveEmpty(): CareState {
+  const e = makeEmpty();
+  return {
+    ...e, clinics: [], templates: [], channels: [], simDay: 0, loadErrors: [],
+    usage: { mode: "GREEN", todaySpend: 0, todayCap: 0, budgetUsed: 0, budget: 0, days: [], tasks: [], retries: 0, breaker: 0, billing: 0, providerPct: 0 },
+  };
+}
 
-/** Optional slices: a 4xx (role not allowed, route missing) leaves the previous value. Network errors still throw. */
-const opt = async <T,>(p: Promise<T>): Promise<T | undefined> => {
+let cache: CareState = makeLiveEmpty();
+let role = "";
+const details = new Map<string, WireReviewDetail>(); // approval id -> detail, fetched at most once
+const detailInflight = new Map<string, Promise<void>>();
+const queueItems = new Map<string, WireReviewItem>();
+let loading: Promise<CareState> | null = null;
+
+/**
+ * Optional slices: a 4xx (role not allowed, route missing) keeps the previous (real) value and is reported as
+ * "could not load <name>" instead of silently showing sample data. 401/403 (role not allowed): console only.
+ * Network errors still throw.
+ */
+const failed = new Set<string>();
+const opt = async <T,>(name: string, p: Promise<T>): Promise<T | undefined> => {
   try {
     return await p;
   } catch (e) {
-    if (e instanceof ApiError) return undefined;
+    if (e instanceof ApiError) {
+      console.warn(`[caremem] could not load ${name}: ${e.httpStatus} ${e.message}`);
+      if (e.httpStatus !== 403 && e.httpStatus !== 401) failed.add(name);
+      return undefined;
+    }
     throw e;
   }
 };
 
+const dedupeQueue = (items: WireReviewItem[]) => [...new Map(items.map((i) => [i.approval_id, i])).values()];
+const mapQueue = (items: WireReviewItem[], now: number) => dedupeQueue(items).map((i) => mapApproval(i, details.get(i.approval_id), now));
+
+/** Fetch one approval's draft text (when a card is opened, and for Red items on load). Cached, one request per id. */
+export function loadApprovalDetail(id: string): Promise<CareState> {
+  if (details.has(id)) return Promise.resolve(cache);
+  let p = detailInflight.get(id);
+  if (!p) {
+    p = http<WireReviewDetail>(`/review/${id}`)
+      .then((d) => {
+        details.set(id, d);
+        const it = queueItems.get(id);
+        if (it) cache = { ...cache, approvals: cache.approvals.map((a) => (a.id === id ? mapApproval(it, d, Date.now()) : a)) };
+      })
+      .catch((e) => {
+        console.warn(`[caremem] could not load draft ${id}: ${e instanceof Error ? e.message : e}`);
+      })
+      .finally(() => detailInflight.delete(id));
+    detailInflight.set(id, p);
+  }
+  return p.then(() => cache);
+}
+
 async function loadDoctor(): Promise<CareState> {
   const now = Date.now();
+  failed.clear();
   const queue = await http<{ items: WireReviewItem[] }>("/review/queue", { query: { limit: 100 } });
+  queue.items.forEach((i) => queueItems.set(i.approval_id, i));
   const [pat, reqs, ev, notes, lens, msgs, clinics, usage, audit, tpl, tiles, sset, dist] = await Promise.all([
-    opt(http<{ items: WireUiPatient[] }>("/patients", { query: { limit: 200 } })),
-    opt(http<WireRequest[]>("/requests")),
-    opt(http<Evidence[]>("/evidence")),
-    opt(http<Note[]>("/notes")),
-    opt(http<LensSnap[]>("/lens")),
-    opt(http<WireMessage[]>("/messages")),
-    opt(http<{ id: string; name: string; area: string }[]>("/clinics")),
-    opt(http<WireUsage>("/admin/usage")),
-    opt(http<{ items: WireAudit[] }>("/admin/audit", { query: { limit: 100 } })),
-    opt(http<WireTemplate[]>("/templates", { query: { status: "approved" } })),
-    opt(http<{ sim_day: number }>("/dashboard/tiles")),
-    opt(http<Parameters<typeof mapServerSettings>[0]>("/admin/settings")),
-    opt(http<WireDistrict>("/dashboard/district")),
+    opt("patients", http<{ items: WireUiPatient[] }>("/patients", { query: { limit: 200 } })),
+    opt("requests", http<WireRequest[]>("/requests")),
+    opt("evidence", http<Evidence[]>("/evidence")),
+    opt("notes", http<Note[]>("/notes")),
+    opt("lens", http<LensSnap[]>("/lens")),
+    opt("messages", http<WireMessage[]>("/messages")),
+    opt("clinics", http<{ id: string; name: string; area: string }[]>("/clinics")),
+    opt("usage", http<WireUsage>("/admin/usage")),
+    opt("audit log", http<{ items: WireAudit[] }>("/admin/audit", { query: { limit: 100 } })),
+    opt("templates", http<WireTemplate[]>("/templates", { query: { status: "approved" } })),
+    opt("dashboard", http<{ sim_day: number }>("/dashboard/tiles")),
+    opt("settings", http<Parameters<typeof mapServerSettings>[0]>("/admin/settings")),
+    opt("district", http<WireDistrict>("/dashboard/district")),
   ]);
-  const details = new Map<string, WireReviewDetail>();
-  await Promise.all(
-    queue.items.filter((i) => i.status === "pending").slice(0, 40).map(async (i) => {
-      const d = await opt(http<WireReviewDetail>(`/review/${i.approval_id}`));
-      if (d) details.set(i.approval_id, d);
-    }),
-  );
+  // Drafts: only pending Red items are fetched up front (once each, cached). Other cards load their draft when opened.
+  await Promise.all(dedupeQueue(queue.items).filter((i) => i.status === "pending" && i.tier === "red" && !details.has(i.approval_id)).slice(0, 10).map((i) => loadApprovalDetail(i.approval_id)));
+  const sv = sset ? mapServerSettings(sset) : cache.serverSettings;
   return (cache = {
     ...cache,
     seededAt: now,
     simDay: tiles?.sim_day ?? cache.simDay,
     clinics: clinics ?? cache.clinics,
     patients: pat ? pat.items.map(mapPatient) : cache.patients,
-    approvals: queue.items.map((i) => mapApproval(i, details.get(i.approval_id), now)),
+    approvals: mapQueue(queue.items, now),
     requests: reqs ? reqs.map((r) => mapRequest(r, now)) : cache.requests,
     evidence: ev ?? cache.evidence,
     notes: notes ?? cache.notes,
@@ -62,15 +105,35 @@ async function loadDoctor(): Promise<CareState> {
     usage: usage ? mapUsage(usage) : cache.usage,
     audit: audit ? audit.items.map(mapAudit) : cache.audit,
     templates: tpl ? tpl.map(mapTemplate) : cache.templates,
-    serverSettings: sset ? mapServerSettings(sset) : cache.serverSettings,
+    serverSettings: sv,
+    channels: sv ? mapChannels(sv.channels) : cache.channels,
     district: dist ? mapDistrict(dist) : cache.district,
+    loadErrors: [...failed],
+  });
+}
+
+/** After a decision: refetch only the slices it changed (queue, plus requests and messages), not the whole app. */
+async function refreshAfterDecision(withRequests: boolean): Promise<CareState> {
+  const now = Date.now();
+  const [queue, reqs, msgs] = await Promise.all([
+    http<{ items: WireReviewItem[] }>("/review/queue", { query: { limit: 100 } }),
+    withRequests ? opt("requests", http<WireRequest[]>("/requests")) : Promise.resolve(undefined),
+    opt("messages", http<WireMessage[]>("/messages")),
+  ]);
+  queue.items.forEach((i) => queueItems.set(i.approval_id, i));
+  return (cache = {
+    ...cache,
+    seededAt: now,
+    approvals: mapQueue(queue.items, now),
+    requests: reqs ? reqs.map((r) => mapRequest(r, now)) : cache.requests,
+    messages: msgs ? msgs.map(mapMessage) : cache.messages,
   });
 }
 
 async function loadPortal(): Promise<CareState> {
   const now = Date.now();
   if (role === "supporter") {
-    const v = await opt(http<WireSupporterView>("/portal/supporter/checkin"));
+    const v = await opt("check-in", http<WireSupporterView>("/portal/supporter/checkin"));
     const prev = cache.portal;
     return (cache = {
       ...cache,
@@ -82,14 +145,14 @@ async function loadPortal(): Promise<CareState> {
     });
   }
   const [me, today, rec, reqs, inbox, cons, docs, meds] = await Promise.all([
-    opt(http<WirePortalMe>("/portal/me")),
-    opt(http<WireToday>("/portal/today")),
-    opt(http<WireRecord>("/portal/record")),
-    opt(http<WirePortalRequest[]>("/portal/requests")),
-    opt(http<WirePortalMsg[]>("/portal/inbox")),
-    opt(http<Record<string, boolean>>("/portal/consents")),
-    opt(http<Parameters<typeof mapDocument>[0][]>("/portal/documents")),
-    opt(http<Parameters<typeof mapMedicine>[0][]>("/portal/medicines")),
+    opt("profile", http<WirePortalMe>("/portal/me")),
+    opt("today", http<WireToday>("/portal/today")),
+    opt("record", http<WireRecord>("/portal/record")),
+    opt("requests", http<WirePortalRequest[]>("/portal/requests")),
+    opt("inbox", http<WirePortalMsg[]>("/portal/inbox")),
+    opt("consents", http<Record<string, boolean>>("/portal/consents")),
+    opt("documents", http<Parameters<typeof mapDocument>[0][]>("/portal/documents")),
+    opt("medicines", http<Parameters<typeof mapMedicine>[0][]>("/portal/medicines")),
   ]);
   const prev = cache.portal;
   const mePart = me ? mapPortalMe(me) : prev?.me;
@@ -114,9 +177,17 @@ async function loadPortal(): Promise<CareState> {
   });
 }
 
-async function load(): Promise<CareState> {
-  if (!role) role = (await http<{ role: string }>("/auth/me")).role;
-  return role === "patient" || role === "supporter" ? loadPortal() : loadDoctor();
+/** Concurrent load() calls (mount, session event, poll, SSE) share one round of requests. */
+function load(): Promise<CareState> {
+  if (!loading) {
+    loading = (async () => {
+      if (!role) role = (await getMe()).role;
+      return role === "patient" || role === "supporter" ? loadPortal() : loadDoctor();
+    })().finally(() => {
+      loading = null;
+    });
+  }
+  return loading;
 }
 
 async function dispatch(a: Action): Promise<CareState> {
@@ -139,11 +210,11 @@ async function dispatch(a: Action): Promise<CareState> {
       const res = await Promise.allSettled(ids.map((id) => http(`/review/${id}/decision`, { method: "POST", body })));
       const bad = res.find((r) => r.status === "rejected") as PromiseRejectedResult | undefined;
       if (bad) throw bad.reason;
-      return load();
+      return refreshAfterDecision(false);
     }
     case "decideRequest":
       await http(`/requests/${a.id}/decision`, { method: "POST", body: decisionBody(a.decision, a.text) });
-      return load();
+      return refreshAfterDecision(true);
     case "addNote":
       await http(`/patients/${toApiToken(a.note.code)}/notes`, { method: "POST", body: { text: a.note.text } });
       return load();
@@ -192,8 +263,10 @@ export const httpApi: CareApi = {
   load,
   dispatch,
   subscribe: (cb) => startLive(() => cb()),
+  loadDetail: loadApprovalDetail,
   async reset() {
-    cache = makeEmpty();
+    cache = makeLiveEmpty();
+    details.clear();
     return load();
   },
 };
@@ -201,5 +274,9 @@ export const httpApi: CareApi = {
 /** Called on login/logout so the next load re-reads the role. */
 export function resetHttpSession() {
   role = "";
-  cache = makeEmpty();
+  cache = makeLiveEmpty();
+  details.clear();
+  queueItems.clear();
+  loading = null;
+  forgetSession(null);
 }

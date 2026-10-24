@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useCare } from "../../api/CareProvider";
-import type { Approval } from "../../api";
+import { USE_MOCK, type Approval } from "../../api";
 import { DraftCard } from "../../components/DraftCard";
 import { useDecide } from "../../components/doctorKit";
 import { dueAtOf } from "../../api/derive";
@@ -13,7 +13,7 @@ const LANES: { key: Approval["lane"]; label: string; cls: string; help: string }
 ];
 
 export default function ApprovalsPage() {
-  const { state } = useCare();
+  const { state, loadDetail } = useCare();
   const decide = useDecide();
   const [sort, setSort] = useState<"time" | "patient">("time");
   const [picked, setPicked] = useState<string[]>([]);
@@ -80,6 +80,7 @@ export default function ApprovalsPage() {
                         </label>
                       ) : undefined
                     }
+                    onLoadDraft={USE_MOCK ? undefined : () => loadDetail(a.id)}
                     onDecide={(d, text) => decide.approvals([a.id], d, text)}
                   />
                 ))}

@@ -173,6 +173,8 @@ export interface CareState {
   settings: Settings;
   portal?: PortalSlice;
   serverSettings?: ServerSettings;
+  /** Live mode: slices that failed to load (shown as "could not load", never replaced by sample data). */
+  loadErrors?: string[];
 }
 
 export type Action =
@@ -199,4 +201,6 @@ export interface CareApi {
   /** Called when another tab (or the server) changed the data. */
   subscribe(cb: () => void): () => void;
   reset(): Promise<CareState>;
+  /** Live mode: fetch one approval's draft text when its card is opened. */
+  loadDetail?(id: string): Promise<CareState>;
 }

@@ -35,7 +35,7 @@ describe("startLive", () => {
 
   it("refetches on review and channels events and marks live", () => {
     const cb = vi.fn();
-    const stop = startLive(cb);
+    const stop = startLive(cb, () => true);
     const es = FakeES.all[0];
     expect(es.url).toContain("/stream?topics=review,channels");
     es.onopen?.();
@@ -50,9 +50,18 @@ describe("startLive", () => {
     expect(status.get().live).toBe(false);
   });
 
+  it("does nothing while logged out: no /stream, no polling", () => {
+    const cb = vi.fn();
+    const stop = startLive(cb, () => false);
+    vi.advanceTimersByTime(60000);
+    expect(FakeES.all.length).toBe(0);
+    expect(cb).not.toHaveBeenCalled();
+    stop();
+  });
+
   it("polls every 5 s without SSE and every 30 s with it", () => {
     const cb = vi.fn();
-    const stop = startLive(cb);
+    const stop = startLive(cb, () => true);
     vi.advanceTimersByTime(5100);
     expect(cb).toHaveBeenCalledTimes(1);
     FakeES.all[0].onopen?.();
@@ -65,7 +74,7 @@ describe("startLive", () => {
   });
 
   it("reconnects with backoff after an error and resets once open", () => {
-    const stop = startLive(vi.fn());
+    const stop = startLive(vi.fn(), () => true);
     FakeES.all[0].onerror?.();
     expect(status.get().live).toBe(false);
     expect(FakeES.all).toHaveLength(1);

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import type { Decision } from "../api";
 import { useCare } from "../api/CareProvider";
 import { EvChips, SlaOf } from "./doctorKit";
+import { splitCitations } from "../api/mapping";
 
 interface Props {
   heading: string;
@@ -20,6 +21,7 @@ interface Props {
   why?: string;
   due?: { dueMin?: number; createdAt?: number };
   channel?: string;
+  onLoadDraft?: () => void; // live mode: the draft text is fetched when the card is opened
 }
 
 /** What the patient will see: a small phone-style preview of the exact message. */
@@ -51,9 +53,12 @@ function Delivery({ srcId }: { srcId: string }) {
 }
 
 /** AI draft + Approve and send / Edit / Decline. Nothing is sent until the doctor approves. */
-export function DraftCard({ heading, who, asked, meta, draft, status, reply, onDecide, lead, tone = "plain", srcId, refs, why, due, channel }: Props) {
+export function DraftCard({ heading, who, asked, meta, draft, status, reply, onDecide, lead, tone = "plain", srcId, refs, why, due, channel, onLoadDraft }: Props) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(draft);
+  useEffect(() => { if (draft && !text) setText(draft); }, [draft]); // eslint-disable-line react-hooks/exhaustive-deps
+  const shown = splitCitations(text);
+  const allRefs = [...new Set([...(refs ?? []), ...shown.refs])];
 
   if (status === "approved") {
     return (
@@ -61,9 +66,9 @@ export function DraftCard({ heading, who, asked, meta, draft, status, reply, onD
         <h3>{heading}: approved</h3>
         {who && <div className="who"><Link to={`/doctor/patients/${who}`}>{who}</Link></div>}
         {asked && <div className="q">"{asked}"</div>}
-        <div><b>✓ Approved and sent to the patient.</b> <span className="sub">"{reply ?? draft}"</span></div>
+        <div><b>✓ Approved and sent to the patient.</b> <span className="sub">"{splitCitations(reply ?? draft).clean}"</span></div>
         {srcId && <Delivery srcId={srcId} />}
-        <EvChips ids={refs} />
+        <EvChips ids={allRefs} />
       </section>
     );
   }
@@ -84,20 +89,22 @@ export function DraftCard({ heading, who, asked, meta, draft, status, reply, onD
       {who && <div className="who"><Link to={`/doctor/patients/${who}`}>{who}</Link></div>}
       {asked && <div className="asked">"{asked}"</div>}
       {meta && <div className="q">{meta}</div>}
-      {why && <div className="q">Why: {why} <EvChips ids={refs} /></div>}
-      {!why && <EvChips ids={refs} />}
-      {editing ? (
+      {why && <div className="q">Why: {why} <EvChips ids={allRefs} /></div>}
+      {!why && <EvChips ids={allRefs} />}
+      {!draft && !text && onLoadDraft ? (
+        <div className="draft"><button type="button" className="btn ed" onClick={onLoadDraft}>Open draft</button></div>
+      ) : editing ? (
         <>
           <span className="ai">EDITING DRAFT</span>
           <label className="sr-only" htmlFor={`d-${heading}-${who}`}>Edit the reply</label>
           <textarea id={`d-${heading}-${who}`} className="draft" value={text} onChange={(e) => setText(e.target.value)} />
         </>
       ) : (
-        <div className="draft"><span className="ai">AI DRAFT</span><br />{text}</div>
+        <div className="draft"><span className="ai">AI DRAFT</span><br />{shown.clean}</div>
       )}
       <details className="prev" open>
         <summary>What the patient will see</summary>
-        <PhonePreview text={text} channel={channel ?? (tone === "req" ? "Patient app" : "Telegram")} />
+        <PhonePreview text={shown.clean} channel={channel ?? (tone === "req" ? "Patient app" : "Telegram")} />
       </details>
       <div className="btns">
         <button type="button" className="btn ap" disabled={!text.trim()} onClick={() => onDecide("approved", text.trim())}>✓ Approve and send</button>

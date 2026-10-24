@@ -83,10 +83,40 @@ export function mapRequest(r: WireRequest, nowMs: number): PatientRequest {
   };
 }
 
+const CHANNEL_NAMES: Record<string, string> = { telegram: "Telegram", tg: "Telegram", gmail: "Gmail", email: "Email", calendar: "Calendar", sms: "SMS", whatsapp: "WhatsApp", app: "Patient app", portal: "Patient app" };
+/** Backend channel id ("telegram") -> the name a doctor reads ("Telegram"). */
+export const channelName = (c: string): string => CHANNEL_NAMES[c.trim().toLowerCase()] ?? (c ? c.charAt(0).toUpperCase() + c.slice(1) : "Unknown channel");
+
+const DELIVERY_TEXT: Record<string, string> = {
+  "skipped:no_consent": "Not sent: the patient has not given consent for this channel",
+  "skipped:quiet_hours": "Not sent: held for the patient's quiet hours",
+  "skipped:no_channel": "Not sent: the patient has no linked channel",
+  "skipped:banned_term": "Not sent: the text contains a word that cannot be sent",
+};
+/** Raw outbox error ("skipped:no_consent") -> plain language. Unknown codes are de-underscored, never shown raw. */
+export function friendlyDeliveryError(e?: string | null): string {
+  if (!e) return "";
+  const k = e.trim().toLowerCase();
+  if (DELIVERY_TEXT[k]) return DELIVERY_TEXT[k];
+  if (k.startsWith("skipped:")) return `Not sent: ${k.slice(8).replace(/_/g, " ")}`;
+  return e.replace(/_/g, " ");
+}
+
+const CITE = /\s*\[((?:[EBCRGD]-\d+)(?:\s*,\s*[EBCRGD]-\d+)*)\]/g;
+/** Pull raw [E-0412] citation tokens out of draft text. `clean` is what to show; `refs` are rendered as evidence chips. */
+export function splitCitations(text: string): { clean: string; refs: string[] } {
+  const refs: string[] = [];
+  const clean = text.replace(CITE, (_m, ids: string) => {
+    for (const i of ids.split(",")) if (!refs.includes(i.trim())) refs.push(i.trim());
+    return "";
+  }).replace(/[ ]+\n/g, "\n").trim();
+  return { clean, refs };
+}
+
 export const mapMessage = (m: WireMessage): Message => ({
-  id: m.id, srcId: m.src_id ?? "", code: m.code, at: fmtWhen(m.at), channel: m.channel, text: m.text,
+  id: m.id, srcId: m.src_id ?? "", code: m.code, at: fmtWhen(m.at), channel: channelName(m.channel), text: m.text,
   approvedBy: m.approved_by, version: m.version, status: m.status === "seen" ? "seen" : "sent",
-  ...(m.delivery ? { delivery: m.delivery, deliveryError: m.delivery_error ?? undefined } : {}),
+  ...(m.delivery ? { delivery: m.delivery, deliveryError: friendlyDeliveryError(m.delivery_error) || undefined } : {}),
 });
 
 export const mapAudit = (a: WireAudit): AuditEntry => ({
@@ -96,9 +126,19 @@ export const mapAudit = (a: WireAudit): AuditEntry => ({
 
 export const mapTemplate = (t: WireTemplate): Template => ({ id: t.template_id, name: `${t.key} (${t.lang})`, text: t.body });
 
+/** The server may list one task name several times ("Other"). Merge them so each name shows once. */
+export function mergeTasks(tasks: Usage["tasks"]): Usage["tasks"] {
+  const m = new Map<string, Usage["tasks"][number]>();
+  for (const t of tasks ?? []) {
+    const c = m.get(t.name);
+    if (!c) m.set(t.name, { ...t });
+    else m.set(t.name, { name: t.name, spend: c.spend + t.spend, pct: Math.min(100, c.pct + t.pct), flag: c.flag === "watch" || t.flag === "watch" ? "watch" : c.flag });
+  }
+  return [...m.values()];
+}
 export const mapUsage = (u: WireUsage): Usage => ({
   mode: u.mode, todaySpend: u.today_spend, todayCap: u.today_cap, budgetUsed: u.budget_used, budget: u.budget,
-  days: u.days, tasks: u.tasks, retries: u.retries, breaker: u.breaker, billing: u.billing, providerPct: u.provider_pct,
+  days: u.days, tasks: mergeTasks(u.tasks), retries: u.retries, breaker: u.breaker, billing: u.billing, providerPct: u.provider_pct,
 });
 
 export const mapEvidence = (e: Evidence): Evidence => e; // wire shape already equals the UI shape
@@ -186,6 +226,11 @@ export function mapQueryAnswer(a: WireQueryAnswer): MappedAnswer {
   }).filter((s) => s.text);
   const sources = (a.tool_calls_used ?? []).map((c) => ({ n: c.n, label: `${c.tool.replace(/_/g, " ")}: ${c.row_count} record${c.row_count === 1 ? "" : "s"}` }));
   return { sentences, sources, verified: a.numbers_verified, refused: !!a.refused };
+}
+
+/** /admin/settings.channels ({telegram: true}) -> the Admin channel list. Only what the server reports, nothing invented. */
+export function mapChannels(ch: Record<string, boolean> | undefined): { name: string; connected: boolean; detail: string }[] {
+  return Object.entries(ch ?? {}).map(([k, v]) => ({ name: channelName(k), connected: !!v, detail: v ? "Connected" : "Not connected" }));
 }
 
 export function mapServerSettings(s: { version: number; values: Record<string, string | number>; channels?: Record<string, boolean>; updated_at?: string | null }): ServerSettings {

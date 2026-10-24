@@ -2,7 +2,7 @@ import { useEffect, useState, type ComponentProps, type ReactNode } from "react"
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { USE_MOCK } from "../api";
 import { resetHttpSession } from "../api/httpAdapter";
-import { http } from "../api/http";
+import { forgetSession, getMe, http } from "../api/http";
 
 export interface Me {
   role: string;
@@ -30,6 +30,7 @@ export const canOpen = (area: keyof typeof ALLOWED, role: string) => ALLOWED[are
 export async function signIn(username: string, password: string): Promise<string> {
   resetHttpSession();
   const out = await http<{ role: string }>("/auth/login", { method: "POST", body: { username, password } });
+  forgetSession(null); // the next /auth/me is the first of the new session
   window.dispatchEvent(new Event("cm-session"));
   return out.role;
 }
@@ -39,13 +40,14 @@ export async function signOut(): Promise<void> {
     await http("/auth/logout", { method: "POST" });
   } finally {
     resetHttpSession();
+    forgetSession(false);
     window.dispatchEvent(new Event("cm-session"));
   }
 }
 
 export async function fetchMe(): Promise<Me | null> {
   try {
-    return await http<Me>("/auth/me");
+    return await getMe<Me>();
   } catch {
     return null;
   }

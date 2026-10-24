@@ -9,7 +9,7 @@ const PREFS: { k: keyof Settings; label: string; help: string }[] = [
   { k: "notifyRed", label: "Tell me about RED items at once", help: "A pop-up and a message when a red draft is ready" },
   { k: "notifyRequests", label: "Tell me when a patient asks something", help: "One alert per request" },
   { k: "digest", label: "Daily summary at 8 am", help: "One short list instead of many alerts" },
-  { k: "quiet", label: "Quiet hours, 9 pm to 6 am", help: "Only RED items break through" },
+  { k: "quiet", label: "Quiet hours, 9 pm to 7 am", help: "Only RED items break through" },
   { k: "sound", label: "Play a sound", help: "Off by default in the clinic" },
 ];
 

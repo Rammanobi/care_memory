@@ -74,6 +74,7 @@
  .doc .lanes{grid-template-columns:1fr}
 }
 @media (max-width:720px){
+ .doc .pill{min-height:40px}
  .doc .app{display:block;padding-bottom:70px}
  .doc .nav{display:none}
  .doc .clinic,.doc .search{display:none}

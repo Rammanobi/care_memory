@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useCare } from "../api/CareProvider";
+import { USE_MOCK } from "../api";
 import { dueAtOf, findEvidence, fmtLeft, slaClass } from "../api/derive";
 
 /** Re-renders every `ms` so countdowns stay live. */
@@ -80,8 +81,8 @@ function Drawer({ id, onClose }: { id: string; onClose: () => void }) {
 }
 
 // ---------- undo toast ----------
-interface Toast { msg: string; undo: () => void; key: number }
-const ToastCtx = createContext<(msg: string, undo: () => void) => void>(() => {});
+interface Toast { msg: string; undo?: () => void; key: number }
+const ToastCtx = createContext<(msg: string, undo?: () => void) => void>(() => {});
 
 const KEYS: [string, string][] = [["J", "Next item in the list"], ["K", "Previous item"], ["Enter", "Open the highlighted patient"], ["A", "Approve the highlighted draft"], ["E", "Edit the highlighted draft"], ["D", "Decline the highlighted draft"], ["?", "Show or hide this help"], ["Esc", "Close a panel"]];
 
@@ -90,7 +91,7 @@ export function DoctorKit({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<Toast | null>(null);
   const [help, setHelp] = useState(false);
   const timer = useRef<number>();
-  const notify = useCallback((msg: string, undo: () => void) => {
+  const notify = useCallback((msg: string, undo?: () => void) => {
     window.clearTimeout(timer.current);
     setToast({ msg, undo, key: Date.now() });
     timer.current = window.setTimeout(() => setToast(null), 10000);
@@ -108,8 +109,8 @@ export function DoctorKit({ children }: { children: ReactNode }) {
         {toast && (
           <div className="toast" role="status" key={toast.key}>
             <span>{toast.msg}</span>
-            <button type="button" onClick={() => { toast.undo(); setToast(null); }}>Undo</button>
-            <i className="bar10" aria-hidden="true" />
+            {toast.undo && <button type="button" onClick={() => { toast.undo?.(); setToast(null); }}>Undo</button>}
+            {toast.undo && <i className="bar10" aria-hidden="true" />}
           </div>
         )}
         {help && (
@@ -137,7 +138,7 @@ export function useDecide() {
   return useMemo(() => {
     const run = (ids: string[], code: string, d: "approved" | "declined", fire: () => void) => {
       fire();
-      notify(`${d === "approved" ? "Approved and sent" : "Declined"}${ids.length > 1 ? ` ${ids.length} drafts` : ` for ${code}`}.`, () => dispatch({ t: "undo", ids }));
+      notify(`${d === "approved" ? "Approved and sent" : "Declined"}${ids.length > 1 ? ` ${ids.length} drafts` : ` for ${code}`}.`, USE_MOCK ? () => dispatch({ t: "undo", ids }) : undefined); // the server has no undo: no Undo button in live mode
     };
     return {
       request: (id: string, d: "approved" | "declined", text?: string) => {

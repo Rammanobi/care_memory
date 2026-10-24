@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bulkFailures, mapConsentState, mapDistrict, mapDocument, mapMedicine, mapMessage, mapPatient, dayFromIso, decisionBody, mapApproval, mapConsents, mapPortalMe, mapPortalMsg, mapPortalRequest, mapQueryAnswer, mapRecord, mapServerSettings, mapStatus, mapSupporterView, mapTimeline, mapUsage, toApiToken, toUiCode } from "./mapping";
+import { bulkFailures, mapConsentState, mapDistrict, mapDocument, mapMedicine, mapMessage, mapPatient, dayFromIso, decisionBody, mapApproval, mapConsents, mapPortalMe, mapPortalMsg, mapPortalRequest, mapQueryAnswer, mapRecord, mapServerSettings, mapStatus, mapSupporterView, mapTimeline, mapUsage, toApiToken, toUiCode, splitCitations, friendlyDeliveryError, channelName, mergeTasks, mapChannels } from "./mapping";
 import { problemFrom } from "./http";
 
 describe("mapping", () => {
@@ -101,5 +101,25 @@ describe("mapping", () => {
     expect(mapConsentState({ by_source_purpose: { telegram: { reminders: "granted" }, gmail: { x: "withdrawn" } } })).toBe("Active");
     expect(mapConsentState({ by_source_purpose: { telegram: { reminders: "withdrawn" } } })).toBe("Withdrawn");
     expect(mapConsentState({ by_source_purpose: { telegram: { reminders: "never" } } })).toBe("Pending");
+  });
+});
+
+describe("live-mode display helpers", () => {
+  it("moves [E-..] tokens out of draft text", () => {
+    expect(splitCitations("Take your tablet [E-0412] daily [B-0101, C-0201].")).toEqual({ clean: "Take your tablet daily.", refs: ["E-0412", "B-0101", "C-0201"] });
+    expect(splitCitations("No tokens [1]")).toEqual({ clean: "No tokens [1]", refs: [] });
+  });
+  it("explains delivery errors and channel names", () => {
+    expect(friendlyDeliveryError("skipped:no_consent")).toMatch(/not given consent/);
+    expect(friendlyDeliveryError("skipped:other_thing")).toBe("Not sent: other thing");
+    expect(channelName("telegram")).toBe("Telegram");
+  });
+  it("merges duplicate task names", () => {
+    const t = mergeTasks([{ name: "Other", spend: 1, pct: 10, flag: "ok" }, { name: "Other", spend: 2, pct: 20, flag: "watch" }]);
+    expect(t).toEqual([{ name: "Other", spend: 3, pct: 30, flag: "watch" }]);
+  });
+  it("reads channels from /admin/settings only", () => {
+    expect(mapChannels({ telegram: true, gmail: false }).map((c) => [c.name, c.connected])).toEqual([["Telegram", true], ["Gmail", false]]);
+    expect(mapChannels(undefined)).toEqual([]);
   });
 });

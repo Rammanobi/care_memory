@@ -1,4 +1,4 @@
-import { API_BASE } from "../api/http";
+import { API_BASE, sessionState } from "../api/http";
 import { status } from "../api/status";
 
 export const SSE_TOPICS = ["review", "channels"];
@@ -23,7 +23,7 @@ export function parseLive(data: unknown, fallbackTopic = ""): LiveEvent | null {
  * Live updates: SSE on GET /stream (event name = topic). Every event triggers an immediate (debounced) refetch.
  * Polling stays as a fallback: 5 s without SSE, 30 s while connected. Reconnects with exponential backoff.
  */
-export function startLive(onEvent: (e: LiveEvent | null) => void): () => void {
+export function startLive(onEvent: (e: LiveEvent | null) => void, enabled: () => boolean = () => sessionState.signedIn === true): () => void {
   let es: EventSource | null = null;
   let poll: ReturnType<typeof setTimeout> | null = null;
   let retry: ReturnType<typeof setTimeout> | null = null;
@@ -40,7 +40,7 @@ export function startLive(onEvent: (e: LiveEvent | null) => void): () => void {
     if (stopped) return;
     if (poll) clearTimeout(poll);
     poll = setTimeout(() => {
-      if (typeof document === "undefined" || document.visibilityState === "visible") onEvent(null);
+      if (enabled() && (typeof document === "undefined" || document.visibilityState === "visible")) onEvent(null);
       schedulePoll();
     }, connected ? POLL_UP_MS : POLL_DOWN_MS);
   };
@@ -50,7 +50,7 @@ export function startLive(onEvent: (e: LiveEvent | null) => void): () => void {
     schedulePoll(); // re-arm with the interval that matches the new state
   };
   const open = () => {
-    if (stopped || typeof EventSource === "undefined") return;
+    if (stopped || typeof EventSource === "undefined" || !enabled()) return; // logged out: no /stream, no 401 storm
     const src = new EventSource(`${API_BASE}/stream?topics=${SSE_TOPICS.join(",")}`, { withCredentials: true });
     es = src;
     src.onopen = () => {
@@ -80,12 +80,18 @@ export function startLive(onEvent: (e: LiveEvent | null) => void): () => void {
     setConnected(false);
     open();
   };
-  if (typeof window !== "undefined") window.addEventListener("cm-session", onSession);
+  if (typeof window !== "undefined") {
+    window.addEventListener("cm-session", onSession);
+    window.addEventListener("cm-session-up", onSession); // /auth/me just answered 200: start now
+  }
   schedulePoll();
   open();
   return () => {
     stopped = true;
-    if (typeof window !== "undefined") window.removeEventListener("cm-session", onSession);
+    if (typeof window !== "undefined") {
+      window.removeEventListener("cm-session", onSession);
+      window.removeEventListener("cm-session-up", onSession);
+    }
     es?.close();
     es = null;
     if (poll) clearTimeout(poll);

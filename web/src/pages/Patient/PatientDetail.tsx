@@ -4,10 +4,11 @@ import { buildRow, treatmentDay } from "../../api/derive";
 import { DraftCard } from "../../components/DraftCard";
 import { EvChip, useDecide } from "../../components/doctorKit";
 import { Icon } from "../../components/ui";
+import { USE_MOCK } from "../../api";
 
 /** Pending request and approval cards for one patient. */
 export function Drafts({ code }: { code: string }) {
-  const { state } = useCare();
+  const { state, loadDetail } = useCare();
   const decide = useDecide();
   if (!state) return null;
   const reqs = state.requests.filter((r) => r.patientCode === code && !r.archived);
@@ -19,7 +20,7 @@ export function Drafts({ code }: { code: string }) {
           srcId={r.id} refs={r.refs} due={r.status === "waiting" ? r : undefined} onDecide={(d, text) => decide.request(r.id, d, text)} />
       ))}
       {aps.map((a) => (
-        <DraftCard key={a.id} heading={`Next step: ${a.title}`} draft={a.draft} status={a.status} reply={a.reply} srcId={a.id} refs={a.refs} why={a.why}
+        <DraftCard key={a.id} heading={`Next step: ${a.title}`} draft={a.draft} status={a.status} reply={a.reply} srcId={a.id} refs={a.refs} why={a.why} onLoadDraft={USE_MOCK ? undefined : () => loadDetail(a.id)}
           due={a.status === "waiting" ? a : undefined} onDecide={(d, text) => decide.approvals([a.id], d, text)} />
       ))}
     </>

@@ -31,6 +31,40 @@ export function buildUrl(path: string, query?: Opts["query"]): string {
   return u.toString();
 }
 
+/**
+ * Session knowledge shared by the route guard, the adapter and the live-update loop.
+ * signedIn: null = not asked yet, true/false = answered by /auth/me. Logged-out visits then stop polling and stop opening /stream.
+ */
+export const sessionState: { signedIn: boolean | null; me: unknown; inflight: Promise<unknown> | null } = { signedIn: null, me: null, inflight: null };
+export function forgetSession(signedIn: boolean | null = null) {
+  sessionState.signedIn = signedIn;
+  sessionState.me = null;
+  sessionState.inflight = null;
+}
+/** One GET /auth/me per session: concurrent callers share the request, later callers share the answer. 401 = signed out (no retry until sign-in). */
+export function getMe<T = { role: string }>(): Promise<T> {
+  if (sessionState.signedIn === false) return Promise.reject(new ApiError(401, "Not signed in"));
+  if (sessionState.me) return Promise.resolve(sessionState.me as T);
+  if (!sessionState.inflight) {
+    sessionState.inflight = http<T>("/auth/me")
+      .then((m) => {
+        const was = sessionState.signedIn;
+        sessionState.me = m;
+        sessionState.signedIn = true;
+        if (was !== true && typeof window !== "undefined") window.dispatchEvent(new Event("cm-session-up"));
+        return m;
+      })
+      .catch((e) => {
+        if (e instanceof ApiError && e.httpStatus === 401) sessionState.signedIn = false;
+        throw e;
+      })
+      .finally(() => {
+        sessionState.inflight = null;
+      });
+  }
+  return sessionState.inflight as Promise<T>;
+}
+
 /** Only idempotent GETs are retried (network errors and 502/503/504). */
 export async function http<T>(path: string, o: Opts = {}): Promise<T> {
   const method = (o.method ?? "GET").toUpperCase();
@@ -47,6 +81,7 @@ export async function http<T>(path: string, o: Opts = {}): Promise<T> {
     try {
       const res = await fetch(buildUrl(path, o.query), { method, headers, body, credentials: "include" });
       status.setOffline(false);
+      if (res.status === 401 && path !== "/auth/login") sessionState.signedIn = false;
       if (res.status === 401 && path !== "/auth/login" && path !== "/auth/me") {
         status.toast("Your session ended. Please sign in again.");
         if (location.pathname !== "/") location.assign("/");

@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useCare } from "../../api/CareProvider";
 import { isLive, timelineServer } from "../../api/serverCalls";
-import type { TimelineRow } from "../../api/mapping";
+import { splitCitations, type TimelineRow } from "../../api/mapping";
 import { buildRow, clinicName, missedLabel, stripCells } from "../../api/derive";
 import type { EvKind } from "../../api";
-import { EvChip } from "../../components/doctorKit";
+import { EvChip, EvChips } from "../../components/doctorKit";
 import { Icon, Skeleton } from "../../components/ui";
 import { Changes, Drafts, Snapshot } from "./PatientDetail";
 
@@ -111,7 +111,7 @@ export default function PatientPage() {
         <section className="sec">
           {msgs.length === 0 ? <div className="empty"><b>No messages sent yet</b>Approved messages appear here.</div> : msgs.map((m) => (
             <div key={m.id} className="msg">
-              <div className="bubble">{m.text}</div>
+              <div className="bubble">{splitCitations(m.text).clean}</div>{splitCitations(m.text).refs.length > 0 && <EvChips ids={splitCitations(m.text).refs} />}
               <div className="sm">{m.at} · {m.channel} · approved by {m.approvedBy} · version {m.version} · {m.status === "seen" ? <b>Seen</b> : !m.delivery && <b>Sent</b>}
                 {m.delivery && <span className={`dchip ${m.delivery === "failed" ? "f" : m.delivery === "sent" ? "s" : "q"}`} data-testid="delivery">{m.delivery === "failed" ? `Failed${m.deliveryError ? `: ${m.deliveryError}` : ""}` : m.delivery === "sent" ? "Sent" : "Queued"}</span>}</div>
             </div>

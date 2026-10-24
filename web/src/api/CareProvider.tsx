@@ -8,11 +8,12 @@ interface Ctx {
   state: CareState | null; // null while loading
   dispatch: (a: Action) => void;
   reset: () => void;
+  loadDetail: (id: string) => void;
 }
 
 const CareCtx = createContext<Ctx | null>(null);
 
-function Banner({ onRetry }: { onRetry: () => void }) {
+function Banner({ onRetry, loadErrors }: { onRetry: () => void; loadErrors?: string[] }) {
   const s = useSyncExternalStore(status.subscribe, status.get);
   useEffect(() => {
     if (!s.toast) return;
@@ -25,6 +26,11 @@ function Banner({ onRetry }: { onRetry: () => void }) {
         <div role="alert" style={{ position: "sticky", top: 0, zIndex: 50, background: "#b3261e", color: "#fff", padding: "10px 16px", display: "flex", gap: 12, alignItems: "center" }}>
           <span>Cannot reach the server. Showing the last data we have.</span>
           <button onClick={onRetry} style={{ minHeight: 36, padding: "0 14px", borderRadius: 8, border: "1px solid #fff", background: "transparent", color: "#fff" }}>Retry</button>
+        </div>
+      )}
+      {!!loadErrors?.length && (
+        <div role="status" style={{ background: "#fff4d6", color: "#5c3d00", padding: "8px 16px", fontSize: 14 }}>
+          Could not load: {loadErrors.join(", ")}. Those parts stay empty until the server answers.
         </div>
       )}
       {s.bulk && (
@@ -78,10 +84,14 @@ export function CareProvider({ children }: { children: ReactNode }) {
     api.reset().then(setState).catch(() => undefined);
   }, []);
 
-  const value = useMemo(() => ({ state, dispatch, reset }), [state, dispatch, reset]);
+  const loadDetail = useCallback((id: string) => {
+    api.loadDetail?.(id).then(setState).catch(() => undefined);
+  }, []);
+
+  const value = useMemo(() => ({ state, dispatch, reset, loadDetail }), [state, dispatch, reset, loadDetail]);
   return (
     <CareCtx.Provider value={value}>
-      <Banner onRetry={refetch} />
+      <Banner onRetry={refetch} loadErrors={state?.loadErrors} />
       {children}
     </CareCtx.Provider>
   );

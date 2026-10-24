@@ -1,0 +1,36 @@
+schema: spec-driven
+
+context: |
+  CareMemory is a TB care-memory system (Python, FastAPI, LangGraph, deepagents,
+  Cloud SQL Postgres, Google Cloud). Mock data only.
+  Master design docs live one folder up (../INTEGRATION_DECISIONS.md wins, then
+  ../CAREMEMORY_ARCHITECTURE.md, then ../feature_specs/01-04).
+  Hard constraints:
+  - A doctor approves every outbound AI output (enforced by a DB constraint on the outbox).
+  - Statistics and rules decide; LLMs only plan, parse and narrate, and must cite events (cite-or-cut).
+  - Patient-facing text never says "TB". Say "Supporter", never "Saathi".
+  - Runtime LLMs are OpenAI or DeepSeek via init_chat_model; no keys in code.
+  - Names: task_runs, approval_id, recorded_at, cm-* services, code under cm/, no /v1 prefix.
+  - Contracts in cm/contracts/ are frozen at the contracts-v1 tag; change them only via an RFC.
+  - Every side effect is idempotent (named Cloud Tasks, idempotency keys, outbox).
+  - Each lane edits only the directories it owns (see CLAUDE.md).
+
+rules:
+  proposal:
+    - State which lane owns the change and which spec section it implements
+    - Always state what is out of scope
+  tasks:
+    - Break tasks into chunks of max 2 hours
+    - Name the exact files and the tests that prove each task done
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing

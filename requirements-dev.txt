@@ -1,0 +1,25 @@
+# CareMemory dev/CI requirements. Not installed in the runtime image.
+# "UNVERIFIED" = pin copied from feature_specs/04 section 11, not confirmed on PyPI.
+-r requirements.txt
+pytest==9.1.1                             # UNVERIFIED
+pytest-asyncio==1.4.0                     # UNVERIFIED
+pytest-cov==7.1.0                         # UNVERIFIED
+pytest-xdist==3.8.0                       # UNVERIFIED
+respx==0.23.1                             # UNVERIFIED
+freezegun==1.5.5                          # UNVERIFIED
+hypothesis==6.170.8                       # UNVERIFIED
+testcontainers==4.15.0                    # UNVERIFIED
+schemathesis==4.32.4                      # UNVERIFIED, P1 API fuzzing
+import-linter==2.15                       # UNVERIFIED (truth isolation + layering contracts)
+ruff==0.17.2                              # UNVERIFIED
+detect-secrets==1.5.0                     # UNVERIFIED
+pyyaml>=6.0                               # scripts/check_ownership.py reads scripts/lanes.yaml
+google-cloud-pubsub==2.43.0               # UNVERIFIED (infra/replay_dlq.py, local tests)
+
+# --- mock documents (dev container only; infra/local/Dockerfile.dev) ---
+# Faker: the spec recommends a committed name list (fixtures/names_en_in.json) instead of Faker at runtime.
+Faker==40.43.0                            # UNVERIFIED
+weasyprint==70.0                          # UNVERIFIED: needs Pango/HarfBuzz system libs
+pypdfium2==5.14.0                         # UNVERIFIED
+augraphy==8.2.6                           # UNVERIFIED: pulls opencv + numba + scikit-image; numba vs numpy 2.4 unverified
+opencv-python-headless==5.0.0.93          # UNVERIFIED: if augraphy fights over opencv, install augraphy --no-deps

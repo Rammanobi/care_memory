@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cm"
+version = "0.1.0"
+description = "CareMemory: longitudinal adherence memory and doctor-gated follow-up (coordination only)"
+requires-python = ">=3.11"
+# Runtime pins live in requirements.txt (the image installs from it): one source of truth.
+dependencies = []
+
+[tool.setuptools.packages.find]
+include = ["cm*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["web", "node_modules", "out", "openspec", ".claude"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "S"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+asyncio_mode = "auto"
+markers = [
+  "live: calls real network services (LLM, Telegram, Gmail, GCP); excluded from make test",
+  "slow: long-running tests",
+  "docs: mock-document generation (needs WeasyPrint, dev container only)",
+  "db: needs a Postgres (docker compose db)",
+]

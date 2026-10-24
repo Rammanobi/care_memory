@@ -1,0 +1,176 @@
+# Approved message templates: confirmations and acknowledgements (Green tier, patient audience).
+# Lane K (content). Telugu is machine-written; each te block needs native-speaker review.
+# Placeholders are declared per template and must match the {names} used in every language.
+# No medical advice, no diagnosis, no disease or drug names (see scripts/banned_terms.py). Use "your treatment" and "your medicine".
+version: 1
+templates:
+  - id: reminder_time_changed_v1
+    kind: reminder_time_changed
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [first_name, new_time]
+    languages:
+      en:
+        telegram: "Done, {first_name}. Your daily reminder is now at {new_time}."
+        email:
+          subject: "Your daily reminder time has changed"
+          body: |
+            Hello {first_name},
+
+            Your daily reminder will now arrive at {new_time}. Nothing else has changed.
+
+            If you want a different time, reply to this message.
+
+            With care,
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "సరే, {first_name}. మీ రోజువారీ గుర్తు ఇప్పుడు {new_time} కు ఉంటుంది."
+        email:
+          subject: "మీ రోజువారీ గుర్తు సమయం మారింది"
+          body: |
+            నమస్కారం {first_name},
+
+            మీ రోజువారీ గుర్తు ఇప్పుడు {new_time} కు వస్తుంది. ఇంకేమీ మారలేదు.
+
+            వేరే సమయం కావాలంటే ఈ సందేశానికి బదులివ్వండి.
+
+            ఆప్యాయతతో,
+            మీ సంరక్షణ బృందం
+
+  - id: visit_moved_v1
+    kind: visit_moved
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [first_name, new_date, new_time, clinic_name]
+    languages:
+      en:
+        telegram: "Done, {first_name}. Your visit has moved to {new_date} at {new_time} at {clinic_name}."
+        email:
+          subject: "Your visit has moved to {new_date}"
+          body: |
+            Hello {first_name},
+
+            Your visit has moved to {new_date} at {new_time} at {clinic_name}. Please keep this date in mind.
+
+            If this does not work, reply to this message and we will find another time.
+
+            With care,
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "సరే, {first_name}. మీ సందర్శన {new_date} న {new_time} కు {clinic_name} లో మార్చబడింది."
+        email:
+          subject: "మీ సందర్శన {new_date} కు మారింది"
+          body: |
+            నమస్కారం {first_name},
+
+            మీ సందర్శన {new_date} న {new_time} కు {clinic_name} లో మార్చబడింది. ఈ తేదీని గుర్తుంచుకోండి.
+
+            ఇది మీకు వీలుకాకపోతే ఈ సందేశానికి బదులివ్వండి, మరో సమయం చూస్తాం.
+
+            ఆప్యాయతతో,
+            మీ సంరక్షణ బృందం
+
+  - id: request_received_v1
+    kind: request_received
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [first_name]
+    languages:
+      en:
+        telegram: "Thank you, {first_name}. We have received your request. Your care team will reply soon."
+        email:
+          subject: "We have received your request"
+          body: |
+            Hello {first_name},
+
+            Thank you for writing to us. We have received your request, and your care team will reply soon.
+
+            If it is urgent, do not wait for us. Contact your clinic or call 108 right away.
+
+            With care,
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "ధన్యవాదాలు, {first_name}. మీ అభ్యర్థన మాకు అందింది. మీ సంరక్షణ బృందం త్వరలో బదులిస్తుంది."
+        email:
+          subject: "మీ అభ్యర్థన అందింది"
+          body: |
+            నమస్కారం {first_name},
+
+            మాకు రాసినందుకు ధన్యవాదాలు. మీ అభ్యర్థన మాకు అందింది, మీ సంరక్షణ బృందం త్వరలో బదులిస్తుంది.
+
+            ఇది అత్యవసరమైతే మా కోసం వేచి ఉండకండి. వెంటనే మీ క్లినిక్‌ను సంప్రదించండి లేదా 108 కు కాల్ చేయండి.
+
+            ఆప్యాయతతో,
+            మీ సంరక్షణ బృందం
+
+  - id: consent_confirmation_v1
+    kind: consent_confirmation
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [first_name, channel_name]
+    languages:
+      en:
+        telegram: "Thank you, {first_name}. We will send {channel_name} messages as you agreed. You can stop any time by sending /stop."
+        email:
+          subject: "Thank you for your consent"
+          body: |
+            Hello {first_name},
+
+            Thank you. We have recorded your consent for {channel_name} messages. You can change your mind at any time, and we will confirm when it is done.
+
+            With care,
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "ధన్యవాదాలు, {first_name}. మీరు అంగీకరించినట్లు {channel_name} ద్వారా సందేశాలు పంపుతాం. ఎప్పుడైనా /stop పంపి ఆపవచ్చు."
+        email:
+          subject: "మీ అంగీకారానికి ధన్యవాదాలు"
+          body: |
+            నమస్కారం {first_name},
+
+            ధన్యవాదాలు. {channel_name} సందేశాలకు మీ అంగీకారాన్ని మేము నమోదు చేశాం. మీరు ఎప్పుడైనా మనసు మార్చుకోవచ్చు, అది అయ్యాక మేము మీకు తెలియజేస్తాం.
+
+            ఆప్యాయతతో,
+            మీ సంరక్షణ బృందం
+
+  - id: consent_revoke_confirmation_v1
+    kind: consent_revoke_confirmation
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [first_name, channel_name]
+    languages:
+      en:
+        telegram: "Done, {first_name}. We have stopped {channel_name} messages, as you asked. Your Supporter can still help you."
+        email:
+          subject: "We have stopped your {channel_name} messages"
+          body: |
+            Hello {first_name},
+
+            As you asked, we have stopped {channel_name} messages to you. Your Supporter can still help you, and your care team has been told.
+
+            If you change your mind, you can turn messages back on at any time.
+
+            With care,
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "సరే, {first_name}. మీరు కోరినట్లు {channel_name} సందేశాలు ఆపాం. మీ సపోర్టర్ ఇంకా మీకు సహాయం చేయగలరు."
+        email:
+          subject: "మీ {channel_name} సందేశాలు ఆపాం"
+          body: |
+            నమస్కారం {first_name},
+
+            మీరు కోరినట్లు మీకు {channel_name} సందేశాలు ఆపాం. మీ సపోర్టర్ ఇంకా మీకు సహాయం చేయగలరు, మీ సంరక్షణ బృందానికి తెలియజేశాం.
+
+            మనసు మారితే ఎప్పుడైనా సందేశాలను మళ్ళీ ఆన్ చేసుకోవచ్చు.
+
+            ఆప్యాయతతో,
+            మీ సంరక్షణ బృందం

@@ -1,0 +1,73 @@
+# Approved message templates: Supporter summary (Green tier, supporter audience) and emergency note (patient audience).
+# Lane K (content). Telugu is machine-written; each te block needs native-speaker review.
+# Placeholders are declared per template and must match the {names} used in every language.
+# No medical advice, no diagnosis, no disease or drug names (see scripts/banned_terms.py). Use "your treatment" and "your medicine".
+version: 1
+templates:
+  - id: supporter_weekly_summary_v1
+    kind: supporter_weekly_summary
+    audience: supporter
+    tier: green
+    doctor_approved: true
+    placeholders: [supporter_name, patient_name, days_taken, days_in_week, next_visit_date]
+    languages:
+      en:
+        telegram: "Hello {supporter_name}. This week {patient_name} took the medicine on {days_taken} of {days_in_week} days. Next visit: {next_visit_date}."
+        email:
+          subject: "Weekly summary for {patient_name}"
+          body: |
+            Hello {supporter_name},
+
+            Thank you for supporting {patient_name}. This week, the medicine was taken on {days_taken} of {days_in_week} days.
+
+            The next visit is on {next_visit_date}. If you have a worry, or a day was missed, please let the care team know.
+
+            Thank you for your help,
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "నమస్కారం {supporter_name}. ఈ వారం {patient_name} {days_in_week} రోజులలో {days_taken} రోజులు మందు తీసుకున్నారు. తదుపరి సందర్శన: {next_visit_date}."
+        email:
+          subject: "{patient_name} కోసం వారపు సారాంశం"
+          body: |
+            నమస్కారం {supporter_name},
+
+            {patient_name} కు మీరు ఇస్తున్న సహాయానికి ధన్యవాదాలు. ఈ వారం {days_in_week} రోజులలో {days_taken} రోజులు మందు తీసుకున్నారు.
+
+            తదుపరి సందర్శన {next_visit_date} న. ఏదైనా ఆందోళన ఉంటే, లేదా ఒక రోజు మిస్ అయితే, సంరక్షణ బృందానికి చెప్పండి.
+
+            మీ సహాయానికి ధన్యవాదాలు,
+            మీ సంరక్షణ బృందం
+
+  - id: emergency_note_v1
+    kind: emergency_note
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [first_name, clinic_phone]
+    languages:
+      en:
+        telegram: "{first_name}, if you feel very unwell, please contact your clinic at {clinic_phone} or call 108 now. We have let your care team know."
+        email:
+          subject: "Please contact your clinic or call 108"
+          body: |
+            Hello {first_name},
+
+            You told us you are not feeling well, or we noticed something that needs attention. Please contact your clinic at {clinic_phone} or call 108 now.
+
+            We have let your care team know. This message does not replace medical care.
+
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "{first_name}, మీకు చాలా బాగోలేకపోతే, దయచేసి ఇప్పుడే మీ క్లినిక్‌ను {clinic_phone} లో సంప్రదించండి లేదా 108 కు కాల్ చేయండి. మీ సంరక్షణ బృందానికి తెలియజేశాం."
+        email:
+          subject: "దయచేసి మీ క్లినిక్‌ను సంప్రదించండి లేదా 108 కు కాల్ చేయండి"
+          body: |
+            నమస్కారం {first_name},
+
+            మీకు బాగోలేదని మీరు చెప్పారు, లేదా మాకు శ్రద్ధ అవసరమని అనిపించింది. దయచేసి ఇప్పుడే మీ క్లినిక్‌ను {clinic_phone} లో సంప్రదించండి లేదా 108 కు కాల్ చేయండి.
+
+            మీ సంరక్షణ బృందానికి తెలియజేశాం. ఈ సందేశం వైద్య సహాయానికి ప్రత్యామ్నాయం కాదు.
+
+            మీ సంరక్షణ బృందం

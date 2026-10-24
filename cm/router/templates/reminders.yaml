@@ -1,0 +1,180 @@
+# Approved message templates: routine reminders (Green tier, patient audience).
+# Lane K (content). Telugu is machine-written; each te block needs native-speaker review.
+# Placeholders are declared per template and must match the {names} used in every language.
+# No medical advice, no diagnosis, no disease or drug names (see scripts/banned_terms.py). Use "your treatment" and "your medicine".
+version: 1
+templates:
+  - id: daily_checkin_reminder_v1
+    kind: daily_checkin_reminder
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [first_name]
+    languages:
+      en:
+        telegram: "Good morning, {first_name}. Did you take today's medicine?"
+        email:
+          subject: "Your daily medicine check-in"
+          body: |
+            Good morning, {first_name}.
+
+            Please tap one of the buttons in the app to tell us if you took today's medicine. It only takes a moment.
+
+            If you need help, reply to this message and your care team will get back to you.
+
+            With care,
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "శుభోదయం, {first_name}. ఈరోజు మీ మందు తీసుకున్నారా?"
+        email:
+          subject: "మీ రోజువారీ మందు నమోదు"
+          body: |
+            శుభోదయం, {first_name}.
+
+            ఈరోజు మీ మందు తీసుకున్నారో లేదో మాకు చెప్పడానికి యాప్‌లో ఒక బటన్ నొక్కండి. ఇది కొద్ది క్షణాలు మాత్రమే పడుతుంది.
+
+            మీకు సహాయం కావాలంటే ఈ సందేశానికి బదులివ్వండి, మీ సంరక్షణ బృందం మీకు తిరిగి తెలియజేస్తుంది.
+
+            ఆప్యాయతతో,
+            మీ సంరక్షణ బృందం
+
+  - id: missed_dose_nudge_v1
+    kind: missed_dose_nudge
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [first_name]
+    languages:
+      en:
+        telegram: "Just checking in, {first_name}: did you take today's medicine? Tap a button to let us know."
+        email:
+          subject: "A quick check on today's medicine"
+          body: |
+            Hello {first_name},
+
+            We have not heard yet whether you took today's medicine. There is no need to worry. Please tap one of the buttons in the app, or reply to this message, so your care team knows how you are doing.
+
+            If you missed a dose, just tell us. Nobody will be upset.
+
+            With care,
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "{first_name}, ఒక చిన్న గుర్తు చేయడం: ఈరోజు మీ మందు తీసుకున్నారా? ఒక బటన్ నొక్కి మాకు చెప్పండి."
+        email:
+          subject: "ఈరోజు మందు గురించి ఒక చిన్న తనిఖీ"
+          body: |
+            నమస్కారం {first_name},
+
+            ఈరోజు మీ మందు తీసుకున్నారో లేదో ఇంకా మాకు తెలియలేదు. ఆందోళన అవసరం లేదు. యాప్‌లో ఒక బటన్ నొక్కండి, లేదా ఈ సందేశానికి బదులివ్వండి, అప్పుడు మీ సంరక్షణ బృందానికి మీ పరిస్థితి తెలుస్తుంది.
+
+            మీరు ఒక మోతాదు మిస్ అయితే, మాకు చెప్పండి. ఎవరూ కోపగించుకోరు.
+
+            ఆప్యాయతతో,
+            మీ సంరక్షణ బృందం
+
+  - id: visit_reminder_v1
+    kind: visit_reminder
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [first_name, visit_date, visit_time, clinic_name]
+    languages:
+      en:
+        telegram: "Reminder, {first_name}: your visit is on {visit_date} at {visit_time} at {clinic_name}."
+        email:
+          subject: "Your visit on {visit_date}"
+          body: |
+            Hello {first_name},
+
+            This is a reminder that your visit is on {visit_date} at {visit_time} at {clinic_name}.
+
+            Please bring your medicine card, if you have one. If you cannot come, reply to this message and we will help you plan a new time.
+
+            With care,
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "గుర్తు చేయడం, {first_name}: మీ సందర్శన {visit_date} న {visit_time} కు {clinic_name} లో ఉంది."
+        email:
+          subject: "{visit_date} న మీ సందర్శన"
+          body: |
+            నమస్కారం {first_name},
+
+            {visit_date} న {visit_time} కు {clinic_name} లో మీ సందర్శన ఉందని గుర్తు చేస్తున్నాం.
+
+            మీ దగ్గర మందు కార్డు ఉంటే తీసుకురండి. రాలేకపోతే ఈ సందేశానికి బదులివ్వండి, కొత్త సమయం ఏర్పాటు చేయడంలో సహాయం చేస్తాం.
+
+            ఆప్యాయతతో,
+            మీ సంరక్షణ బృందం
+
+  - id: lab_reminder_v1
+    kind: lab_reminder
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [first_name, lab_date, lab_place]
+    languages:
+      en:
+        telegram: "Reminder, {first_name}: your lab test is on {lab_date} at {lab_place}."
+        email:
+          subject: "Your lab test on {lab_date}"
+          body: |
+            Hello {first_name},
+
+            Your lab test is booked for {lab_date} at {lab_place}. Your care team will go through the result with you once it is ready.
+
+            If the date does not suit you, reply to this message and we will try to move it.
+
+            With care,
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "గుర్తు చేయడం, {first_name}: మీ ల్యాబ్ పరీక్ష {lab_date} న {lab_place} లో ఉంది."
+        email:
+          subject: "{lab_date} న మీ ల్యాబ్ పరీక్ష"
+          body: |
+            నమస్కారం {first_name},
+
+            మీ ల్యాబ్ పరీక్ష {lab_date} న {lab_place} లో బుక్ అయింది. ఫలితం సిద్ధమైనప్పుడు మీ సంరక్షణ బృందం దాన్ని మీతో కలిసి వివరిస్తుంది.
+
+            ఆ తేదీ మీకు వీలుకాకపోతే ఈ సందేశానికి బదులివ్వండి, మార్చడానికి ప్రయత్నిస్తాం.
+
+            ఆప్యాయతతో,
+            మీ సంరక్షణ బృందం
+
+  - id: refill_reminder_v1
+    kind: refill_reminder
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [first_name, pharmacy_name, refill_date]
+    languages:
+      en:
+        telegram: "Reminder, {first_name}: your medicine supply may run low soon. Please collect your refill from {pharmacy_name} by {refill_date}."
+        email:
+          subject: "Time to collect your medicine refill"
+          body: |
+            Hello {first_name},
+
+            Your medicine supply may run low soon. Please collect your refill from {pharmacy_name} by {refill_date}.
+
+            If you have any trouble getting it, reply to this message and your care team will help.
+
+            With care,
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "గుర్తు చేయడం, {first_name}: మీ మందు నిల్వ త్వరలో తగ్గవచ్చు. {refill_date} లోపు {pharmacy_name} నుండి కొత్త మందు తీసుకోండి."
+        email:
+          subject: "మీ మందు కొత్తగా తీసుకోవాల్సిన సమయం"
+          body: |
+            నమస్కారం {first_name},
+
+            మీ మందు నిల్వ త్వరలో తగ్గవచ్చు. {refill_date} లోపు {pharmacy_name} నుండి కొత్త మందు తీసుకోండి.
+
+            తీసుకోవడంలో ఇబ్బంది ఉంటే ఈ సందేశానికి బదులివ్వండి, మీ సంరక్షణ బృందం సహాయం చేస్తుంది.
+
+            ఆప్యాయతతో,
+            మీ సంరక్షణ బృందం

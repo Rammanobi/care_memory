@@ -1,0 +1,372 @@
+{
+  "hosting": [
+    {
+      "target": "doctor",
+      "public": "web/dist",
+      "cleanUrls": true,
+      "trailingSlash": false,
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "redirects": [
+        {
+          "source": "/",
+          "destination": "/doctor",
+          "type": 302
+        }
+      ],
+      "rewrites": [
+        {
+          "source": "/auth{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/review{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/requests{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/patients{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/evidence{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/notes{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/lens{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/messages{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/admin{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/dashboard{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/clinics{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/consents{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/templates{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/query{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/portal{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/healthz{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/readyz{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "/assets/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=31536000, immutable"
+            }
+          ]
+        },
+        {
+          "source": "**/*.html",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache"
+            }
+          ]
+        },
+        {
+          "source": "**",
+          "headers": [
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://*.firebaseapp.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "target": "patient",
+      "public": "web/dist",
+      "cleanUrls": true,
+      "trailingSlash": false,
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "redirects": [
+        {
+          "source": "/",
+          "destination": "/patient",
+          "type": 302
+        }
+      ],
+      "rewrites": [
+        {
+          "source": "/auth{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/review{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/requests{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/patients{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/evidence{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/notes{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/lens{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/messages{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/admin{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/dashboard{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/clinics{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/consents{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/templates{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/query{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/portal{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/healthz{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "/readyz{,/**}",
+          "run": {
+            "serviceId": "cm-api",
+            "region": "asia-south1"
+          }
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "/assets/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=31536000, immutable"
+            }
+          ]
+        },
+        {
+          "source": "**/*.html",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache"
+            }
+          ]
+        },
+        {
+          "source": "**",
+          "headers": [
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://*.firebaseapp.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

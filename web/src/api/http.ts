@@ -1,4 +1,5 @@
 import { status } from "./status";
+import { bearerHeader, firebaseAuth, isFirebaseMode } from "../auth/firebase";
 
 /** VITE_API_BASE="" (production image) = same origin, so one build works on any hostname. Unset = local API. */
 export const API_BASE = ((import.meta.env.VITE_API_BASE as string | undefined) ?? "http://localhost:8080").replace(/\/$/, "");
@@ -77,10 +78,23 @@ export async function http<T>(path: string, o: Opts = {}): Promise<T> {
   }
   if (method !== "GET") headers["X-CM-Client"] = "web";
   const attempts = method === "GET" ? 3 : 1;
+  // VITE_AUTH_MODE=firebase: Firebase ID token as bearer, no cookies. Local mode: cookie, exactly as before.
+  const fb = isFirebaseMode();
+  const send = async (force: boolean) =>
+    fetch(buildUrl(path, o.query), {
+      method,
+      headers: fb ? { ...headers, ...(await bearerHeader(force)) } : headers,
+      body,
+      credentials: fb ? "omit" : "include",
+    });
   let lastErr: unknown;
   for (let i = 0; i < attempts; i++) {
     try {
-      const res = await fetch(buildUrl(path, o.query), { method, headers, body, credentials: "include" });
+      let res = await send(false);
+      if (fb && res.status === 401) {
+        res = await send(true); // one retry with a forced token refresh
+        if (res.status === 401) void firebaseAuth().then((a) => a.signOut()).catch(() => undefined);
+      }
       status.setOffline(false);
       if (res.status === 401 && path !== "/auth/login") sessionState.signedIn = false;
       if (res.status === 401 && path !== "/auth/login" && path !== "/auth/me") {

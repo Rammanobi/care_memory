@@ -1,0 +1,17 @@
+{
+  "projects": {
+    "default": "REPLACE-firebase-project-id"
+  },
+  "targets": {
+    "REPLACE-firebase-project-id": {
+      "hosting": {
+        "doctor": [
+          "REPLACE-doctor-site-id"
+        ],
+        "patient": [
+          "REPLACE-patient-site-id"
+        ]
+      }
+    }
+  }
+}

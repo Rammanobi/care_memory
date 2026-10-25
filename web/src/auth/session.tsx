@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { USE_MOCK } from "../api";
 import { resetHttpSession } from "../api/httpAdapter";
 import { forgetSession, getMe, http } from "../api/http";
+import { emailFor, firebaseAuth, isFirebaseMode } from "./firebase";
 
 export interface Me {
   role: string;
@@ -29,6 +30,14 @@ export const canOpen = (area: keyof typeof ALLOWED, role: string) => ALLOWED[are
 
 export async function signIn(username: string, password: string): Promise<string> {
   resetHttpSession();
+  if (isFirebaseMode()) {
+    // VITE_AUTH_MODE=firebase: sign in at Firebase, then the API decides the role (claims checked against the DB).
+    await (await firebaseAuth()).signIn(emailFor(username), password);
+    forgetSession(null);
+    const me = await getMe<{ role: string }>();
+    window.dispatchEvent(new Event("cm-session"));
+    return me.role;
+  }
   const out = await http<{ role: string }>("/auth/login", { method: "POST", body: { username, password } });
   forgetSession(null); // the next /auth/me is the first of the new session
   window.dispatchEvent(new Event("cm-session"));
@@ -37,7 +46,8 @@ export async function signIn(username: string, password: string): Promise<string
 
 export async function signOut(): Promise<void> {
   try {
-    await http("/auth/logout", { method: "POST" });
+    if (isFirebaseMode()) await (await firebaseAuth()).signOut();
+    else await http("/auth/logout", { method: "POST" });
   } finally {
     resetHttpSession();
     forgetSession(false);

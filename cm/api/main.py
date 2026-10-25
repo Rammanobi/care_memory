@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from cm.api import firebase_auth
 from cm.api.body_limit import BodyLimitMiddleware
 from cm.api.deps import ApiError, problem_response
 from cm.api.routers import (
@@ -64,6 +65,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 def create_app() -> FastAPI:
     settings = load_settings()
+    firebase_auth.check_config()  # AUTH_MODE=firebase without FIREBASE_PROJECT_ID refuses to start
     app = FastAPI(title="CareMemory", lifespan=lifespan)
     hosts = parse_hosts(os.environ.get("CM_ALLOWED_HOSTS"))
     if hosts:
@@ -73,7 +75,7 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(settings.cors_origins),
-        allow_credentials=True,
+        allow_credentials=firebase_auth.mode() != "firebase",  # firebase: bearer only, no cookies
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type", "Authorization", "X-CM-Client"],
     )

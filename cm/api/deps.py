@@ -14,7 +14,7 @@ import jwt
 from fastapi import Depends, Request
 from fastapi.responses import JSONResponse
 
-from cm.api import auth
+from cm.api import auth, firebase_auth
 from cm.contracts.api import Problem
 from cm.core import clock
 from cm.core.db import transaction
@@ -67,9 +67,38 @@ def display_name_of(conn: Any, person_id: UUID) -> str | None:
     return bytes(row["enc_name"]).decode() if row and row["enc_name"] else None
 
 
+def _firebase_user(token: str) -> User:
+    """AUTH_MODE=firebase: verify the ID token, then cross-check claims role/pid/tv against the DB."""
+    try:
+        claims = firebase_auth.verify(token)
+    except firebase_auth.FirebaseAuthError as exc:
+        raise ApiError(401, "Session expired or invalid", "unauthenticated") from exc
+    role, pid, tv = claims.get("role"), claims.get("pid"), claims.get("tv")
+    person_id = parse_uuid(pid) if isinstance(pid, str) else None
+    if not isinstance(role, str) or person_id is None or not isinstance(tv, int):
+        raise ApiError(403, "No role assigned to this account", "no_role")
+    with transaction() as conn:
+        row = conn.execute(
+            "SELECT c.token_version, c.active, c.username, p.token, p.role, p.clinic_id, p.district_id "
+            "FROM cm.auth_credentials c JOIN cm.persons p USING (person_id) WHERE c.person_id=%s",
+            (str(person_id),),
+        ).fetchone()
+        if not row or not row["active"] or row["role"] != role or row["token_version"] != tv:
+            raise ApiError(401, "Session no longer valid", "unauthenticated")
+        name = display_name_of(conn, person_id)
+    return User(person_id, row["role"], row["token"], row["username"], name, row["clinic_id"],
+                row["district_id"])
+
+
 def current_user(request: Request) -> User:
-    """Validate the session token and its token_version against auth_credentials."""
+    """Validate the session token and its token_version against auth_credentials.
+
+    AUTH_MODE=firebase: an ``Authorization: Bearer`` token is a Firebase ID token; the ``cm_session``
+    cookie, if present, is still checked by the unchanged local path below.
+    """
     token, via_cookie = _credentials(request)
+    if not via_cookie and firebase_auth.mode() == "firebase":
+        return _firebase_user(token)
     if (
         via_cookie
         and request.method not in ("GET", "HEAD", "OPTIONS")

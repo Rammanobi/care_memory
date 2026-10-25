@@ -15,6 +15,7 @@ ruff==0.17.2                              # UNVERIFIED
 detect-secrets==1.5.0                     # UNVERIFIED
 pyyaml>=6.0                               # scripts/check_ownership.py reads scripts/lanes.yaml
 google-cloud-pubsub==2.43.0               # UNVERIFIED (infra/replay_dlq.py, local tests)
+firebase-admin==6.5.0                     # UNVERIFIED; only scripts/firebase_users.py --apply (never the API image)
 
 # --- mock documents (dev container only; infra/local/Dockerfile.dev) ---
 # Faker: the spec recommends a committed name list (fixtures/names_en_in.json) instead of Faker at runtime.

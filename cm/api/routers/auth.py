@@ -10,7 +10,7 @@ from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, Request, Response
 
-from cm.api import auth
+from cm.api import auth, firebase_auth
 from cm.api.deps import COOKIE, ApiError, User, current_user, display_name_of, now
 from cm.contracts.admin import LoginIn, Me, TokenOut
 from cm.core.config import load_settings
@@ -39,7 +39,9 @@ def _limited(key: str, per_min: int) -> bool:
 
 @router.post("/login", response_model=TokenOut)
 def login(body: LoginIn, request: Request, response: Response) -> TokenOut:
-    ip = request.client.host if request.client else "?"
+    if firebase_auth.mode() == "firebase":  # sign-in happens at Firebase; no password check here
+        raise ApiError(404, "Sign in with Firebase", "use_firebase")
+    ip =request.client.host if request.client else "?"
     if _limited(f"ip:{ip}", int(os.environ.get("LOGIN_PER_IP_PER_MIN", "10"))) or _limited(
         f"u:{body.username}", int(os.environ.get("LOGIN_PER_USER_PER_MIN", "5"))
     ):

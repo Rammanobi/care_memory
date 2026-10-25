@@ -3,6 +3,7 @@
 import { USE_MOCK } from "./index";
 import { API_BASE, NetworkError, problemFrom } from "./http";
 import { getExtras, setExtras } from "./patientExtras";
+import { bearerHeader, isFirebaseMode } from "../auth/firebase";
 import type { UploadResult } from "./documents";
 
 export function uploadDocument(file: File, onProgress: (pct: number) => void): Promise<UploadResult> {
@@ -10,11 +11,15 @@ export function uploadDocument(file: File, onProgress: (pct: number) => void): P
 }
 
 // XMLHttpRequest because fetch cannot report upload progress.
-function liveUpload(file: File, onProgress: (pct: number) => void): Promise<UploadResult> {
+// VITE_AUTH_MODE=firebase: bearer ID token, no cookies; local mode unchanged (cookie).
+async function liveUpload(file: File, onProgress: (pct: number) => void): Promise<UploadResult> {
+  const fb = isFirebaseMode();
+  const auth = fb ? await bearerHeader() : {};
   return new Promise((resolve, reject) => {
     const x = new XMLHttpRequest();
     x.open("POST", new URL(API_BASE + "/portal/documents", location.origin).toString());
-    x.withCredentials = true;
+    x.withCredentials = !fb;
+    for (const [k, v] of Object.entries(auth)) x.setRequestHeader(k, v);
     x.setRequestHeader("Accept", "application/json");
     x.setRequestHeader("X-CM-Client", "web");
     x.upload.onprogress = (e) => { if (e.lengthComputable) onProgress(Math.min(99, Math.round((e.loaded / e.total) * 100))); };

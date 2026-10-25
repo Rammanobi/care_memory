@@ -85,6 +85,22 @@ def load_template(template_id: str) -> dict[str, Any]:
     raise KeyError(template_id)
 
 
+class _Safe(dict):
+    def __missing__(self, key: str) -> str:
+        return ""
+
+
+def template_text(template_id: str, lang: str, first_name: str | None = None) -> str:
+    """Telegram text of an approved template, EN or TE. Same name and banned-term rules as ``ack_text``."""
+    langs = load_template(template_id)["languages"]
+    use = lang if lang in langs else "en"
+    name = first_name if first_name and not find_banned(first_name) else FALLBACK_NAME
+    text = langs[use]["telegram"].format_map(_Safe(first_name=name))
+    if find_banned(text):
+        raise ValueError(f"template {template_id} contains a banned term")
+    return text
+
+
 def ack_text(urgent: bool, lang: str, first_name: str | None = None) -> tuple[str, str]:
     """(template_id, text) for the acknowledgement, EN or TE. The name is the safe vault first name or
     the neutral fallback; banned words never get through (the template itself is also banned-term clean)."""

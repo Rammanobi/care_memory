@@ -28,8 +28,19 @@ class ReplyOutcome:
     echo_text: str = ""
 
 
+_ADDR = re.compile(r"[^\s<>\"',;:()]+@[^\s<>\"',;:()]+")
+
+
+def _one_address(value: str) -> bool:
+    """Exactly one distinct address in the header. parseaddr reads 'doc@clinic <evil@x>' as doc@clinic, while
+    DMARC aligns on evil@x: a header carrying two addresses is never trusted."""
+    return len({a.lower().rstrip(".") for a in _ADDR.findall(value or "")}) == 1
+
+
 def sender_ok(headers: dict[str, str], doctor_email: str) -> bool:
     """From must equal the registered doctor AND authentication must pass (dmarc, or dkim+spf)."""
+    if not _one_address(headers.get("from", "")):
+        return False
     if parseaddr(headers.get("from", ""))[1].lower() != doctor_email.lower():
         return False
     sender_hdr = parseaddr(headers.get("sender", ""))[1].lower()

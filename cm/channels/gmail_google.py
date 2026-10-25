@@ -220,6 +220,11 @@ class GoogleGmailApi(_Lazy):
     def get_message(self, message_id: str) -> dict[str, Any]:
         return self._exec(self._users.messages().get(userId=self.user_id, id=message_id, format="full"))
 
+    def fetch_attachment(self, message_id: str, attachment_id: str) -> bytes:
+        out = self._exec(self._users.messages().attachments().get(
+            userId=self.user_id, messageId=message_id, id=attachment_id))
+        return base64.urlsafe_b64decode(str(out.get("data", "")) + "==")
+
     def watch(self, topic: str) -> dict[str, Any]:
         out = self._exec(self._users.watch(userId=self.user_id, body={"topicName": topic, "labelIds": ["INBOX"]}))
         return {"historyId": int(out["historyId"]), "expiration": int(out["expiration"])}

@@ -14,7 +14,7 @@ from typing import Any
 from uuid import UUID
 
 from cm.channels import tg_callback as cb
-from cm.channels import tg_text
+from cm.channels import tg_text, tg_upload
 from cm.channels.binding import (
     STOPPED_TEXT,
     UNBOUND_TEXT,
@@ -53,6 +53,12 @@ class Deps:
     audit: AuditPort
     now: Callable[[], datetime]
     messages: MessagePort | None = None  # None: legacy enqueue-only behaviour (supporters, old tests)
+    # Upload intake (None: photos and documents are ignored). files(file_id, max_bytes) -> bytes.
+    files: Callable[[str, int], bytes] | None = None
+    patient_token: Callable[[UUID], str | None] | None = None  # person_id -> 'P-0142'
+    # True only on the local poller (worker thread): download inline. The webhook path acks and enqueues
+    # a 'tgfile' task instead (ack under 1 s, no work after the response).
+    inline_files: bool = False
 
 
 def verify_secret(header: str | None, expected: str) -> bool:
@@ -117,6 +123,10 @@ def _on_message(upd: TelegramUpdate, d: Deps) -> dict[str, Any]:
         b.person_id, "telegram", "daily_checkin", now
     ):
         return _say(chat_id, STOPPED_TEXT)
+    if b.role == "patient" and b.patient_id is not None:
+        ref = tg_upload.extract(m)
+        if ref is not None:
+            return _on_upload(upd, m, ref, b, chat_id, now, d)
     if d.messages is not None and b.role == "patient" and b.patient_id is not None:
         return _free_text(upd, text, b, chat_id, now, d)
     d.tasks.enqueue(
@@ -131,6 +141,19 @@ def _on_message(upd: TelegramUpdate, d: Deps) -> dict[str, Any]:
         },
     )
     return OK
+
+
+def _on_upload(
+    upd: TelegramUpdate, m: dict[str, Any], ref: tg_upload.FileRef, b: Binding, chat_id: str,
+    now: datetime, d: Deps,
+) -> dict[str, Any]:
+    """Photo or document from a bound, consented patient chat. A caption is also the free-text question
+    (routed once through the normal path); the update gets at most ONE inline reply."""
+    caption = (m.get("caption") or "").strip()
+    cap = _free_text(upd, caption, b, chat_id, now, d) if caption and d.messages is not None else None
+    up = tg_upload.handle(m, ref, b, chat_id, now, d)
+    urgent = bool(caption) and tg_text.classify(caption) == "danger"
+    return tg_upload.pick_reply(cap, up, urgent) or OK
 
 
 def _free_text(

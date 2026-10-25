@@ -30,7 +30,7 @@ _LOCAL_POLL_KEY = secrets.token_hex(16)
 def handle_local_poll(raw: dict[str, Any], deps: Deps) -> tuple[int, dict[str, Any]]:
     """Trusted path for the local poller (python -m cm.jobs.tg_poll). The poller authenticates by owning
     the bot token, so there is no secret header. Never import this from an HTTP route."""
-    trusted = dataclasses.replace(deps, secret=_LOCAL_POLL_KEY)
+    trusted = dataclasses.replace(deps, secret=_LOCAL_POLL_KEY, inline_files=True)
     return handle_update(raw, _LOCAL_POLL_KEY, trusted)
 
 

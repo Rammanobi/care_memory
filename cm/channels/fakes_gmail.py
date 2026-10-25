@@ -14,6 +14,7 @@ class FakeGmailClient:
     def __init__(self) -> None:
         self.sent: list[dict[str, Any]] = []
         self.messages: dict[str, dict[str, Any]] = {}
+        self.attachments: dict[tuple[str, str], bytes] = {}  # (message_id, attachment_id) -> bytes
         self.history: list[tuple[int, str]] = []  # (historyId, message_id)
         self.latest = 100
         self.cursor_floor = 0
@@ -54,6 +55,10 @@ class FakeGmailClient:
         self._maybe_fail("get_message")
         self.get_count += 1
         return self.messages[message_id]
+
+    def fetch_attachment(self, message_id: str, attachment_id: str) -> bytes:
+        self._maybe_fail("fetch_attachment")
+        return self.attachments[(message_id, attachment_id)]
 
     def watch(self, topic: str) -> dict[str, Any]:
         self._maybe_fail("watch")

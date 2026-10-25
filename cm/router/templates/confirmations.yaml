@@ -232,3 +232,61 @@ templates:
             మీ సంరక్షణ బృందానికి ఇప్పుడే తెలియజేశాం. మీకు చాలా బాగోలేకపోతే, వెంటనే 108 కు కాల్ చేయండి.
 
             మీ సంరక్షణ బృందం
+
+  - id: upload_rejected_v1
+    kind: upload_rejected
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [first_name]
+    languages:
+      en:
+        telegram: "Sorry, {first_name}. We could not accept that file. Please send a photo, a PDF or a text file under 10 MB."
+        email:
+          subject: "We could not accept that file"
+          body: |
+            Hello {first_name},
+
+            We could not accept that file. Please send a photo, a PDF or a text file under 10 MB.
+
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "క్షమించండి, {first_name}. ఆ ఫైల్‌ను మేము స్వీకరించలేకపోయాం. దయచేసి 10 MB కంటే తక్కువ ఉన్న ఫోటో, PDF లేదా టెక్స్ట్ ఫైల్ పంపండి."
+        email:
+          subject: "ఆ ఫైల్‌ను మేము స్వీకరించలేకపోయాం"
+          body: |
+            నమస్కారం {first_name},
+
+            ఆ ఫైల్‌ను మేము స్వీకరించలేకపోయాం. దయచేసి 10 MB కంటే తక్కువ ఉన్న ఫోటో, PDF లేదా టెక్స్ట్ ఫైల్ పంపండి.
+
+            మీ సంరక్షణ బృందం
+
+  - id: upload_ack_v1
+    kind: upload_ack
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [first_name]
+    languages:
+      en:
+        telegram: "Thank you, {first_name}. We received your document. Your care team will review it."
+        email:
+          subject: "We received your document"
+          body: |
+            Hello {first_name},
+
+            We received your document. Your care team will review it.
+
+            Your care team
+      te:
+        # needs native-speaker review
+        telegram: "ధన్యవాదాలు, {first_name}. మీ పత్రం మాకు అందింది. మీ సంరక్షణ బృందం దానిని పరిశీలిస్తుంది."
+        email:
+          subject: "మీ పత్రం మాకు అందింది"
+          body: |
+            నమస్కారం {first_name},
+
+            మీ పత్రం మాకు అందింది. మీ సంరక్షణ బృందం దానిని పరిశీలిస్తుంది.
+
+            మీ సంరక్షణ బృందం

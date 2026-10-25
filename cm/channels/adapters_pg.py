@@ -11,11 +11,19 @@ from typing import Any
 from uuid import UUID, uuid4
 
 from cm.channels.ports import Binding
+from cm.channels.tg_http import HttpTelegramClient
 from cm.channels.tg_inbound import Deps
 from cm.channels.tg_ratelimit import ChatLimiter
 from cm.core import clock, db, tasks
 from cm.core.logging import get_logger
-from cm.store import approvals_repo, channels_repo, consent, events_repo, outbox_repo
+from cm.store import (
+    approvals_repo,
+    channels_repo,
+    consent,
+    events_repo,
+    outbox_repo,
+    upload_channels_repo,
+)
 
 log = get_logger()
 
@@ -275,6 +283,8 @@ def build_deps(secret: str | None = None) -> Deps:
         messages=PgMessages(),
         audit=PgAudit(),
         now=clock.now,
+        files=HttpTelegramClient().fetch_file,
+        patient_token=upload_channels_repo.person_token,
     )
 
 

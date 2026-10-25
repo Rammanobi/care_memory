@@ -10,7 +10,7 @@ from uuid import UUID
 from cm.contracts.review import ReviewDecisionIn, ReviewDecisionOut
 
 # Gmail quota units (RELIABILITY_PLAYBOOK).
-UNITS = {"messages.send": 100, "messages.get": 20, "history.list": 2, "users.watch": 100}
+UNITS = {"messages.send": 100, "messages.get": 20, "history.list": 2, "users.watch": 100, "messages.attachments.get": 5}
 
 BANNED_RE = re.compile(
     r"\bTB\b|tubercul|isoniazid|rifampi[cn]|pyrazinamide|ethambutol|streptomycin|bedaquiline|linezolid|\bHRZE\b",
@@ -57,6 +57,10 @@ class GmailApi(Protocol):
     def profile_history_id(self) -> int: ...
 
     def get_message(self, message_id: str) -> dict[str, Any]: ...
+
+    def fetch_attachment(self, message_id: str, attachment_id: str) -> bytes:
+        """messages.attachments.get, base64url decoded. Same typed errors as the other calls."""
+        ...
 
     def watch(self, topic: str) -> dict[str, Any]:
         """Return {historyId: int, expiration: epoch_ms}."""

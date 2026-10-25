@@ -91,7 +91,36 @@ def normalize_message(raw: dict[str, Any]) -> dict[str, Any]:
     payload = raw.get("payload", {})
     headers = {h["name"].lower(): h["value"] for h in payload.get("headers", [])}
     return {"id": raw["id"], "thread_id": raw.get("threadId"), "labels": raw.get("labelIds", []),
-            "headers": headers, "text": _plain_text(payload)}
+            "headers": headers, "text": _plain_text(payload), "attachments": _attachments(payload)}
+
+
+TINY_IMAGE_BYTES = 10 * 1024      # an image this small is a logo or tracking pixel, never a document
+INLINE_IMAGE_BYTES = 100 * 1024   # an inline / Content-ID image up to this size is a signature graphic
+
+
+def _is_decoration(part: dict[str, Any]) -> bool:
+    """Signature logos and other inline images: they must not become uploads."""
+    mime = str(part.get("mimeType", "")).lower()
+    if not mime.startswith("image/"):
+        return False
+    hdrs = {str(h.get("name", "")).lower(): str(h.get("value", "")) for h in part.get("headers", []) or []}
+    size = (part.get("body") or {}).get("size")
+    size = size if isinstance(size, int) else 0
+    inline = hdrs.get("content-disposition", "").strip().lower().startswith("inline") or "content-id" in hdrs
+    return size <= TINY_IMAGE_BYTES or (inline and size <= INLINE_IMAGE_BYTES)
+
+
+def _attachments(part: dict[str, Any]) -> list[dict[str, Any]]:
+    """Parts that carry a file name and an attachmentId -> [{filename, mime, size, attachment_id}].
+    Inline signature images (logos) are skipped."""
+    out: list[dict[str, Any]] = []
+    body = part.get("body") or {}
+    if part.get("filename") and body.get("attachmentId") and not _is_decoration(part):
+        out.append({"filename": part["filename"], "mime": part.get("mimeType", "application/octet-stream"),
+                    "size": body.get("size"), "attachment_id": body["attachmentId"]})
+    for sub in part.get("parts", []) or []:
+        out += _attachments(sub)
+    return out
 
 
 def _decode(part: dict[str, Any]) -> str:

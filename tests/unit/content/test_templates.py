@@ -26,6 +26,17 @@ REQUIRED_KINDS = {
     "emergency_note",
     "telegram_ack",
     "telegram_ack_urgent",
+    "upload_ack",
+    "upload_rejected",
+    "own_data_missed_week_v1",
+    "own_data_taken_week_v1",
+    "own_data_streak_v1",
+    "own_data_next_visit_v1",
+    "own_data_no_visit_v1",
+    "own_data_last_refill_v1",
+    "own_data_no_refill_v1",
+    "own_data_none_v1",
+    "own_data_advice_v1",
 }
 TE_COMMENT = re.compile(r"^\s+te:\s*\n\s+# needs native-speaker review", re.MULTILINE)
 
@@ -71,7 +82,9 @@ def test_template_fields(fname: str, tpl: dict) -> None:
     assert tpl["audience"] in {"patient", "supporter"}
     assert tpl["tier"] == "green"
     assert tpl["doctor_approved"] is True
-    assert isinstance(tpl["placeholders"], list) and tpl["placeholders"]
+    assert isinstance(tpl["placeholders"], list)
+    if not tpl["kind"].startswith("own_data_"):  # fixed own-data sentences carry no slots
+        assert tpl["placeholders"]
     assert set(tpl["languages"]) == {"en", "te"}, "both en and te are required"
 
 

@@ -25,6 +25,7 @@ PATIENT_GETS = [
     "/documents",
     "/medicines",
     "/inbox",
+    "/answers",
 ]
 SUPPORTER_GETS = ["/supporter/checkin", "/inbox"]
 

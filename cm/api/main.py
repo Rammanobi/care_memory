@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from cm.api.body_limit import BodyLimitMiddleware
 from cm.api.deps import ApiError, problem_response
 from cm.api.routers import (
     admin,
@@ -23,6 +24,7 @@ from cm.api.routers import (
     patient_requests,
     patients,
     portal,
+    portal_answers,
     query,
     review,
     stream,
@@ -36,6 +38,7 @@ from cm.core import budget_pg, clock, db
 from cm.core import tasks as core_tasks
 from cm.core.config import load_settings
 from cm.core.logging import get_logger
+from cm.uploads.validate import max_bytes
 
 log = get_logger()
 
@@ -65,6 +68,8 @@ def create_app() -> FastAPI:
     hosts = parse_hosts(os.environ.get("CM_ALLOWED_HOSTS"))
     if hosts:
         app.add_middleware(AllowedHostsMiddleware, allowed=hosts)
+    # upload size is enforced before FastAPI parses (and spools) the multipart body
+    app.add_middleware(BodyLimitMiddleware, paths=("/portal/documents",), limit=max_bytes)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(settings.cors_origins),
@@ -116,6 +121,7 @@ def create_app() -> FastAPI:
         consent,
         templates,
         portal,
+    portal_answers,
         ops,
         stream,
         webhooks,

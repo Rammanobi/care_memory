@@ -1,0 +1,3 @@
+- [x] Templates `cm/router/templates/own_data.yaml`; REQUIRED_KINDS in tests/unit/content/test_templates.py
+- [x] `cm/api/own_data.py`, `cm/api/routers/portal_answers.py`, `AnswerCard`, include in main.py
+- [x] Unit tests tests/unit/api/test_own_data.py; integration tests/integration/test_portal_answers.py; banned scan extended in test_portal_live_gaps.py

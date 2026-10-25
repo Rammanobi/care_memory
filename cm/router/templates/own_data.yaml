@@ -1,0 +1,178 @@
+# Approved templates: answers about the patient's own record (website only).
+# Lane K (content). Telugu is machine-written; each te block needs native-speaker review.
+# Numbers are filled by code from cm.memory.features, never by a model. No advice, no disease or drug names.
+version: 1
+templates:
+# ---- own-data answers (patient website only; code-computed numbers, no model) ----
+# The email block mirrors the text; these are shown in the app only and never sent.
+
+  - id: own_data_taken_week_v1
+    kind: own_data_taken_week_v1
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [taken, window]
+    languages:
+      en:
+        telegram: "In the last {window} days you took {taken} of {window} doses."
+        email:
+          subject: "Your record"
+          body: "In the last {window} days you took {taken} of {window} doses."
+      te:
+        # needs native-speaker review
+        telegram: "గత {window} రోజుల్లో {window} డోసులలో {taken} తీసుకున్నారు."
+        email:
+          subject: "మీ రికార్డు"
+          body: "గత {window} రోజుల్లో {window} డోసులలో {taken} తీసుకున్నారు."
+
+  - id: own_data_missed_week_v1
+    kind: own_data_missed_week_v1
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [missed, window]
+    languages:
+      en:
+        telegram: "In the last {window} days you marked {missed} of {window} doses as missed."
+        email:
+          subject: "Your record"
+          body: "In the last {window} days you marked {missed} of {window} doses as missed."
+      te:
+        # needs native-speaker review
+        telegram: "గత {window} రోజుల్లో {missed} డోసులను మీరు తీసుకోలేదని నమోదు చేశారు."
+        email:
+          subject: "మీ రికార్డు"
+          body: "గత {window} రోజుల్లో {missed} డోసులను మీరు తీసుకోలేదని నమోదు చేశారు."
+
+  - id: own_data_streak_v1
+    kind: own_data_streak_v1
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [days]
+    languages:
+      en:
+        telegram: "Your current run of days taken in a row is {days}."
+        email:
+          subject: "Your record"
+          body: "Your current run of days taken in a row is {days}."
+      te:
+        # needs native-speaker review
+        telegram: "వరుసగా మందు తీసుకున్న మీ ప్రస్తుత రోజుల సంఖ్య {days}."
+        email:
+          subject: "మీ రికార్డు"
+          body: "వరుసగా మందు తీసుకున్న మీ ప్రస్తుత రోజుల సంఖ్య {days}."
+
+  - id: own_data_next_visit_v1
+    kind: own_data_next_visit_v1
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [when]
+    languages:
+      en:
+        telegram: "Your next visit is {when}."
+        email:
+          subject: "Your record"
+          body: "Your next visit is {when}."
+      te:
+        # needs native-speaker review
+        telegram: "మీ తదుపరి సందర్శన {when}."
+        email:
+          subject: "మీ రికార్డు"
+          body: "మీ తదుపరి సందర్శన {when}."
+
+  - id: own_data_no_visit_v1
+    kind: own_data_no_visit_v1
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: []
+    languages:
+      en:
+        telegram: "No visit is scheduled yet."
+        email:
+          subject: "Your record"
+          body: "No visit is scheduled yet."
+      te:
+        # needs native-speaker review
+        telegram: "ఇంకా ఏ సందర్శనా నిర్ణయించలేదు."
+        email:
+          subject: "మీ రికార్డు"
+          body: "ఇంకా ఏ సందర్శనా నిర్ణయించలేదు."
+
+  - id: own_data_last_refill_v1
+    kind: own_data_last_refill_v1
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: [date]
+    languages:
+      en:
+        telegram: "Your last refill was recorded on {date}."
+        email:
+          subject: "Your record"
+          body: "Your last refill was recorded on {date}."
+      te:
+        # needs native-speaker review
+        telegram: "మీ చివరి రీఫిల్ {date} న నమోదైంది."
+        email:
+          subject: "మీ రికార్డు"
+          body: "మీ చివరి రీఫిల్ {date} న నమోదైంది."
+
+  - id: own_data_no_refill_v1
+    kind: own_data_no_refill_v1
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: []
+    languages:
+      en:
+        telegram: "No refill is recorded yet."
+        email:
+          subject: "Your record"
+          body: "No refill is recorded yet."
+      te:
+        # needs native-speaker review
+        telegram: "ఇంకా ఏ రీఫిల్ నమోదు కాలేదు."
+        email:
+          subject: "మీ రికార్డు"
+          body: "ఇంకా ఏ రీఫిల్ నమోదు కాలేదు."
+
+  - id: own_data_none_v1
+    kind: own_data_none_v1
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: []
+    languages:
+      en:
+        telegram: "There is not enough history yet. Keep sending your daily check-in."
+        email:
+          subject: "Your record"
+          body: "There is not enough history yet. Keep sending your daily check-in."
+      te:
+        # needs native-speaker review
+        telegram: "ఇంకా తగినంత చరిత్ర లేదు. మీ రోజువారీ చెక్-ఇన్ పంపుతూ ఉండండి."
+        email:
+          subject: "మీ రికార్డు"
+          body: "ఇంకా తగినంత చరిత్ర లేదు. మీ రోజువారీ చెక్-ఇన్ పంపుతూ ఉండండి."
+
+  - id: own_data_advice_v1
+    kind: own_data_advice_v1
+    audience: patient
+    tier: green
+    doctor_approved: true
+    placeholders: []
+    languages:
+      en:
+        telegram: "For any question about your medicines, food or symptoms, ask your care team."
+        email:
+          subject: "Your record"
+          body: "For any question about your medicines, food or symptoms, ask your care team."
+      te:
+        # needs native-speaker review
+        telegram: "మీ మందులు, ఆహారం లేదా లక్షణాల గురించి ఏ ప్రశ్న ఉన్నా మీ సంరక్షణ బృందాన్ని అడగండి."
+        email:
+          subject: "మీ రికార్డు"
+          body: "మీ మందులు, ఆహారం లేదా లక్షణాల గురించి ఏ ప్రశ్న ఉన్నా మీ సంరక్షణ బృందాన్ని అడగండి."

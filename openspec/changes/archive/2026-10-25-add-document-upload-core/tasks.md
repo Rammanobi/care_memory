@@ -1,0 +1,4 @@
+- [x] storage, validate, intake, uploads_repo (tests/unit/uploads/test_validate.py, tests/integration/test_upload_core.py)
+- [x] portal POST/GET routes and PortalUploadOut (tests/integration/test_upload_core.py)
+- [x] upload_ack_v1 template and REQUIRED_KINDS (tests/unit/content/test_templates.py)
+- [x] .gitignore data/uploads/

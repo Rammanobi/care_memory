@@ -20,8 +20,10 @@ from cm.contracts.review import ReviewDecisionIn, ReviewDecisionOut
 from cm.core import clock
 from cm.core.db import transaction
 from cm.core.ids import idempotency_key
+from cm.core.logging import get_logger
 from cm.store import events_repo, outbox_repo
 
+log = get_logger()
 _STATUS = {"approve": "approved", "edit": "edited", "reject": "rejected", "expired": "expired"}
 _OUTBOX_KIND = {
     "card": "card",
@@ -206,6 +208,22 @@ def _decision_event(
     )
 
 
+def _after_commit(approval_id: UUID) -> None:
+    """Post-decision follow-ups that must not share the decision transaction. Never raises."""
+    try:
+        from cm.uploads.review import on_decided
+
+        on_decided(approval_id)  # no-op unless the approval is a document_review item
+    except Exception as exc:  # noqa: BLE001  (a failed follow-up must not undo or hide the decision)
+        log.warning("post-decision hook failed", error=type(exc).__name__)
+        try:
+            from cm.uploads.review import mark_index_failed
+
+            mark_index_failed(approval_id, exc)  # state 'failed' + idempotent docidx-<id> retry task
+        except Exception as exc2:  # noqa: BLE001
+            log.warning("post-decision failure handling failed", error=type(exc2).__name__)
+
+
 def decide(
     approval_id: UUID,
     d: ReviewDecisionIn,
@@ -217,7 +235,9 @@ def decide(
     """Record a doctor decision atomically. Raises DecisionError on business-rule failures."""
     if conn is None:
         with transaction() as c:
-            return decide(approval_id, d, via=via, actor_id=actor_id, conn=c)
+            out = decide(approval_id, d, via=via, actor_id=actor_id, conn=c)
+        _after_commit(approval_id)  # runs only once the decision is committed (idempotent hooks)
+        return out
     at = clock.now()
     approval = conn.execute(
         "SELECT * FROM cm.approvals WHERE approval_id=%s FOR UPDATE", (approval_id,)

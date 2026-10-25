@@ -39,6 +39,9 @@ _TASK_TYPE = {
     "calendar_sync": "calendar_sync",
     "tap": "ingest_event",
     "ingest_event": "ingest_event",
+    "tgfile": "ingest_event",  # Telegram file fetch + intake; closest allowed task_type
+    "document_extract": "investigate",  # same closest allowed task_type as question_research
+    "document_index": "investigate",  # retry of the post-approval indexing
     "question_research": "investigate",  # task_runs.task_type CHECK has no new value; closest allowed type
 }
 _key_fetcher: gmail_oidc.KeyFetcher | None = None
@@ -76,6 +79,18 @@ def dispatch(queue: str, name: str, payload: Any) -> None:
         from cm.channels.question_routing import run_question_research
 
         run_question_research(str(payload["approval_id"]))
+    elif kind == "document_extract":
+        from cm.uploads.review import run_document_extract
+
+        run_document_extract(str(payload["document_id"]))
+    elif kind == "document_index":
+        from cm.uploads.review import on_approved
+
+        on_approved(str(payload["approval_id"]))
+    elif kind == "tgfile":
+        from cm.channels.tg_upload import run_tgfile_task
+
+        run_tgfile_task(payload)  # token-free errors; retryable ones re-raise so the queue retries
     elif kind == "calendar_sync":
         log.info("calendar_sync is a stub", queue=queue)  # Lane M wires the real sync
     elif kind in ("tap", "ingest_event"):

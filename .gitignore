@@ -57,3 +57,6 @@ Thumbs.db
 # local state
 *.log
 gmail_cred/
+
+# uploaded patient documents (never commit)
+data/uploads/

@@ -1,0 +1,4 @@
+- [x] extract.py + tests/unit/uploads/test_extract_review.py (txt, pdf, scanned, image, garbage, PII)
+- [x] review.py create_review_item, run_document_extract, on_decided/on_approved + tests
+- [x] decide.py post-commit hook; tasks.py dispatch + tests (approve, reject, idempotent, isolation)
+- [x] requirements.txt pypdf verified

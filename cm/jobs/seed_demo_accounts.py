@@ -1,20 +1,22 @@
-"""Demo accounts with 3 / 30 / 60 days of mock history (additive, idempotent, deterministic).
+"""Demo accounts with 6 / 60 days of mock history (additive, idempotent, deterministic).
 
     python -m cm.jobs.seed_demo_accounts                      # create (or no-op) on the DB_* target
     python -m cm.jobs.seed_demo_accounts --no-embed           # skip real embeddings (full-text only)
     python -m cm.jobs.seed_demo_accounts --skip-pipeline      # rows only, no memory nightly / rag index
+    python -m cm.jobs.seed_demo_accounts --no-retire-extra    # keep the earlier extras' logins enabled
     python -m cm.jobs.seed_demo_accounts --export out/demo_accounts.json
     python -m cm.jobs.seed_demo_accounts --import out/demo_accounts.json
 
 Accounts (patient token -> code, history, archetype):
-    P-0903 / PT-0903   3 days   steady adherer, English        user demo.pt0903
-    P-0930 / PT-0930  30 days   market-day misses, Telugu      user demo.pt0930 + Supporter demo.sup0930 (S-93)
+    P-0906 / PT-0906   6 days   steady adherer, English        user demo.pt0906
     P-0960 / PT-0960  60 days   payday misses, English         user demo.pt0960
+Retired by default (--retire-extra): the earlier extras demo.pt0903, demo.pt0930 and Supporter demo.sup0930 get
+their logins disabled (no data is deleted; the patients stay in the database).
 
 Safety: refuses unless CM_DATA_CLASS=mock. Never wipes, never reseeds, never touches PT-0142 or any Telegram
 binding. The target DB is the normal DB_* environment; the data is identical on every database (fixed seeds,
 fixed sim day 0 = 2026-08-27, fixed as_of = sim day 59 18:00 IST, deterministic ids).
-Passwords: env DEMO_ACCOUNT_PASSWORDS ('{"demo.pt0903": "..."}'), else out/demo_accounts_credentials.txt
+Passwords: env DEMO_ACCOUNT_PASSWORDS ('{"demo.pt0906": "..."}'), else out/demo_accounts_credentials.txt
 (git-ignored, read if present, else generated there). Passwords are never printed.
 """
 
@@ -37,6 +39,7 @@ from cm.core.db import close_pool, connect_direct
 from cm.core.ids import det_id
 from cm.jobs import migrate
 from cm.sim import gen, noise
+from cm.store import auth_repo
 from cm.store import events_repo as ev
 from cm.store.events_repo import NewEvent
 
@@ -49,15 +52,13 @@ CONSENT_SOURCES = ("web", "telegram", "chemist", "supporter")
 IST = clock.IST
 
 ACCOUNTS: list[dict[str, Any]] = [
-    {"code": "PT-0903", "token": "P-0903", "days": 3, "seed": 9007, "base": 0.93, "patterns": [],
-     "market_dow": 1, "lang": "en", "sex": "F", "age": 38, "user": "demo.pt0903", "supporter": None},
-    {"code": "PT-0930", "token": "P-0930", "days": 30, "seed": 9030, "base": 0.88, "patterns": ["market_day"],
-     "market_dow": 1, "lang": "te", "sex": "M", "age": 46, "user": "demo.pt0930",
-     "supporter": {"token": "S-93", "user": "demo.sup0930", "name": "Meena", "lang": "te"}},
+    {"code": "PT-0906", "token": "P-0906", "days": 6, "seed": 9006, "base": 0.93, "patterns": [],
+     "market_dow": 1, "lang": "en", "sex": "F", "age": 38, "user": "demo.pt0906", "supporter": None},
     {"code": "PT-0960", "token": "P-0960", "days": 60, "seed": 9060, "base": 0.86, "patterns": ["payday"],
      "market_dow": 1, "lang": "en", "sex": "F", "age": 52, "user": "demo.pt0960", "supporter": None},
 ]
-DEMO_TOKENS = [a["token"] for a in ACCOUNTS] + ["S-93"]
+DEMO_TOKENS = [a["token"] for a in ACCOUNTS]
+RETIRED_USERS = ["demo.pt0903", "demo.pt0930", "demo.sup0930"]  # earlier extras: logins disabled, data kept
 
 TEXT = {  # (lang, pattern) -> missed-day note, all free of clinical vocabulary
     ("en", "market_day"): "I went to the weekly market and forgot my tablets.",
@@ -385,11 +386,13 @@ def _guard() -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="Additive, idempotent demo accounts (3 / 30 / 60 days)")
+    ap = argparse.ArgumentParser(description="Additive, idempotent demo accounts (6 / 60 days)")
     ap.add_argument("--export", metavar="FILE")
     ap.add_argument("--import", dest="imp", metavar="FILE")
     ap.add_argument("--no-embed", action="store_true", help="full-text only, no embedding calls")
     ap.add_argument("--skip-pipeline", action="store_true")
+    ap.add_argument("--retire-extra", action=argparse.BooleanOptionalAction, default=True,
+                    help="disable the logins of the earlier extras (default on; data is never deleted)")
     a = ap.parse_args(argv)
     _guard()
     migrate.run_migrations()
@@ -404,6 +407,8 @@ def main(argv: list[str] | None = None) -> int:
         bundle = json.loads(Path(a.imp).read_text(encoding="utf-8")) if a.imp else build_bundle()
         with connect_direct() as conn:
             res = apply_bundle(conn, bundle)
+            if a.retire_extra:
+                res["retired_logins"] = auth_repo.disable_login(RETIRED_USERS, conn=conn)
             conn.commit()
         if not a.skip_pipeline:
             res["pipeline"] = run_pipeline([p["code"] for p in bundle["patients"]], embed=not a.no_embed)

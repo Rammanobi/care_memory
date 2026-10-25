@@ -14,7 +14,7 @@ from cm.jobs import seed_demo_accounts as sda
 from tests.unit.content.conftest import load_banned_terms
 
 pytestmark = pytest.mark.db
-PASSWORDS = {u: f"Pw-{u}-test-only" for u in ("demo.pt0903", "demo.pt0930", "demo.pt0960", "demo.sup0930")}
+PASSWORDS = {u: f"Pw-{u}-test-only" for u in ("demo.pt0906", "demo.pt0960", "demo.pt0903", "demo.pt0930", "demo.sup0930")}
 
 
 @pytest.fixture()
@@ -36,18 +36,18 @@ def test_bundle_is_deterministic() -> None:
 
 
 def test_idempotent_and_additive(demo) -> None:  # noqa: ANN001
-    n_events = _count("SELECT count(*) AS n FROM cm.events e JOIN cm.patients p USING (patient_id) WHERE p.nikshay_id IN ('NK-0903','NK-0930','NK-0960')")
-    n_pt = _count("SELECT count(*) AS n FROM cm.patients WHERE nikshay_id IN ('NK-0903','NK-0930','NK-0960')")
-    n_cons = _count("SELECT count(*) AS n FROM cm.consents c JOIN cm.persons p USING (person_id) WHERE p.token IN ('P-0903','P-0930','P-0960')")
+    n_events = _count("SELECT count(*) AS n FROM cm.events e JOIN cm.patients p USING (patient_id) WHERE p.nikshay_id IN ('NK-0906','NK-0960')")
+    n_pt = _count("SELECT count(*) AS n FROM cm.patients WHERE nikshay_id IN ('NK-0906','NK-0960')")
+    n_cons = _count("SELECT count(*) AS n FROM cm.consents c JOIN cm.persons p USING (person_id) WHERE p.token IN ('P-0906','P-0960')")
     with transaction() as conn:
         again = sda.apply_bundle(conn, sda.build_bundle())
     assert again["events_new"] == 0 and again["users_new"] == 0
-    assert _count("SELECT count(*) AS n FROM cm.events e JOIN cm.patients p USING (patient_id) WHERE p.nikshay_id IN ('NK-0903','NK-0930','NK-0960')") == n_events
-    assert _count("SELECT count(*) AS n FROM cm.patients WHERE nikshay_id IN ('NK-0903','NK-0930','NK-0960')") == n_pt
-    assert _count("SELECT count(*) AS n FROM cm.consents c JOIN cm.persons p USING (person_id) WHERE p.token IN ('P-0903','P-0930','P-0960')") == n_cons
+    assert _count("SELECT count(*) AS n FROM cm.events e JOIN cm.patients p USING (patient_id) WHERE p.nikshay_id IN ('NK-0906','NK-0960')") == n_events
+    assert _count("SELECT count(*) AS n FROM cm.patients WHERE nikshay_id IN ('NK-0906','NK-0960')") == n_pt
+    assert _count("SELECT count(*) AS n FROM cm.consents c JOIN cm.persons p USING (person_id) WHERE p.token IN ('P-0906','P-0960')") == n_cons
 
 
-@pytest.mark.parametrize("code,days", [("PT-0903", 3), ("PT-0930", 30), ("PT-0960", 60)])
+@pytest.mark.parametrize("code,days", [("PT-0906", 6), ("PT-0960", 60)])
 def test_spans_and_no_future(demo, code: str, days: int) -> None:  # noqa: ANN001
     as_of, end = sda.as_of_instant(), sda.today_ist()
     pid = det_id("patient", code)
@@ -72,17 +72,63 @@ def test_patient_facing_text_is_clean(demo) -> None:  # noqa: ANN001
         assert not banned.scan_text(text), text
 
 
-def test_login_through_api(demo) -> None:  # noqa: ANN001
+def _legacy_extras() -> None:
+    """Create the retired extras the way the earlier 3/30/60 run did (users only; enough to test retiring)."""
+    with transaction() as conn:
+        for tok, user in (("P-0903", "demo.pt0903"), ("P-0930", "demo.pt0930"), ("S-93", "demo.sup0930")):
+            pid = det_id("person", tok)
+            conn.execute("INSERT INTO cm.persons (person_id, role, token) VALUES (%s,%s,%s) ON CONFLICT DO NOTHING",
+                         (pid, "supporter" if tok == "S-93" else "patient", tok))
+            conn.execute("INSERT INTO cm.auth_credentials (person_id, username, password_hash) VALUES (%s,%s,%s) "
+                         "ON CONFLICT DO NOTHING", (pid, user, sda.hash_password(PASSWORDS[user])))
+
+
+def _client():  # noqa: ANN202
     from fastapi.testclient import TestClient
 
     from cm.api.main import create_app
+    from cm.api.routers.auth import reset_rate_limits
 
-    c = TestClient(create_app())
-    for user, role in (("demo.pt0903", "patient"), ("demo.pt0930", "patient"), ("demo.pt0960", "patient"),
-                       ("demo.sup0930", "supporter")):
-        r = c.post("/auth/login", json={"username": user, "password": PASSWORDS[user]})
-        assert r.status_code == 200 and r.json()["role"] == role
-    assert c.post("/auth/login", json={"username": "demo.pt0903", "password": "wrong"}).status_code == 401
+    reset_rate_limits()
+    return TestClient(create_app())
+
+
+def _login(c, user: str):  # noqa: ANN001, ANN202
+    return c.post("/auth/login", json={"username": user, "password": PASSWORDS[user]})
+
+
+def test_two_default_accounts() -> None:
+    assert [a["code"] for a in sda.ACCOUNTS] == ["PT-0906", "PT-0960"]
+    assert [a["days"] for a in sda.ACCOUNTS] == [6, 60]
+    assert all(a["supporter"] is None for a in sda.ACCOUNTS)
+
+
+def test_login_through_api(demo) -> None:  # noqa: ANN001
+    c = _client()
+    for user in ("demo.pt0906", "demo.pt0960"):
+        r = _login(c, user)
+        assert r.status_code == 200 and r.json()["role"] == "patient"
+    bad = c.post("/auth/login", json={"username": "demo.pt0906", "password": "wrong"})
+    assert bad.status_code == 401
+
+
+def test_retire_disables_logins_and_keeps_data(demo) -> None:  # noqa: ANN001
+    from cm.store import auth_repo
+
+    _legacy_extras()
+    c = _client()
+    assert all(_login(c, u).status_code == 200 for u in sda.RETIRED_USERS)
+    with transaction() as conn:
+        assert auth_repo.disable_login(sda.RETIRED_USERS, conn=conn) == 3
+    with transaction() as conn:
+        assert auth_repo.disable_login(sda.RETIRED_USERS, conn=conn) == 0  # idempotent
+    assert all(_login(c, u).status_code == 401 for u in sda.RETIRED_USERS)
+    assert all(_login(c, u).status_code == 200 for u in ("demo.pt0906", "demo.pt0960"))
+    assert _count("SELECT count(*) AS n FROM cm.auth_credentials WHERE username = ANY(%s)", sda.RETIRED_USERS) == 3
+    # no supported way to hide a patient from the doctor list: the schema status values do not cover it
+    from cm.api import readmodels
+
+    assert "<> 'erased'" in readmodels._PATIENTS_SQL
 
 
 def test_export_import_roundtrip(demo) -> None:  # noqa: ANN001

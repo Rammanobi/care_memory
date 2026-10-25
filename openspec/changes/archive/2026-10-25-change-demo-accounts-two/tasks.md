@@ -1,0 +1,4 @@
+- [x] cm/store/auth_repo.py: disable_login (tests: test_retire_disables_logins)
+- [x] cm/jobs/seed_demo_accounts.py: ACCOUNTS = PT-0906 + PT-0960, --retire-extra / --no-retire-extra
+- [x] tests/unit/jobs/test_seed_demo_accounts.py updated (spans 6/60, retire, idempotency, clean text, round trip)
+- [x] scripts/make_demo_env.py ROLES

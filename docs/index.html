@@ -71,6 +71,13 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
 @media (max-width:640px){body{font-size:15.5px}.bar-row{grid-template-columns:34px 1fr 84px}.bar-row .bar{grid-column:1/-1;order:4}header.hero{padding-top:32px}th,td{padding:8px 9px;font-size:13.5px}.shot img{height:150px}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 .deploy{max-width:78ch;background:var(--safbg);border:1px solid var(--saf);border-radius:12px;padding:10px 14px;margin:0 0 18px}
+.qflow{display:flex;flex-wrap:wrap;align-items:stretch;gap:14px;margin:12px 0;padding:0;list-style:none}
+.qflow li{flex:1 1 150px;position:relative;background:var(--card);border:1.5px solid var(--teal);border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.4;color:var(--ink)}
+.qflow li b{display:block;color:var(--teal);font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
+.qflow li.ai{border-color:var(--saf);background:var(--safbg)}.qflow li.ai b{color:var(--saf)}
+.qflow li.doc{background:var(--tealbg)}
+.qflow li+li::before{content:"\2192";position:absolute;left:-13px;top:50%;transform:translateY(-50%);color:var(--mute);font-weight:700}
+@media (max-width:640px){.qflow{flex-direction:column}.qflow li+li::before{content:"\2193";left:50%;top:-16px;transform:translateX(-50%)}}
 </style>
 </head>
 <body>
@@ -86,10 +93,10 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
 <main class="wrap">
   <div class="progress" id="progress">
     <h2>Build progress</h2>
-    <p class="muted" style="margin:0">21 of 26 feature slices done, 5 partial, 0 in progress, 0 planned (25 Oct 2026, 00:45 IST). Backend: 1296 tests passed, 0 failed, 2 expected failures (known gaps), 1 skipped. Web: 132 tests, typecheck and build pass. The doctor gate is enforced by a database constraint.</p>
+    <p class="muted" style="margin:0">23 of 29 feature slices done, 6 partial, 0 in progress, 0 planned (25 Oct 2026, ~02:30 IST). Backend: 1516 tests passed, 0 failed, 2 expected failures (known gaps), 2 skipped. Web: 154 tests, typecheck and build pass. The doctor gate is enforced by a database constraint.</p>
     <div class="overall"><b>92%</b><span class="bar"><span class="fill" style="width:92%"></span></span></div>
-    <p class="muted" style="margin:0 0 10px;font-size:14px">21 of 26 slices done, 5 partial. Weighted: done 100%, partial 60%, in progress 35%. Details and commit plan in <a href="../TRACKER.md">TRACKER.md</a>.</p>
-    <div class="bar-row"><span class="bar-id">F01</span><span class="bar-name">Project scaffold</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F02</span><span class="bar-name">Contracts and skeletons</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F03</span><span class="bar-name">Infra and GCP scripts</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F04</span><span class="bar-name">Data core and event store</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F05</span><span class="bar-name">Doctor decision service</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F06</span><span class="bar-name">Core API and seed</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F07</span><span class="bar-name">AI budget governor</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F08</span><span class="bar-name">Templates and banned terms</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F09</span><span class="bar-name">Telegram lane</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F10</span><span class="bar-name">Gmail lane</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F11</span><span class="bar-name">Telegram live wiring</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F12</span><span class="bar-name">Doctor console</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F13</span><span class="bar-name">Patient app and Supporter</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F14</span><span class="bar-name">Web on the real API</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F15</span><span class="bar-name">AI runtime</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F16</span><span class="bar-name">Documentation</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F17</span><span class="bar-name">Rules R1-R6</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F18</span><span class="bar-name">Memory engine and nightly</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F19</span><span class="bar-name">AI eval suite and guards</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F20</span><span class="bar-name">Edge-case bug fixes</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F21</span><span class="bar-name">Vision extraction drafts</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F22</span><span class="bar-name">Gmail and Calendar adapter</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F23</span><span class="bar-name">Patient memory RAG</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F24</span><span class="bar-name">Live-mode patient app</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F25</span><span class="bar-name">Demo accounts 3/30/60</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F26</span><span class="bar-name">Production image, Cloud Tasks</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div>
+    <p class="muted" style="margin:0 0 10px;font-size:14px">23 of 29 slices done, 6 partial. Weighted: done 100%, partial 60%, in progress 35%. Details and commit plan in <a href="../TRACKER.md">TRACKER.md</a>.</p>
+    <div class="bar-row"><span class="bar-id">F01</span><span class="bar-name">Project scaffold</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F02</span><span class="bar-name">Contracts and skeletons</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F03</span><span class="bar-name">Infra and GCP scripts</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F04</span><span class="bar-name">Data core and event store</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F05</span><span class="bar-name">Doctor decision service</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F06</span><span class="bar-name">Core API and seed</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F07</span><span class="bar-name">AI budget governor</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F08</span><span class="bar-name">Templates and banned terms</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F09</span><span class="bar-name">Telegram lane</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F10</span><span class="bar-name">Gmail lane</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F11</span><span class="bar-name">Telegram live wiring</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F12</span><span class="bar-name">Doctor console</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F13</span><span class="bar-name">Patient app and Supporter</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F14</span><span class="bar-name">Web on the real API</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F15</span><span class="bar-name">AI runtime</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F16</span><span class="bar-name">Documentation</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F17</span><span class="bar-name">Rules R1-R6</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F18</span><span class="bar-name">Memory engine and nightly</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F19</span><span class="bar-name">AI eval suite and guards</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F20</span><span class="bar-name">Edge-case bug fixes</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F21</span><span class="bar-name">Vision extraction drafts</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F22</span><span class="bar-name">Gmail and Calendar adapter</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F23</span><span class="bar-name">Patient memory RAG</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F24</span><span class="bar-name">Live-mode patient app</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F25</span><span class="bar-name">Demo accounts 3/30/60</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F26</span><span class="bar-name">Production image, Cloud Tasks</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F27</span><span class="bar-name">Telegram free text to the doctor</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div><div class="bar-row"><span class="bar-id">F28</span><span class="bar-name">Gmail channel simulation</span><span class="bar"><span class="fill partial" style="width:60%"></span></span><span class="badge partial">partial</span></div><div class="bar-row"><span class="bar-id">F29</span><span class="bar-name">Doctor-question feature</span><span class="bar"><span class="fill done" style="width:100%"></span></span><span class="badge done">done</span></div>
   </div>
   <section id="s1"><h2><span class="num">1</span>The problem</h2><p><em>Problem statement IC26-03-10, as filed (this section names the clinical domain; nothing patient-facing does).</em></p>
 <p>Patients on long tuberculosis (TB) treatment often drop out, take the wrong medicines, or miss support they are entitled to. Six parties each hold one piece of the patient's journey: the patient, the private doctor, the lab, the chemist, the treatment Supporter and the national programme portal. Over six months or more of daily treatment, nobody joins these pieces.</p>
@@ -386,7 +393,7 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
 <td>&#128421;&#65039; Web</td>
 <td>Citation chips and patient-page Ask; honest live-mode patient app (no fake data in live mode)</td>
 <td><span class="badge done">done</span></td>
-<td><code>web/src/</code>, 132 web tests</td>
+<td><code>web/src/</code>, 154 web tests</td>
 </tr>
 <tr>
 <td>&#128421;&#65039; Web</td>
@@ -423,6 +430,24 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
 <td>Production image, Cloud Tasks mode, task auth and deploy scripts</td>
 <td><span class="badge partial">partial</span> (local only, NOT deployed; Google Cloud deployment planned for 2026-10-25, see <a href="deploy/DEPLOY_PLAN.md">DEPLOY_PLAN.md</a>)</td>
 <td><code>openspec/specs/cloud-tasks/</code>, <code>openspec/specs/deployment/</code>, <code>TASKS_MODE</code></td>
+</tr>
+<tr>
+<td>&#128172; Channel</td>
+<td>Telegram free text goes to the doctor queue: template acknowledgement, urgent escalation (13 offline tests; verified live on the real bot)</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/channels/tg_inbound.py</code>, <code>tests/unit/channels/</code></td>
+</tr>
+<tr>
+<td>&#128231; Channel</td>
+<td>Gmail channel simulation: 55 scenarios, 3 bugs fixed; one real test email sent and received with owner approval</td>
+<td><span class="badge partial">partial</span> (live inbound/push and Calendar not verified against real Google)</td>
+<td><a href="design/GMAIL_SIM_REPORT.md">docs/design/GMAIL_SIM_REPORT.md</a></td>
+</tr>
+<tr>
+<td>&#10067; Doctor question</td>
+<td>Triage, cited research brief with a safe suggested reply, routing and live notification, threaded reply on the same channel, patient waiting/answered status, doctor email notifier (dry-run by default), doctor and patient UI. Full loop verified live on 25 Oct; one bug found and fixed live (sender clock vs demo clock)</td>
+<td><span class="badge done">done</span></td>
+<td><code>cm/channels/</code>, <code>web/src/</code>, <code>tests/</code></td>
 </tr>
 </tbody>
 </table></div></section><section id="s5"><h2><span class="num">5</span>Architecture</h2><p>PNG copies of every diagram are in <a href="assets/diagrams/">docs/assets/diagrams/</a> (rendered with Mermaid 11.4.1). Colour key: teal = done, amber = partial, grey dashed = planned. The diagrams were drawn on 24 Oct 2026; since then rules R1-R6, the memory engine and the AI runtime have landed, so the status table in section 4 is the authority where a colour differs.</p>
@@ -695,6 +720,16 @@ footer{margin:40px 0 0;padding:24px 0 40px;border-top:1px solid var(--line);colo
 
   LOCAL -. &quot;infra/00..80 scripts + cloudbuild.yaml&quot; .-&gt; GCP"></div><img class="fallback" src="../assets/diagrams/07_deployment.png" alt="deployment diagram" loading="lazy"><figcaption><a href="../assets/diagrams/07_deployment.png">Open PNG</a> · <a href="../assets/diagrams/07_deployment.mmd">Mermaid source</a></figcaption></figure>
 
+<h3 class="sub">5.8 How a patient question reaches the doctor (built; verified live on 25 Oct 2026)</h3>
+<ol class="qflow" aria-label="How a patient question reaches the doctor">
+<li><b>1 Patient asks</b>on Telegram (free text) or in the patient app</li>
+<li><b>2 Acknowledgement</b>template reply, no AI text; urgent wording escalates at once</li>
+<li class="ai"><b>3 Triage and brief</b>triage plus a cited research brief and a safe suggested reply, for the doctor only</li>
+<li><b>4 Notification</b>live notification in the doctor console, plus a doctor email (dry-run by default)</li>
+<li class="doc"><b>5 Doctor decides</b>edits or approves the reply</li>
+<li><b>6 Threaded reply</b>sent on the same channel; the patient sees waiting, then answered</li>
+</ol>
+<p class="muted small">Built and tested offline (Telegram: 13 tests; Gmail simulation: 55 scenarios). The full loop was verified live on 25 Oct 2026. Real Gmail inbound/push and Calendar are not verified against real Google.</p>
 <p>Earlier design diagrams (framework architecture, data flow, lanes) are in <a href="assets/diagrams/design/">docs/assets/diagrams/design/</a>.</p></section><section id="s6"><h2><span class="num">6</span>Tech stack and models</h2><div class="tw"><table>
 <thead>
 <tr>
@@ -942,12 +977,12 @@ python scripts/banned_terms.py                                 # (ticked) prints
 <td><code>VITE_USE_MOCK</code>, <code>VITE_API_BASE</code> (see <code>web/.env.example</code>)</td>
 </tr>
 </tbody>
-</table></div></section><section id="s11"><h2><span class="num">11</span>Testing</h2><p>Final verified numbers as of 2026-10-25 00:45 IST (earlier figures from 24 Oct are superseded).</p>
+</table></div></section><section id="s11"><h2><span class="num">11</span>Testing</h2><p>Final verified numbers as of 2026-10-25 ~02:30 IST (earlier figures from 24 Oct are superseded).</p>
 <div class="tw"><table>
 <thead><tr><th>Suite</th><th>Result</th></tr></thead>
 <tbody>
-<tr><td>Backend (pytest)</td><td><strong>1296 passed, 0 failed</strong>, 2 expected failures (known gaps), 1 skipped</td></tr>
-<tr><td>&#128421;&#65039; Web (vitest)</td><td><strong>132 tests passed</strong>; typecheck and build pass</td></tr>
+<tr><td>Backend (pytest)</td><td><strong>1516 passed, 0 failed</strong>, 2 expected failures (known gaps), 2 skipped</td></tr>
+<tr><td>&#128421;&#65039; Web (vitest)</td><td><strong>154 tests passed</strong>; typecheck and build pass</td></tr>
 <tr><td>AI eval suite (offline)</td><td><strong>97 cases</strong></td></tr>
 <tr><td>&#128221; Content</td><td><code>python scripts/banned_terms.py</code> prints "banned-terms: clean" (last recorded 24 Oct)</td></tr>
 </tbody>
@@ -976,7 +1011,7 @@ python scripts/banned_terms.py                                 # (ticked) prints
 </tbody>
 </table></div>
 <p>Calibration is poor: ECE at day 60 is 0.22. The risk model uses fixed documented weights; it is not trained (training is deferred, no fine-tuning is planned, RAG is the memory layer). The two expected failures in the backend suite are known gaps; see <a href="design/AI_EVAL_REPORT.md">AI_EVAL_REPORT.md</a>.</p>
-<p>The bug-finding work behind F20 used property, concurrency, contract and edge-case suites and found 19 real bugs, all fixed. Not covered: live Google (Gmail, Calendar) calls and the Cloud deployment.</p></section><section id="s12"><h2><span class="num">12</span>Evaluation mapping</h2><p>Organisers' latest weighting: <strong>Round 1 = 40%, Round 2 = 60%</strong> (the older 15/35/50 plan is kept in <a href="design/EVALUATION_PLAN.md">docs/design/EVALUATION_PLAN.md</a>). Round 2 rubric, raw maximum 50, scaled to 60:</p>
+<p>The bug-finding work behind F20 used property, concurrency, contract and edge-case suites and found 19 real bugs, all fixed. Not covered: live Google (Gmail inbound/push, Calendar) calls and the Cloud deployment. The Gmail channel simulation (55 scenarios, report in <a href="design/GMAIL_SIM_REPORT.md">GMAIL_SIM_REPORT.md</a>) found and fixed 3 bugs.</p></section><section id="s12"><h2><span class="num">12</span>Evaluation mapping</h2><p>Organisers' latest weighting: <strong>Round 1 = 40%, Round 2 = 60%</strong> (the older 15/35/50 plan is kept in <a href="design/EVALUATION_PLAN.md">docs/design/EVALUATION_PLAN.md</a>). Round 2 rubric, raw maximum 50, scaled to 60:</p>
 <div class="tw"><table>
 <thead>
 <tr>
@@ -1003,7 +1038,7 @@ python scripts/banned_terms.py                                 # (ticked) prints
 <td>2</td>
 <td>Technical depth and code quality (10)</td>
 <td>12</td>
-<td>DB-level doctor gate, single <code>decide()</code> transaction, budget governor, PII tokeniser, cite-or-cut, frozen contracts, 1296 backend and 132 web tests, OpenSpec log</td>
+<td>DB-level doctor gate, single <code>decide()</code> transaction, budget governor, PII tokeniser, cite-or-cut, frozen contracts, 1516 backend and 154 web tests, OpenSpec log</td>
 </tr>
 <tr>
 <td>3</td>
@@ -1039,8 +1074,8 @@ python scripts/banned_terms.py                                 # (ticked) prints
 </table></div></section><section id="s13"><h2><span class="num">13</span>Roadmap</h2><p><strong>Next (planned, not done)</strong></p>
 <ol>
 <li><strong>Deploy to Google Cloud (Cloud Run, asia-south1, one domain with several hostnames): planned for 2026-10-25, NOT yet done.</strong> Plan: <a href="deploy/DEPLOY_PLAN.md">docs/deploy/DEPLOY_PLAN.md</a>. The local stack stays as the offline backup.</li>
-<li>Verify the Gmail and Calendar adapter against real Google (tested offline only so far).</li>
-<li>Live Telegram bot run with the owner's bot; record a backup video.</li>
+<li>Verify real Gmail inbound/push and Calendar against real Google (the Gmail channel was simulated with 55 scenarios; one real test email was sent and received).</li>
+<li>Record a backup video of the live Telegram and doctor-question loop (verified live on the real bot on 25 Oct).</li>
 <li>Native-speaker review of Telugu templates and answers; Hindi.</li>
 </ol>
 <p><strong>After the hackathon</strong></p>
@@ -1079,7 +1114,8 @@ python scripts/banned_terms.py                                 # (ticked) prints
 <li>Risk calibration is poor: ECE 0.22 at day 60. The risk model uses fixed documented weights and is not trained.</li>
 <li>Telugu answer text is mostly English, and the Telugu templates need a native-speaker review.</li>
 <li>The simulator clock is one day ahead of the real date in the seeded data.</li>
-<li>The Gmail live path and the Cloud deployment are not yet verified against real Google.</li>
+<li>Real Gmail inbound/push and Calendar are not verified against real Google, and the Cloud deployment has not happened.</li>
+<li>The doctor email notifier is dry-run by default; sending needs explicit confirmation.</li>
 <li>DeepSeek and OpenAI are used on mock data only (<code>CM_DATA_CLASS=mock</code>; DeepSeek is refused for real data). There is no real patient data.</li>
 </ul></section>
 <hr />

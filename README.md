@@ -11,7 +11,7 @@ Innovators Conclave 2026, JNTU Anantapur · Track IC26-03-10 Open Health Innovat
 
 </div>
 
-> **Progress (25 Oct 2026, 00:45 IST):** 21 of 26 feature slices done, 5 partial, 0 in progress, 0 planned. Backend: 1296 tests passed, 0 failed, 2 expected failures (known gaps), 1 skipped. Web: 132 tests, typecheck and build pass. The doctor gate is enforced by a database constraint.
+> **Progress (25 Oct 2026, about 02:30 IST):** 23 of 29 feature slices done, 6 partial, 0 in progress, 0 planned. Backend: 1516 tests passed, 0 failed, 2 expected failures (known gaps), 2 skipped. Web: 154 tests pass, typecheck and build pass. The doctor gate is enforced by a database constraint.
 > **Deployment to Google Cloud (Cloud Run, asia-south1, one domain with several hostnames) is planned for 2026-10-25 and has NOT happened yet.** Everything runs locally today. Plan: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md).
 > Status words in this README are strict: **done** means code plus an automated test or a recorded check; **partial** means code exists but a piece is missing or only tested against fakes; **planned** means designed, not built.
 
@@ -116,15 +116,22 @@ All screens use mock data (badge **MOCK DATA** in mock mode). More in [docs/asse
 | Telegram | Webhook: secret check, dedupe on `update_id`, tap saved as event first, ack under 1 s | **done** (tested with fakes and Postgres) | `cm/channels/tg_inbound.py`, `tests/unit/channels/`, `tests/integration/test_telegram_pg.py` |
 | Telegram | Fast path: 3 missed in 3 days or a danger symptom creates a Red draft (fixed text, no LLM) | **done** | `cm/channels/adapters_pg.py`, integration test |
 | Telegram | Outbox sender: approved rows only, quiet hours 21:00 to 07:00, 1 msg/s per chat, 3 per day, retry-after | **done** | `cm/channels/tg_sender.py`, `cm/jobs/outbox_drainer.py` |
-| Telegram | Live bot run | **partial** | needs the owner's bot token and ngrok; steps in `cm/channels/NOTES_integration.md` |
-| Telegram | Onboarding wizard with itemised consent, free-text intake, Supporter proxy taps | **planned** | listed in `cm/channels/NOTES.md` |
+| Telegram | Live bot run | **partial** (free text, rate limit and urgent escalation verified live on the real bot on 25 Oct; the live Telugu and `/stop` paths were not exercised live) | needs the owner's bot token and ngrok; steps in `cm/channels/NOTES_integration.md` |
+| Telegram | F27 free text to the doctor queue: on a bound chat the text is stored and creates a doctor request (source telegram); ONE approved-template acknowledgement (EN/TE; rate limit 1 per patient per 10 min; the urgent variant adds the 108 line); danger words take the Red fast path; medicine-advice questions become Amber high priority; the system never answers them; an unbound chat gets "by invitation"; after `/stop` nothing is stored | **done** (13 offline tests; verified live on the real bot on 25 Oct: normal text acknowledged, rate limit, urgent text escalated) | `cm/channels/`, `openspec/changes/archive/2026-10-25-add-telegram-free-text/` |
+| Telegram | Onboarding wizard with itemised consent, Supporter proxy taps | **planned** | listed in `cm/channels/NOTES.md` |
 | Gmail | Digest builder, reply parser ("approve 1, reject 2 reason"), single-use token check, consent flows, calendar visits, channel fallback | **partial** (tested against fakes only) | `cm/channels/gmail*.py`, `tests/unit/gmail/` |
 | Gmail | Real Gmail and Calendar adapter with Pub/Sub push verification, tested offline | **partial** (live Google verification pending) | `cm/channels/`, `openspec/specs/gmail-lane/` |
+| Gmail | F28 channel simulation: 55 scenario tests (56 tests) over the real Postgres adapters with fakes (digest, 32 reply cases, Pub/Sub push, calendar, consent, quiet hours); 3 bugs fixed (HTML-only replies, token burned by a refused decision, a Red escalated after the digest was approvable by email, so Red now needs the console) | **partial** (against fakes; a real Gmail test email was sent once with the owner's approval as a doctor notification check and was received; the live Gmail inbound and push path and Calendar are NOT verified against real Google) | [GMAIL_SIM_REPORT.md](docs/design/GMAIL_SIM_REPORT.md), `openspec/changes/archive/2026-10-25-fix-gmail-sim-bugs/` |
+| Doctor questions | F29 question triage: category medicine, food, symptom, visit, admin or other; priority normal, high or urgent; EN/TE/HI keywords | **done** (88 unit and 7 integration tests; live DeepSeek flash verified on demo patients) | `openspec/changes/archive/2026-10-25-add-doctor-question-research/` |
+| Doctor questions | Cited doctor-facing research brief and a safe suggested reply; the system never answers medical questions itself; research is never exposed to patients | **done** (same tests) | same change |
+| Doctor questions | Routing: background research task, live doctor notification (SSE), threaded reply on the same channel ("Reply to your question: ..."); replies are exempt from the 3 per day cap and bypass quiet hours only when urgent; patient status waiting, answered or closed | **done** (full loop verified live on 25 Oct: Telegram question, research, doctor reply in the console, threaded delivery to Telegram) | `openspec/changes/archive/2026-10-25-add-doctor-question-routing/` |
+| Doctor questions | Doctor email notifier: dry-run by default, send mode needs explicit owner confirmation; throttle 1 per patient per 10 min, urgent up to 3 per hour | **done** (tests; dry-run default) | commit fbafdde |
+| Doctor questions | Doctor and patient UI: question cards, research panel with citation chips, editable reply, notification toast and badge | **done** (web tests; shown live in the loop above) | `openspec/changes/archive/2026-10-25-add-doctor-question-ui/` |
 | Web | Doctor console: Today, Patients, patient page with tabs, Approvals with SLA countdown and bulk approve, Requests, Ask, Memory Lens, District, Admin usage caps, Settings, keyboard shortcuts, undo toast | **done** (screens) | `web/src/pages/`, screenshots above |
 | Web | Patient app: welcome and consent, home, record, messages, ask, me (consent revoke, large text), help, privacy; English/Telugu | **done** (screens) | `web/src/pages/PatientApp/` |
 | Web | Supporter view | **done** (screens) | `web/src/pages/Supporter/` |
 | Web | Real HTTP adapter (cookie session, 401 to login, GET-only retry, optimistic update with rollback), SSE with polling fallback | **done** | `web/src/api/httpAdapter.ts`, `mapping.test.ts` (14 tests) |
-| Web | Citation chips and patient-page Ask; honest live-mode patient app (no fake data in live mode) | **done** | `web/src/`, 132 web tests |
+| Web | Citation chips and patient-page Ask; honest live-mode patient app (no fake data in live mode) | **done** | `web/src/`, web tests (154 pass) |
 | Web | Memory Lens and District on real memory data | **partial** | screens exist; the memory engine now exists, but this tracker records no live check of these two screens against it |
 | Demo | Deterministic demo accounts at 3, 30 and 60 days | **done** | `openspec/specs/demo-accounts/` |
 | Eval | Seeded 60-day simulator, Day 3 vs 30 vs 60 evaluation (AUROC, Brier, ECE), RAG live eval with LLM judge | **done** (results in section 11) | `cm/sim/`, `cm/eval/`, `openspec/specs/simulator-eval/` |
@@ -522,12 +529,12 @@ Never put values in the repo. Full list with placeholders: [.env.example](.env.e
 
 ## 11. Testing
 
-Final verified numbers as of 2026-10-25 00:45 IST (earlier figures from 24 Oct are superseded).
+Final verified numbers as of 2026-10-25 about 02:30 IST (earlier figures from 24 Oct are superseded).
 
 | Suite | Result |
 |---|---|
-| Backend (pytest) | **1296 passed, 0 failed**, 2 expected failures (known gaps), 1 skipped |
-| Web (vitest) | **132 tests passed**; typecheck and build pass |
+| Backend (pytest) | **1516 passed, 0 failed**, 2 expected failures (known gaps), 2 skipped |
+| Web (vitest) | **154 tests passed**; typecheck and build pass |
 | AI eval suite (offline) | **97 cases** |
 | Content | `python scripts/banned_terms.py` prints "banned-terms: clean" (last recorded 24 Oct) |
 
@@ -556,7 +563,9 @@ Caveats: 3 misses were model-side. The database-backend check disagrees with the
 
 Calibration is poor: ECE at day 60 is 0.22. The risk model uses fixed documented weights; it is not trained (training is deferred, no fine-tuning is planned, RAG is the memory layer). The two expected failures in the backend suite are known gaps; see [AI_EVAL_REPORT.md](docs/design/AI_EVAL_REPORT.md).
 
-The bug-finding work behind F20 used property, concurrency, contract and edge-case suites and found 19 real bugs, all fixed. Not covered: live Google (Gmail, Calendar) calls and the Cloud deployment.
+The bug-finding work behind F20 used property, concurrency, contract and edge-case suites and found 19 real bugs, all fixed. Not covered: live Google (Gmail inbound and push, Calendar) calls and the Cloud deployment.
+
+**Live checks on 25 Oct 2026 (real Telegram bot, mock data):** F27 free text (normal text acknowledged, rate limit, urgent text escalated) and the F29 loop (Telegram question, research, doctor reply in the console, threaded delivery to Telegram). One bug was found and fixed live: the dev sender used the real clock while the API schedules by the demo clock (a day ahead), so the reply waited in the outbox. Gmail simulation: 55 scenario tests, 3 bugs fixed, report [GMAIL_SIM_REPORT.md](docs/design/GMAIL_SIM_REPORT.md).
 
 ## 12. Evaluation mapping
 
@@ -566,7 +575,7 @@ Organisers' latest weighting: **Round 1 = 40%, Round 2 = 60%** (the older 15/35/
 |---|---|---|---|
 | R1 | Idea and solution presentation, repo progress tracker | 40 | This README, diagrams, [TRACKER.md](TRACKER.md), one commit per feature slice |
 | 1 | Functionality and working demo (15) | 18 | Doctor approves a patient request and the patient app shows "doctor approved"; a Telegram tap becomes an event and a Red draft; Ask box answers with citations |
-| 2 | Technical depth and code quality (10) | 12 | DB-level doctor gate, single `decide()` transaction, budget governor, PII tokeniser, cite-or-cut, frozen contracts, 1296 backend and 132 web tests, OpenSpec log |
+| 2 | Technical depth and code quality (10) | 12 | DB-level doctor gate, single `decide()` transaction, budget governor, PII tokeniser, cite-or-cut, frozen contracts, 1516 backend and 154 web tests, OpenSpec log |
 | 3 | UI/UX and usability (5) | 6 | Responsive console and patient app (360 px to 1440 px), Telugu toggle, large text, empty states, keyboard shortcuts |
 | 4 | Completeness vs proposed scope (5) | 6 | Section 4 and TRACKER.md: honest done / partial / planned against the problem statement's expected outputs |
 | 5 | Viability and deployment readiness (5) | 6 | Spend caps with RED template-only mode, consent model, no PII to LLMs, Docker image, GCP scripts, cost per patient |
@@ -577,13 +586,13 @@ Organisers' latest weighting: **Round 1 = 40%, Round 2 = 60%** (the older 15/35/
 
 **Next (planned, not done)**
 1. **Deploy to Google Cloud (Cloud Run, asia-south1, one domain with several hostnames): planned for 2026-10-25, NOT yet done.** Plan: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md). The local stack stays as the offline backup.
-2. Verify the Gmail and Calendar adapter against real Google (tested offline only so far).
-3. Live Telegram bot run with the owner's bot; record a backup video.
+2. Verify the real Gmail inbound and Pub/Sub push path and Calendar against real Google (simulated with fakes only; one real test email was sent and received).
+3. Exercise the live Telegram Telugu and `/stop` paths; record a backup video.
 4. Native-speaker review of Telugu templates and answers; Hindi.
 
 **After the hackathon**
-1. Per-clinic scoping of doctor reads (today doctors see every clinic's patients).
-2. Better risk calibration (ECE 0.22 at day 60); training is deferred.
+1. Per-clinic scoping of doctor reads (today doctors see every clinic's patients; not built).
+2. Trained risk model and better calibration (ECE 0.22 at day 60); deferred.
 3. Pilot with one private clinic on synthetic-then-consented data.
 4. Move to an India-region provider with zero data retention before any real patient data (`CM_DATA_CLASS=real` already refuses DeepSeek).
 
@@ -606,7 +615,10 @@ Built with parallel AI coding agents, one lane each, coordinated through frozen 
 - Risk calibration is poor: ECE 0.22 at day 60. The risk model uses fixed documented weights and is not trained.
 - Telugu answer text is mostly English, and the Telugu templates need a native-speaker review.
 - The simulator clock is one day ahead of the real date in the seeded data.
-- The Gmail live path and the Cloud deployment are not yet verified against real Google.
+- The Gmail live inbound and push path, Calendar and the Cloud deployment are not yet verified against real Google; Cloud deployment (planned for 2026-10-25) has not happened.
+- The live Telegram Telugu and `/stop` paths have not been exercised live (offline tests only).
+- The doctor email notifier is dry-run by default; send mode needs explicit owner confirmation.
+- The system never answers patient medical questions itself: they go to the doctor; the research brief is doctor-facing only.
 - DeepSeek and OpenAI are used on mock data only (`CM_DATA_CLASS=mock`; DeepSeek is refused for real data). There is no real patient data.
 
 ---

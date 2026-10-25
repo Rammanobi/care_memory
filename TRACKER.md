@@ -1,6 +1,6 @@
 # CareMemory: GitHub Repository Progress Tracker
 
-**Progress summary (25 Oct 2026, 00:45 IST):** 21 of 26 feature slices done, 5 partial, 0 in progress, 0 planned. Backend 1296 tests passed, 0 failed, 2 expected failures (known gaps), 1 skipped; web 132 tests, typecheck and build pass; the doctor gate is enforced by a database constraint. Deployment to Google Cloud is planned for 2026-10-25 and has NOT happened. Plan: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md).
+**Progress summary (25 Oct 2026, about 02:30 IST):** 23 of 29 feature slices done, 6 partial, 0 in progress, 0 planned. Backend 1516 tests passed, 0 failed, 2 expected failures (known gaps), 2 skipped; web 154 tests pass, typecheck and build pass; the doctor gate is enforced by a database constraint. Deployment to Google Cloud is planned for 2026-10-25 and has NOT happened. Plan: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md).
 
 Back to the [README](README.md) · Web version: [docs/index.html](docs/index.html) · Rubric: [docs/design/EVALUATION_PLAN.md](docs/design/EVALUATION_PLAN.md)
 
@@ -27,7 +27,7 @@ Points use the organisers' latest split: Round 1 = 40, Round 2 = 60 (rubric raw 
 | F11 | Telegram live wiring | Postgres adapters, httpx client, `/webhooks/telegram`, outbox drainer, daily reminders, invite codes, local task queue | `cm/channels/adapters_pg.py`, `tg_http.py`, `cm/jobs/outbox_drainer.py`, `reminders.py` | `tests/integration/test_telegram_pg.py` | partial (live bot run is an owner step) | Functionality | 2 |
 | F12 | Doctor console | Today, Patients, patient page, Approvals with SLA and bulk approve, Requests, Ask, Memory Lens, District, Admin caps, Settings | `web/src/pages/`, `web/src/components/` | screenshots in `docs/assets/ui/` | done (screens; Lens and District on sample data) | Functionality, UI/UX, Completeness | 6 |
 | F13 | Patient app and Supporter view | Welcome and consent, home, record, messages, ask, me, help, privacy; Telugu; Supporter tap | `web/src/pages/PatientApp/`, `web/src/pages/Supporter/` | screenshots; banned-term scan of these folders | done (screens) | UI/UX, Completeness | 3 |
-| F14 | Web on the real API | HTTP adapter, real login, role guards, SSE with polling fallback, offline banner, portal data | `web/src/api/`, `web/src/realtime/` | `web/src/api/mapping.test.ts` (14 tests) | done (typecheck and build pass; 132 web tests) | Functionality | 1 |
+| F14 | Web on the real API | HTTP adapter, real login, role guards, SSE with polling fallback, offline banner, portal data | `web/src/api/`, `web/src/realtime/` | `web/src/api/mapping.test.ts` (14 tests) | done (typecheck and build pass; 154 web tests) | Functionality | 1 |
 | F15 | AI runtime | Deep Agents orchestrator, narrator and drafter, `interrupt()` at `submit_for_review`, cite-or-cut, LLM Ask box, nightly job | `cm/agents/`, `cm/tools/`, `cm/validator/`, `cm/api/routers/query.py` | `tests/unit/ai/`; live run on mock data with DeepSeek (commit f3a9663) | done (mock data only) | Technical depth, Completeness | 2 |
 | F16 | Documentation | README, this tracker, web page, design docs, diagrams, screenshots | `README.md`, `TRACKER.md`, `docs/` | diagrams render with Mermaid 11.4.1; page screenshot checked | done | Round 1, Q&A and team, Presentation | 14 |
 | F17 | Rules R1-R6 reconciler | Rules R1 to R6 including household contact screening, with red-team tests | `cm/rules/`, `tests/redteam/` | `tests/unit/rules/`, red-team tests (commit 3836d3b) | done | Functionality, Technical depth | n/a |
@@ -40,13 +40,16 @@ Points use the organisers' latest split: Round 1 = 40, Round 2 = 60 (rubric raw 
 | F24 | Honest live-mode patient app | Patient app and patient-page Ask that show real data in live mode, with citation chips | `web/src/pages/PatientApp/` | web tests (commits 9d1bedd, bfe8f7a) | done | UI/UX, Functionality | n/a |
 | F25 | Demo accounts | Deterministic demo accounts at 3, 30 and 60 days | see `openspec/specs/demo-accounts/` | `openspec/specs/demo-accounts/` (commit 8db6687) | done | Functionality | n/a |
 | F26 | Production image and Cloud Tasks mode | Production image, Cloud Tasks mode, task auth and deploy scripts (local only, NOT deployed) | `Dockerfile`, `infra/`, `cm/core/tasks.py` | `openspec/specs/cloud-tasks/`, `openspec/specs/deployment/` (commit a46c2f3) | partial (not deployed) | Viability | n/a |
+| F27 | Telegram free text to the doctor queue | Free text on a bound chat is stored and creates a doctor request (source telegram); ONE approved-template acknowledgement (EN/TE; 1 per patient per 10 min; urgent variant adds the 108 line); danger words go to the Red fast path; medicine-advice questions become Amber high priority; never answered by the system; unbound chat gets "by invitation"; after `/stop` nothing is stored | `cm/channels/`, `cm/router/templates/` | 13 offline tests; verified live on the real bot on 25 Oct (normal text acknowledged, rate limit, urgent text escalated) (commit c9ad3fd) | done (live Telugu and `/stop` paths not exercised live) | Functionality, Completeness | n/a |
+| F28 | Gmail channel simulation | 55 scenario tests (56 tests) over the real Postgres adapters with fakes: digest, 32 reply cases, Pub/Sub push, calendar, consent, quiet hours; 3 bugs fixed (HTML-only replies, token burned by a refused decision, Red escalated after the digest approvable by email, so Red now needs the console) | `cm/channels/`, `tests/` | [GMAIL_SIM_REPORT.md](docs/design/GMAIL_SIM_REPORT.md) (commit cf62004); one real test email sent with the owner's approval (doctor notification check) and received | partial (fakes only; live Gmail inbound and push and Calendar NOT verified against real Google) | Functionality, Technical depth | n/a |
+| F29 | Doctor-question feature | Question triage (category medicine/food/symptom/visit/admin/other, priority normal/high/urgent; EN/TE/HI keywords); cited doctor-facing research brief and safe suggested reply (the system never answers medical questions itself); routing, background research task, live doctor notification (SSE), threaded reply on the same channel (replies exempt from the 3/day cap; bypass quiet hours only when urgent); patient status waiting/answered/closed (research never exposed to patients); doctor email notifier (dry-run by default; send needs explicit owner confirmation; throttle 1 per patient per 10 min, urgent up to 3/hour); doctor and patient UI (question cards, research panel with citation chips, editable reply, toast and badge) | `cm/`, `web/src/` | 88 unit and 7 integration tests; live DeepSeek flash verified on demo patients; full loop verified live on 25 Oct: Telegram question, research, doctor reply in the console, threaded delivery to Telegram (commits 29cdeef, fbafdde, 81d56eb, 8d516bb, b3ffa90) | done (bug found and fixed live: the dev sender used the real clock while the API schedules by the demo clock, a day ahead, so the reply waited in the outbox) | Functionality, UI/UX, Technical depth | n/a |
 | | **Total tied to slices F01-F16** | | | | | | **63** |
 
-Points for F17-F26 were not re-estimated (shown as n/a); the 63 covers F01-F16. Not done: Google Cloud deployment (planned for 2026-10-25, NOT happened; see [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md)), live Google verification of Gmail and Calendar, cassette replay (stubs), risk training (deferred). See (c) and (e).
+Points for F17-F29 were not re-estimated (shown as n/a); the 63 covers F01-F16. Not done: Google Cloud deployment (planned for 2026-10-25, NOT happened; see [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md)), live Google verification of Gmail and Calendar, cassette replay (stubs), risk training (deferred). See (c) and (e).
 
 ## (b) Git commit plan: one commit per slice
 
-F01 to F16 below were committed as planned. F17 to F26 map to the 17 newest commits, which are local (not pushed); they are listed in the table after the F16 block.
+F01 to F16 below were committed as planned. F17 to F29 map to the newest commits, which are local (not pushed); they are listed in the table after the F16 block.
 
 Rules for the person committing:
 - Run from `caremem/`, in the order below (dependency order). Commits are made today with real timestamps; never rewrite or fake dates.
@@ -159,7 +162,7 @@ git add -- ':(glob)openspec/changes/archive/*-add-readme-and-tracker/**' 2>/dev/
 git commit -m "docs: add README, progress tracker, design docs, diagrams and screenshots"
 ```
 
-#### F17 to F26: actual local commits (git log, 25 Oct 2026)
+#### F17 to F29: actual local commits (git log, 25 Oct 2026)
 
 | Slice | Commit | Message |
 |---|---|---|
@@ -175,8 +178,15 @@ git commit -m "docs: add README, progress tracker, design docs, diagrams and scr
 | F24 | 9d1bedd | feat(web): citation chips, patient-page Ask and honest live-mode patient app |
 | F25 | 8db6687 | feat(demo): add deterministic 3-day, 30-day and 60-day demo accounts |
 | F26 | a46c2f3 | build(deploy): production image, Cloud Tasks mode, task auth and deploy scripts (local only) |
+| F27 | c9ad3fd | feat(telegram): route patient free text to the doctor queue with a template acknowledgement and urgent escalation |
+| F28 | cf62004 | test(gmail): simulate 55 email scenarios end to end and fix HTML replies, token burn and Red approval by email |
+| F29 | 29cdeef | feat(ai): triage patient questions and prepare a cited doctor brief with a safe suggested reply |
+| F29 | fbafdde | feat(email): add doctor notification email for patient questions (dry-run by default, send needs explicit confirmation) |
+| F29 | 81d56eb | feat(telegram): route patient questions to the doctor with research, live notification and threaded replies |
+| F29 | 8d516bb | feat(web): doctor question cards with research brief, live notification and patient waiting status |
+| F29 | b3ffa90 | fix(telegram): make the dev sender follow the demo clock so replies scheduled by the API are delivered |
 
-Other commits in the same range, not given their own slice: f3a9663 feat(ai): finish AI runtime live run, budget alerts and run notes (F15); bfe8f7a fix(web): live-mode defects (undo, request volume, raw strings, logged-out 401s, channel status); c3ca863 fix(api): admin usage merge, channel status route, nightly trigger, next-step and audit fixes, safer Telegram tests; d2b472c chore: harden .gitignore for cloud credentials, tokens and key files; 3c2992c chore: sync remaining specs, fixtures and docs.
+Other commits in the same range, not given their own slice: 566fbcd docs: record live Telegram channel test; relax event-count invariant for superseded events; c130943 test: pin live research and email send off in the test environment; d122a79 docs(openspec): sync doctor-console and patient-app specs; 0614c46 chore: add helper to collect demo logins into a git-ignored env file; relax outbox test isolation; 9037042 and 148dccc chore: ignore Gmail token files and the gmail_cred folder; f3a9663 feat(ai): finish AI runtime live run, budget alerts and run notes (F15); bfe8f7a fix(web): live-mode defects (undo, request volume, raw strings, logged-out 401s, channel status); c3ca863 fix(api): admin usage merge, channel status route, nightly trigger, next-step and audit fixes, safer Telegram tests; d2b472c chore: harden .gitignore for cloud credentials, tokens and key files; 3c2992c chore: sync remaining specs, fixtures and docs.
 
 ### Must NOT be committed
 
@@ -198,22 +208,22 @@ All of these are already covered by `.gitignore`; check `git status` anyway.
 |---|---|---|---|
 | P0 | Deploy to Google Cloud (Cloud Run, asia-south1, one domain with several hostnames): planned for 2026-10-25, NOT done. Plan: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md) | I | Viability and deployment readiness |
 | P0 | Rehearse the core loop on the real stack: patient request, doctor approves, patient sees "doctor approved"; Telegram tap to Red draft | all | Working demo |
-| P1 | Verify the Gmail and Calendar adapter against real Google (tested offline only) | M | Second channel |
-| P1 | Live Telegram bot run with the owner's token; record a backup video | F | Integration evidence |
+| P1 | Verify the real Gmail inbound and Pub/Sub push path and Calendar against real Google (55 simulated scenarios with fakes; one real test email sent and received) | M | Second channel |
+| P1 | Exercise the live Telegram Telugu and `/stop` paths; record a backup video (free text, rate limit, urgent text and the question loop were verified live on 25 Oct) | F | Integration evidence |
 | P2 | Native-speaker review of Telugu templates and answers (answer text is mostly English); Hindi | K | Usability |
-| P2 | Risk calibration (ECE 0.22 at day 60); training is deferred | C | Honest risk numbers |
-| P2 | Per-clinic scoping of doctor reads (district-wide today) | G | Privacy |
+| P2 | Trained risk model deferred (ECE 0.22 at day 60) | C | Honest risk numbers |
+| P2 | Per-clinic scoping of doctor reads: not built (district-wide today) | G | Privacy |
 | P3 | Cassette replay for an offline demo (stubs today) | J | Offline backup |
 
-Done since the last tracker: AI runtime, memory engine v1, rules R1-R6, simulator and Day 3 / 30 / 60 evaluation, the TypeScript build error (build now passes).
+Done since the last tracker: F27 Telegram free text, F29 doctor-question feature, F28 Gmail simulation (partial), AI runtime, memory engine v1, rules R1-R6, simulator and Day 3 / 30 / 60 evaluation, the TypeScript build error (build now passes).
 
 ## (d) One-line progress
 
-21 of 26 feature slices done, 5 partial, 0 in progress, 0 planned (25 Oct 2026, 00:45 IST). Backend 1296 tests passed, 0 failed, 2 expected failures (known gaps), 1 skipped; web 132 tests, typecheck and build pass; the doctor gate is enforced by a database constraint. Deployment to Google Cloud is planned for 2026-10-25 and has NOT happened.
+23 of 29 feature slices done, 6 partial, 0 in progress, 0 planned (25 Oct 2026, about 02:30 IST). Backend 1516 tests passed, 0 failed, 2 expected failures (known gaps), 2 skipped; web 154 tests pass, typecheck and build pass; the doctor gate is enforced by a database constraint. Deployment to Google Cloud is planned for 2026-10-25 and has NOT happened.
 
-## (e) Verified results (as of 2026-10-25 00:45 IST)
+## (e) Verified results (as of 2026-10-25 about 02:30 IST)
 
-- Backend: 1296 passed, 0 failed, 2 expected failures (known gaps), 1 skipped. Web: 132 tests, typecheck and build pass. AI eval suite: 97 offline cases.
+- Backend: 1516 passed, 0 failed, 2 expected failures (known gaps), 2 skipped. Web: 154 tests pass, typecheck and build pass. AI eval suite: 97 offline cases.
 - RAG live eval, 66 questions across day 3, 30 and 60 on PT-0142 (DeepSeek flash, mock data): abstain accuracy 98.5%, groundedness 96.4%, judge pass 95.5%, 0 temporal leakage, citation validity 1.0; retrieval recall@10 1.0 / 1.0 / 0.97 at days 3 / 30 / 60. Caveats: 3 model-side misses; the database-backend check disagrees with the in-memory harness within 0.106 on abstain accuracy because of rendering differences.
 - Simulator Day 3 to 30 to 60: AUROC 0.645, 0.703, 0.796; Brier 0.261, 0.249, 0.197. ECE at day 60 is poor (0.22). The risk model uses fixed documented weights (not trained; training deferred, no fine-tuning planned, RAG is the memory layer).
 
@@ -224,7 +234,10 @@ Done since the last tracker: AI runtime, memory engine v1, rules R1-R6, simulato
 - Risk calibration: ECE 0.22 at day 60.
 - Telugu answer text is mostly English; Telugu templates need native-speaker review.
 - The simulator clock is one day ahead of the real date in the seeded data.
-- Gmail live path and Cloud deployment are not yet verified against real Google.
+- Gmail live inbound and push path, Calendar and Cloud deployment are not yet verified against real Google; Cloud deployment (planned for 2026-10-25) has not happened.
+- Live Telegram Telugu and `/stop` paths have not been exercised live (offline tests only).
+- Doctor email notifier is dry-run by default; send mode needs explicit owner confirmation.
+- The system never answers patient medical questions itself; the research brief is doctor-facing only.
 - DeepSeek and OpenAI are used on mock data only (`CM_DATA_CLASS=mock`; DeepSeek refused for real data). No real patient data.
 
 ## (g) Team

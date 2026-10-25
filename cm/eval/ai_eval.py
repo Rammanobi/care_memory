@@ -39,10 +39,22 @@ from cm.core.config import REPO_ROOT
 FIXTURES = REPO_ROOT / "fixtures" / "ai_evals"
 OUT_DIR = REPO_ROOT / "out" / "evals"
 DOC = REPO_ROOT / "docs" / "design" / "AI_EVAL_REPORT.md"
-CATEGORIES = ("cite_or_cut", "narrator", "ask_box", "doctor_gate", "boundary", "longitudinal")
+CATEGORIES = (
+    "cite_or_cut",
+    "narrator",
+    "ask_box",
+    "doctor_gate",
+    "boundary",
+    "longitudinal",
+    "document_extraction",
+    "own_data_answers",
+    "question_research",
+)
 KNOWN_GAPS = {
     "LONG-ECE": "Baseline risk model is miscalibrated: Day-60 ECE is above 0.10 and worse than the population "
     "average (Brier and AUROC do improve).",
+    "DOC-IMG-TYPE": "Photo uploads take their doc type only from the filename or hint; an unnamed photo "
+    "(IMG_2041.jpg) is read with the prescription prompt and the vision model's own doc_type is overwritten.",
 }
 
 
@@ -926,7 +938,16 @@ def longitudinal_cases() -> list[Case]:
 
 # ------------------------------------------------------------------------------------------- suite
 def offline_cases() -> list[Case]:
-    return [*cite_cases(), *narrator_cases(), *ask_cases(), *gate_cases(), *longitudinal_cases()]
+    from cm.eval.ai_eval_batch2 import batch2_cases
+
+    return [
+        *cite_cases(),
+        *narrator_cases(),
+        *ask_cases(),
+        *gate_cases(),
+        *longitudinal_cases(),
+        *batch2_cases(),
+    ]
 
 
 def run_case(c: Case) -> CaseResult:
@@ -1220,6 +1241,14 @@ DOC_NOTES = """## Notes
 - A first full live run (0.97 USD governor estimate) is not in the cost list: it exposed judge-rubric and
   text-detector false positives (PT codes judged as PII, quoted injections, narrow abstain phrases), which were
   fixed in the harness before the runs above.
+- Batch 2 (OpenSpec `add-ai-evals-batch2`): document_extraction (39 mock documents + 4 review flows, in-memory
+  store seams, fake vision), own_data_answers (26 records), question_research (45 + 11 adversarial questions, each
+  run offline and against a scripted adversarial WORKER). Fixed while adding it: upload doc-type guess matched
+  substrings ('lab' in 'available'/'label', 'report' in 'reported', 'mg' in 'among') and called any 'bill' a
+  chemist bill (doc-type accuracy 0.77 -> 0.97); Telugu documents were always 'other'; the upload filename
+  reached the doctor review payload unmasked (phone number); the own-data {when} slot carried free text (advice,
+  phone) to the patient; Hindi 'yellow eyes' (chandrabindu spelling) and vomiting were not urgent.
+- `--live-batch2` runs the adversarial question-research set on deepseek flash (cap 0.50 USD, cost totals only).
 - `known_gap` cases are open bugs (pytest xfail strict); fixing one turns CI red until the tag is removed.
 - Live mode: WORKER = deepseek flash for subject and JUDGE; private in-memory governor, hard cap per run (max 1.00
   USD). Cost is the governor estimate; when the model is not in CM_PRICE_TABLE_JSON the governor uses its
@@ -1263,6 +1292,10 @@ def render_md(report: dict[str, Any]) -> str:
                 f"| {d} | {m['model']['brier']} | {m['model']['ece']} | {m['model'].get('auroc')} | "
                 f"{m['pop_avg']['brier']} | {m['last_week']['brier']} |"
             )
+    for cat, m in (report.get("metrics") or {}).items():
+        if m:
+            lines += ["", f"## Metrics: {cat}", ""]
+            lines += [f"- {k}: {v}" for k, v in m.items()]
     runs = report.get("cost_runs") or ([report["cost"]] if report.get("cost") else [])
     if runs:
         lines += ["", "## Live cost (governor-estimated, per run; each run hard-capped)", ""]
@@ -1294,7 +1327,7 @@ def write_reports(report: dict[str, Any], out_dir: Path, doc: Path | None) -> No
         "Full per-case JSON and Markdown are in `out/evals/` (git-ignored). Mock data only.",
         "",
     ]
-    for m in ("offline", "live"):
+    for m in ("offline", "live", "live_batch2"):
         p = out_dir / f"ai_eval_{m}.json"
         if p.exists():
             parts.append(
@@ -1371,7 +1404,24 @@ def run_suite(
         report["cost"] = cost
     report["results"] = [r.as_dict() for r in results]
     report["summary"] = summarize(results)
+    from cm.eval.ai_eval_batch2 import batch2_metrics
+
+    report["metrics"] = batch2_metrics(results)
     return report
+
+
+def run_live_batch2_report(cap: float) -> dict[str, Any]:
+    """Live question-research adversarial cases only (deepseek flash, hard cap 0.50 USD)."""
+    from cm.eval.ai_eval_batch2 import run_live_batch2
+
+    results, cost = run_live_batch2(cap)
+    return {
+        "mode": "live_batch2",
+        "run_at": datetime.now().isoformat(timespec="seconds"),
+        "results": [r.as_dict() for r in results],
+        "summary": summarize(results),
+        "cost": cost,
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1398,13 +1448,23 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="re-apply text checks to the stored live answers (no provider calls)",
     )
+    ap.add_argument(
+        "--live-batch2",
+        action="store_true",
+        help="only the batch-2 live cases (question research on deepseek flash, cap 0.50 USD)",
+    )
     a = ap.parse_args(argv)
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    if a.live:
+    if a.live or a.live_batch2:
         from cm.core.config import load_dotenv
 
         load_dotenv()
+    if a.live_batch2:
+        report = run_live_batch2_report(min(a.max_usd, 0.50))
+        write_reports(report, Path(a.out), None if a.no_doc else DOC)
+        sys.stdout.write(render_md(report))
+        return 1 if report["summary"]["unexpected_failures"] else 0
     if a.rescore_live:
         report = rescore_live(Path(a.out) / "ai_eval_live.json")
         write_reports(report, Path(a.out), None if a.no_doc else DOC)

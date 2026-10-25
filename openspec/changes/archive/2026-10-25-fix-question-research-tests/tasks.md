@@ -1,0 +1,2 @@
+- [x] Update tests/integration/test_question_research.py to PT-0906/PT-0960 and temporary 'te' vault language
+- [x] Run it and tests/unit/agents/test_question_research.py (96 passed)

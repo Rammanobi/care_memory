@@ -1,0 +1,4 @@
+- [x] documents.ts upload list (documents.test.ts)
+- [x] Next3 missed state, consent -> Supporter, reply threading, Telugu sample set, own answers (patientMock.test.ts)
+- [x] Accessibility and UI state fixes
+- [x] typecheck, test, build

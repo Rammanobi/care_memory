@@ -9,9 +9,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import secrets
 import unicodedata
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
@@ -232,7 +233,13 @@ def recent_request_with_hash(
 def claim_ack(
     person_id: UUID, action: str, at: datetime, window_s: int, *, conn: Any = None
 ) -> bool:
-    """Atomically allow one ack per person and action per window (advisory lock + audit_log row)."""
+    """Atomically allow one ack per person and action per window (advisory lock + audit_log row).
+
+    In the dev/demo environments the demo clock is pinned (frozen), so a pace limit measured on it would never
+    expire: there the window runs on real wall time. Tests (CM_ENV=test) and prod keep the caller's clock.
+    """
+    if os.environ.get("CM_ENV", "").strip().lower() in ("dev", "demo"):
+        at = datetime.now(UTC)
     if conn is None:
         with transaction() as c:
             return claim_ack(person_id, action, at, window_s, conn=c)
@@ -240,8 +247,8 @@ def claim_ack(
     conn.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (f"{action}:{pid}",))
     hit = conn.execute(
         "SELECT 1 FROM cm.audit_log WHERE action=%s AND %s = ANY(result_ids) "
-        "AND at > %s - make_interval(secs => %s) LIMIT 1",
-        (action, pid, at, window_s),
+        "AND at > %s - make_interval(secs => %s) AND at <= %s LIMIT 1",
+        (action, pid, at, window_s, at),
     ).fetchone()
     if hit:
         return False

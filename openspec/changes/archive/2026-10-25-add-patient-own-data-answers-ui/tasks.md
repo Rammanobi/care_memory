@@ -1,0 +1,5 @@
+- [x] types.ts, mapping.ts (mapOwnAnswers, asOfWhen), serverCalls.ts (ownAnswersServer); test: api/ownAnswers.test.ts, ownAnswersCall.test.ts
+- [x] mocks/ownAnswers.ts sample cards
+- [x] PatientApp/useOwnAnswers.ts, AboutMyRecord.tsx, index.tsx (Home), parts.tsx (#ask-box), extra.css
+- [x] i18nExtra.ts EN+TE labels
+- [x] typecheck, test, build pass

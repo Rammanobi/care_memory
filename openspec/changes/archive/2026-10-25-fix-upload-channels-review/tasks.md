@@ -1,0 +1,3 @@
+- [x] gmail dispatch + inline skip + 4-digit code + max_bytes (gmail_attach.py, gmail.py; tests/unit/gmail/test_gmail_attach.py)
+- [x] tg precheck order + tgfile task (tg_upload.py, tg_inbound.py, telegram.py, tasks.py; tests/unit/channels/test_tg_upload.py)
+- [x] NOTES_gmail.md and spec wording

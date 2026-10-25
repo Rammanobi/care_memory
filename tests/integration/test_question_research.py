@@ -1,7 +1,7 @@
-"""cm.agents.question_research on caremem_test: demo patients with 3 / 30 / 60 days of mock history.
+"""cm.agents.question_research on caremem_test: demo patients with 6 / 60 days of mock history.
 
 Offline by default (BM25 index, no embeddings, extractive brief or a scripted fake model). One optional
-``live`` test runs the real WORKER model (deepseek flash) on PT-0930 with a $0.10 governor cap.
+``live`` test runs the real WORKER model (deepseek flash) on PT-0960 with a $0.10 governor cap.
 Read-only apart from the fixture: the research itself never writes approvals or outbox rows.
 """
 
@@ -10,6 +10,8 @@ from __future__ import annotations
 import json
 import os
 import re
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import timedelta
 from typing import Any
 
@@ -20,15 +22,16 @@ from langchain_core.messages import AIMessage
 from cm.agents import question_research as qr
 from cm.core.banned_lexicon import find_banned
 from cm.core.db import transaction
+from cm.core.ids import det_id
 from cm.jobs import rag_index
 from cm.jobs import seed_demo_accounts as sda
 from cm.store import chunks_repo
 from cm.tools import memory_search as ms
 
 pytestmark = pytest.mark.db
-CODES = ("PT-0903", "PT-0930", "PT-0960")
+CODES = ("PT-0906", "PT-0960")
 PASSWORDS = {
-    u: f"Pw-{u}-test-only" for u in ("demo.pt0903", "demo.pt0930", "demo.pt0960", "demo.sup0930")
+    u: f"Pw-{u}-test-only" for u in ("demo.pt0906", "demo.pt0960")
 }
 MED_Q = "Can I take this tablet with my evening tea?"
 FOOD_Q = "Can I eat chicken and eggs during the festival?"
@@ -74,8 +77,8 @@ def _counts() -> tuple[int, int]:
     return a, o
 
 
-def test_day3_versus_day60_extractive(demo):
-    early = qr.research_question("PT-0903", MED_Q, as_of=demo, embed=False).as_dict()
+def test_day6_versus_day60_extractive(demo):
+    early = qr.research_question("PT-0906", MED_Q, as_of=demo, embed=False).as_dict()
     late = qr.research_question("PT-0960", MED_Q, as_of=demo, embed=False).as_dict()
     assert early["status"] == late["status"] == "ready"
     assert early["confidence"] == "low" and any(
@@ -98,7 +101,7 @@ def test_day3_versus_day60_extractive(demo):
 def test_brief_cites_only_this_patients_chunks(demo):
     r = qr.research_question("PT-0960", FOOD_Q, as_of=demo, embed=False).as_dict()
     own = _refs_of("PT-0960", FOOD_Q, demo)
-    others = _refs_of("PT-0930", FOOD_Q, demo) | _refs_of("PT-0903", FOOD_Q, demo)
+    others = _refs_of("PT-0906", FOOD_Q, demo)
     d_refs = {x for b in r["brief"] for x in b["refs"] if x.startswith("D-")}
     assert d_refs <= own and not d_refs & others
 
@@ -113,17 +116,34 @@ def test_as_of_hides_the_future(demo):
     assert {x for b in r["brief"] for x in b["refs"] if x.startswith("D-")} <= visible
 
 
+@contextmanager
+def _vault_lang(code: str, lang: str) -> Iterator[None]:
+    """Temporarily set a demo patient's vault language (caremem_test only), restored afterwards."""
+    pid = det_id("person", "P-" + code[3:])
+    with transaction() as conn:
+        old = conn.execute(
+            "SELECT lang FROM cm.identity_vault WHERE person_id=%s", (pid,)
+        ).fetchone()["lang"]
+        conn.execute("UPDATE cm.identity_vault SET lang=%s WHERE person_id=%s", (lang, pid))
+    try:
+        yield
+    finally:
+        with transaction() as conn:
+            conn.execute("UPDATE cm.identity_vault SET lang=%s WHERE person_id=%s", (old, pid))
+
+
 def test_vault_language_drives_the_reply(demo):
-    te = qr.research_question("PT-0930", FOOD_Q, as_of=demo, embed=False).as_dict()
     en = qr.research_question("PT-0960", FOOD_Q, as_of=demo, embed=False).as_dict()
+    with _vault_lang("PT-0906", "te"):
+        te = qr.research_question("PT-0906", FOOD_Q, as_of=demo, embed=False).as_dict()
+        urgent = qr.research_question(
+            "PT-0906", "I am vomiting blood", as_of=demo, embed=False
+        ).as_dict()
     assert TE.search(te["suggested_reply"]) and not TE.search(en["suggested_reply"])
-    urgent = qr.research_question(
-        "PT-0930", "I am vomiting blood", as_of=demo, embed=False
-    ).as_dict()
     assert urgent["priority"] == "urgent" and "108" in urgent["suggested_reply"]
 
 
-def test_fake_model_on_the_30_day_patient(demo):
+def test_fake_model_with_a_telugu_vault(demo):
     class Fake:
         model_name = "fake-worker"
 
@@ -141,7 +161,10 @@ def test_fake_model_on_the_30_day_patient(demo):
                 )
             )
 
-    r = qr.research_question("PT-0930", MED_Q, as_of=demo, model=Fake(), embed=False).as_dict()
+    with _vault_lang("PT-0906", "te"):
+        r = qr.research_question(
+            "PT-0906", MED_Q, as_of=demo, model=Fake(), embed=False
+        ).as_dict()
     assert r["model"] == "fake-worker" and r["brief"][0]["refs"][0].startswith("D-")
     assert "Uncited" not in json.dumps(r) and TE.search(
         r["suggested_reply"]
@@ -150,7 +173,7 @@ def test_fake_model_on_the_30_day_patient(demo):
 
 def test_research_writes_nothing(demo):
     before = _counts()
-    qr.research_question("PT-0930", FOOD_Q, as_of=demo, embed=False)
+    qr.research_question("PT-0906", FOOD_Q, as_of=demo, embed=False)
     assert _counts() == before
 
 
@@ -163,7 +186,7 @@ def test_unknown_patient_fails_cleanly(demo):
 
 # ------------------------------------------------------------------ live (optional, $0.10 cap)
 @pytest.mark.live
-def test_live_deepseek_flash_on_the_30_day_patient(demo, monkeypatch):
+def test_live_deepseek_flash_on_the_60_day_patient(demo, monkeypatch):
     if not os.environ.get("DEEPSEEK_API_KEY"):
         pytest.skip("DEEPSEEK_API_KEY not set")
     from cm.core import llm
@@ -177,7 +200,7 @@ def test_live_deepseek_flash_on_the_30_day_patient(demo, monkeypatch):
         assert spec.startswith("deepseek:") and "flash" in spec
         out = {}
         for name, q in (("medicine", MED_Q), ("food", FOOD_Q)):
-            r = qr.research_question("PT-0930", q, as_of=demo, embed=False).as_dict()
+            r = qr.research_question("PT-0960", q, as_of=demo, embed=False).as_dict()
             assert r["status"] == "ready" and not find_banned(r["suggested_reply"])
             assert 3 <= len(r["brief"]) <= 6
             out[name] = r

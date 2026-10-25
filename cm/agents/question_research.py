@@ -313,6 +313,10 @@ _DANGER_HI = (
     "दौरा",
     "बहुत बीमार",
     "आंखें पीली",
+    "आँखें पीली",  # chandrabindu spelling
+    "पीली आंख",
+    "पीली आँख",
+    "उल्टी",  # vomiting is a danger word in the English and Telugu lexicons too
     "दिखाई नहीं",
 )
 _LEX: tuple[tuple[str, re.Pattern[str], tuple[str, ...]], ...] = (

@@ -1,0 +1,2 @@
+- [x] DraftCard, doctorKit, DoctorShell, questions.ts, QuestionCard, Approvals, Requests, doctor2.css fixes
+- [x] web/src/components/doctorShell.test.ts and parity tests

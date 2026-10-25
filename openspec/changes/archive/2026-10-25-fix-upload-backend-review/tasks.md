@@ -1,0 +1,3 @@
+- [x] portal enqueue + test (tests/integration/test_upload_core.py)
+- [x] failed state and docidx retry (tests/unit/uploads/test_extract_review.py)
+- [x] vision gate, event guards, advisory lock, own_data window, storage root, as_of, demo env

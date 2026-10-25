@@ -1,0 +1,5 @@
+- [x] seed.ts: documents, evidence, quiet text (api/derive.test.ts)
+- [x] derive.ts helpers: atStamp/fmtAt/newestFirst, confText, requestLabel, suppress, quietDays, weekdayName (api/derive.test.ts)
+- [x] Ask mockAnswer.ts matcher and chips (pages/Ask/mockAnswer.test.ts)
+- [x] Admin logic.ts (pages/Admin/logic.test.ts)
+- [x] Today, Patients, Patient, Lens, District page edits

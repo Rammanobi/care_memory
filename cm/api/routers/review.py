@@ -25,6 +25,8 @@ from cm.core.db import transaction
 from cm.review.decide import DecisionError, decide
 from cm.store import approvals_repo
 
+REQUEST_SUBKINDS = ("patient_request", "document_review")  # live on the Requests page, not the queue
+
 router = APIRouter(prefix="/review", tags=["review"])
 doctor_only = require_roles("doctor")
 doctor_or_admin = require_roles("doctor", "admin")
@@ -83,7 +85,7 @@ def review_queue(
             tier=tier,
             kind=kind,
             patient_id=pid,
-            exclude_subkind="patient_request",
+            exclude_subkind=REQUEST_SUBKINDS,
             cursor=offset,
             limit=limit + 1,
             conn=conn,
@@ -91,7 +93,7 @@ def review_queue(
         tiers = approvals_repo.count_pending_by_tier(at, conn=conn)
         extra = conn.execute(
             "SELECT count(*) FILTER (WHERE due_at < %s) AS overdue, count(*) FILTER (WHERE escalated_at IS NOT NULL) AS esc "
-            "FROM cm.approvals WHERE status='pending' AND COALESCE(payload->>'subkind','') <> 'patient_request'",
+            "FROM cm.approvals WHERE status='pending' AND COALESCE(payload->>'subkind','') NOT IN ('patient_request','document_review')",
             (at,),
         ).fetchone()
         sim_day = clock.current_sim_day(conn)

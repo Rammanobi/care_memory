@@ -108,14 +108,14 @@ def patient_detail(pid: str, _: User = Depends(console)) -> PatientDetailOut:
     with transaction() as conn:
         p = _one(conn, pid, at)
         pend = approvals_repo.queue(
-            at, patient_id=p.patient_id, exclude_subkind="patient_request", conn=conn
+            at, patient_id=p.patient_id, exclude_subkind=("patient_request", "document_review"), conn=conn
         )
         return PatientDetailOut(
             patient=p,
             evidence=rm.evidence_rows(conn, at, p.code),
             notes=rm.notes_for(conn, at, p.code),
             pending_reviews=[item_from_row(r) for r in pend],
-            requests=rm.request_rows(conn, at, code=p.code),
+            requests=rm.request_rows(conn, at, code=p.code, include_documents=True),
             messages=rm.message_rows(conn, at, p.code),
             lens=_lens(conn, p.patient_id, p.code, at),
             as_of=at,

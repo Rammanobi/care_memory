@@ -1,0 +1,3 @@
+- [x] 1 readmodels.request_rows include_documents + RequestOut.document (cm/api/readmodels.py, cm/api/portal_models.py)
+- [x] 2 queue/count exclusion of document_review (cm/store/approvals_repo.py, routers review, patients, dashboard, query)
+- [x] 3 tests/integration/test_api_requests_documents.py

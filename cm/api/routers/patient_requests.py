@@ -27,7 +27,7 @@ def list_requests(
     _: User = Depends(require_roles("doctor", "admin")),
 ) -> list[RequestOut]:
     with transaction() as conn:
-        return rm.request_rows(conn, now(), code=code, status=status)
+        return rm.request_rows(conn, now(), code=code, status=status, include_documents=True)
 
 
 @router.get("/{request_id}", response_model=RequestOut)
@@ -35,7 +35,7 @@ def get_request(
     request_id: UUID, _: User = Depends(require_roles("doctor", "admin"))
 ) -> RequestOut:
     with transaction() as conn:
-        rows = [r for r in rm.request_rows(conn, now()) if r.id == request_id]
+        rows = [r for r in rm.request_rows(conn, now(), include_documents=True) if r.id == request_id]
     if not rows:
         raise ApiError(404, "Request not found", "not_found")
     return rows[0]

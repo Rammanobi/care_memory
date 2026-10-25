@@ -12,7 +12,7 @@ from datetime import date, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, Request, UploadFile
 from psycopg.types.json import Jsonb
 
 from cm.api import readmodels as rm
@@ -30,6 +30,7 @@ from cm.api.portal_models import (
     PortalRequestIn,
     PortalRequestOut,
     PortalToday,
+    PortalUploadOut,
     RecordDay,
     ReminderRequestIn,
     SupporterAskIn,
@@ -40,9 +41,13 @@ from cm.api.suppress import clean_texts, is_clean
 from cm.channels import question_routing
 from cm.core.db import transaction
 from cm.core.ids import new_id
-from cm.store import approvals_repo, events_repo, outbox_repo
+from cm.core.logging import get_logger
+from cm.store import approvals_repo, events_repo, outbox_repo, uploads_repo
 from cm.store import consent as consent_repo
+from cm.uploads import intake as upload_intake
+from cm.uploads.validate import max_bytes
 
+log = get_logger()
 router = APIRouter(prefix="/portal", tags=["portal"])
 patient_only = require_roles("patient")
 supporter_only = require_roles("supporter")
@@ -313,7 +318,9 @@ def portal_today(user: User = Depends(patient_only)) -> PortalToday:
     hist = _history(doses, today)
     ev = doses.get(today)
     nv = sm.get("next_visit")
-    next_visit = nv if isinstance(nv, str) and nv.strip() and is_clean(nv) else None
+    from cm.api.own_data import safe_when  # same slot rule as the own-data answer cards
+
+    next_visit = nv if isinstance(nv, str) and safe_when(nv) else None
     return PortalToday(
         today={"o": "taken", "m": "missed"}.get(hist[-1], "none"),  # type: ignore[arg-type]
         reason=(ev or {}).get("payload", {}).get("reason") if ev else None,
@@ -349,6 +356,43 @@ def portal_undo_dose(user: User = Depends(patient_only)) -> PortalToday:
     return portal_today(user)
 
 
+# internal extra.upload_state -> what the patient may see
+_UPLOAD_STATUS = {
+    "received": "received",
+    "extracting": "received",
+    "pending_review": "with your care team",
+    "accepted": "added to your record",
+    "indexed": "added to your record",  # approved and searchable (the final state after approval)
+    "rejected": "could not be used",
+    "failed": "could not be used",
+}
+_UPLOAD_ERRORS = {
+    "no_consent": (403, "Please allow us to keep your documents in your settings first."),
+    "too_large": (413, "This file is too large. Please send one that is smaller."),
+    "bad_type": (415, "We can only accept photos (JPG or PNG), PDF files and plain text files."),
+    "rate_limited": (429, "You have sent several documents recently. Please try again later."),
+    "unknown_patient": (404, "No patient record for this account"),
+}
+
+
+def _upload_rows(conn: Any, token: str) -> list[dict[str, Any]]:
+    out = []
+    for r in uploads_repo.list_for_patient(token, conn=conn):
+        ex = r["extra"]
+        name = ex.get("filename") or "document"
+        out.append(
+            {
+                "id": str(r["document_id"]),
+                "title": name if is_clean(name) else "Uploaded document",  # shown, never dropped
+                "kind": "other",
+                "date": rm.sim_date(r["recorded_at"]),
+                "summary": "",
+                "status": _UPLOAD_STATUS.get(ex.get("upload_state", ""), "received"),
+            }
+        )
+    return out
+
+
 @router.get("/documents", response_model=list[PortalDocument])
 def portal_documents(user: User = Depends(patient_only)) -> list[PortalDocument]:
     at = now()
@@ -359,6 +403,7 @@ def portal_documents(user: User = Depends(patient_only)) -> list[PortalDocument]
             for e in events_repo.query(p["patient_id"], at, types=["ContextNote"], conn=conn)
             if e["payload"].get("kind") == "document"
         ]
+        uploads = _upload_rows(conn, user.token)
     out = [
         {
             "id": e["payload"]["id"],
@@ -369,7 +414,54 @@ def portal_documents(user: User = Depends(patient_only)) -> list[PortalDocument]
         }
         for e in sorted(notes, key=lambda x: x["occurred_at"], reverse=True)
     ]
-    return [PortalDocument(**d) for d in clean_texts(out, ("title", "summary"))]
+    docs = [PortalDocument(**d) for d in clean_texts(out, ("title", "summary"))]
+    return sorted([*docs, *(PortalDocument(**u) for u in uploads)], key=lambda d: d.date, reverse=True)
+
+
+def _enqueue_extract(document_id: str) -> None:
+    """Idempotent (task docx-<id>). The row is committed already; a queue error must not fail the upload."""
+    try:
+        from cm.uploads.review import enqueue_extract
+
+        enqueue_extract(document_id)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("extract enqueue failed", error=type(exc).__name__)
+
+
+@router.post("/documents", response_model=PortalUploadOut, status_code=201)
+async def portal_upload_document(
+    request: Request, file: UploadFile = File(...), user: User = Depends(patient_only)
+) -> PortalUploadOut:
+    """Upload one file. The patient comes from the session only; size is enforced while streaming."""
+    cap = max_bytes()
+    declared = request.headers.get("content-length")
+    if declared and declared.isdigit() and int(declared) > cap + 64 * 1024:  # multipart framing slack
+        raise ApiError(413, _UPLOAD_ERRORS["too_large"][1], "too_large")
+    buf = bytearray()
+    while chunk := await file.read(64 * 1024):
+        buf += chunk
+        if len(buf) > cap:
+            raise ApiError(413, _UPLOAD_ERRORS["too_large"][1], "too_large")
+    res = upload_intake.accept_upload(
+        patient_token=user.token,
+        source="portal",
+        filename=file.filename or "document",
+        mime=file.content_type or "",
+        data=bytes(buf),
+        uploader_person_id=user.person_id,
+    )
+    if res.reason and res.reason != "duplicate":
+        status, title = _UPLOAD_ERRORS.get(
+            res.reason, (503, "We could not save your document. Please try again later.")
+        )
+        raise ApiError(status, title, res.reason)
+    if res.document_id and not res.duplicate:
+        _enqueue_extract(res.document_id)
+    return PortalUploadOut(
+        document_id=res.document_id,
+        status=_UPLOAD_STATUS.get(res.status, "received"),
+        duplicate=res.duplicate,
+    )
 
 
 @router.get("/medicines", response_model=list[PortalMedicine])

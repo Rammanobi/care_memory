@@ -52,8 +52,8 @@ def tiles(clinic: str | None = None, _: User = Depends(console)) -> TilesOut:
     with transaction() as conn:
         pts = rm.ui_patients(conn, at)
         pend = conn.execute(
-            "SELECT count(*) FILTER (WHERE COALESCE(payload->>'subkind','') = 'patient_request') AS rq, "
-            "count(*) FILTER (WHERE COALESCE(payload->>'subkind','') <> 'patient_request') AS ap "
+            "SELECT count(*) FILTER (WHERE COALESCE(payload->>'subkind','') IN ('patient_request','document_review')) AS rq, "
+            "count(*) FILTER (WHERE COALESCE(payload->>'subkind','') NOT IN ('patient_request','document_review')) AS ap "
             "FROM cm.approvals WHERE status='pending' AND created_at <= %s",
             (at,),
         ).fetchone()

@@ -73,7 +73,7 @@ def queue(
     tier: str | None = None,
     kind: str | None = None,
     patient_id: UUID | None = None,
-    exclude_subkind: str | None = None,
+    exclude_subkind: str | tuple[str, ...] | None = None,
     only_subkind: str | None = None,
     cursor: int = 0,
     limit: int = 50,
@@ -105,8 +105,9 @@ def queue(
             where.append(f"{col} = %s")
             args.append(val)
     if exclude_subkind:
-        where.append("COALESCE(a.payload->>'subkind','') <> %s")
-        args.append(exclude_subkind)
+        subs = (exclude_subkind,) if isinstance(exclude_subkind, str) else tuple(exclude_subkind)
+        where.append("COALESCE(a.payload->>'subkind','') <> ALL(%s)")
+        args.append(list(subs))
     if only_subkind:
         where.append("a.payload->>'subkind' = %s")
         args.append(only_subkind)
@@ -120,13 +121,13 @@ def queue(
 
 
 def count_pending_by_tier(as_of: datetime, *, conn: Any = None) -> dict[str, int]:
-    """Pending counts per tier for the doctor queue (patient requests excluded)."""
+    """Pending counts per tier for the doctor queue (patient requests and document reviews excluded)."""
     if conn is None:
         with transaction() as c:
             return count_pending_by_tier(as_of, conn=c)
     rows = conn.execute(
         "SELECT tier, count(*) AS n FROM cm.approvals WHERE status='pending' AND created_at <= %s "
-        "AND COALESCE(payload->>'subkind','') <> 'patient_request' GROUP BY tier",
+        "AND COALESCE(payload->>'subkind','') NOT IN ('patient_request','document_review') GROUP BY tier",
         (as_of,),
     ).fetchall()
     return {r["tier"]: r["n"] for r in rows}

@@ -194,6 +194,11 @@ class RequestOut(CMModel):
         "confidence, model, cost_usd, reason}",
     )
     answered_at: datetime | None = Field(default=None, description="When the doctor decided")
+    document: dict[str, Any] | None = Field(
+        default=None,
+        description="Doctor-only, document_review items: {id, filename, mime, size, pages, status, "
+        "extraction{doc_type, fields[{name,value,confidence}], text_excerpt, ...}}",
+    )
 
 
 # ---- admin / usage -----------------------------------------------------------------------
@@ -385,6 +390,15 @@ class PortalDocument(CMModel):
     kind: Literal["visit_summary", "lab_slip", "letter", "other"]
     date: date
     summary: str
+    status: Literal[
+        "received", "with your care team", "added to your record", "could not be used"
+    ] = "added to your record"
+
+
+class PortalUploadOut(CMModel):
+    document_id: str | None = None
+    status: str
+    duplicate: bool = False
 
 
 class PortalMedicine(CMModel):
@@ -394,6 +408,17 @@ class PortalMedicine(CMModel):
     label: str
     when: str
     note: str | None = None
+
+
+class AnswerCard(CMModel):
+    """One code-computed answer about the patient's own record (approved template text, no model)."""
+
+    topic: Literal["taken_week", "missed_week", "streak", "history", "next_visit", "last_refill", "advice"]
+    question: str
+    answer_text: str
+    numbers: dict[str, int] = Field(default_factory=dict, description="The digits in answer_text, from code")
+    as_of: datetime
+    lang: Literal["en", "te"]
 
 
 class DistrictClinic(CMModel):

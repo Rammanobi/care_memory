@@ -129,7 +129,7 @@ def _list_answer(
             f"{e.code}: {e.text} [{n}]." for e in ev
         )
     if intent == "requests":
-        rs = rm.request_rows(conn, at, status="waiting")
+        rs = rm.request_rows(conn, at, status="waiting", include_documents=True)
         rs = [r for r in rs if not r.archived]
         n = _call(
             calls,
@@ -143,7 +143,7 @@ def _list_answer(
     if intent == "approvals":
         c = conn.execute(
             "SELECT count(*) AS n FROM cm.approvals WHERE status='pending' AND created_at <= %s "
-            "AND COALESCE(payload->>'subkind','') <> 'patient_request'",
+            "AND COALESCE(payload->>'subkind','') NOT IN ('patient_request','document_review')",
             (at,),
         ).fetchone()["n"]
         n = _call(calls, "count_pending_approvals", {}, [{"pending": c}])
@@ -440,7 +440,7 @@ def _pending_rows(conn: Any, at: Any) -> list[dict[str, Any]]:
     rows = conn.execute(
         "SELECT per.token, a.tier, a.payload->>'title' AS title FROM cm.approvals a JOIN cm.patients p USING (patient_id) "
         "JOIN cm.persons per ON per.person_id=p.person_id WHERE a.status='pending' AND a.created_at <= %s "
-        "AND COALESCE(a.payload->>'subkind','') <> 'patient_request' ORDER BY a.due_at",
+        "AND COALESCE(a.payload->>'subkind','') NOT IN ('patient_request','document_review') ORDER BY a.due_at",
         (at,),
     ).fetchall()
     return [{"code": display_code(r["token"]), "tier": r["tier"], "title": r["title"]} for r in rows]

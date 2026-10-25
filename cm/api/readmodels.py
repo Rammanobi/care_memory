@@ -33,6 +33,9 @@ SELECT p.patient_id, per.token, per.person_id, p.treatment_start, p.status, c.na
 """
 
 
+_REQUEST_SUBKINDS = ("patient_request", "document_review")
+
+
 def sim_date(as_of: datetime) -> date:
     return as_of.astimezone(IST).date()
 
@@ -50,7 +53,7 @@ def _related(conn: Any, as_of: datetime) -> dict[UUID, list[dict[str, Any]]]:
     ).fetchall()
     out: dict[UUID, list[dict[str, Any]]] = {}
     for r in rows:
-        is_req = r["subkind"] == "patient_request"
+        is_req = r["subkind"] in _REQUEST_SUBKINDS
         if is_req and r["archived"]:
             continue
         green = not is_req and r["tier"] == "green"
@@ -185,10 +188,18 @@ def notes_for(conn: Any, as_of: datetime, code: str | None = None) -> list[NoteO
 
 
 def request_rows(
-    conn: Any, as_of: datetime, *, code: str | None = None, status: str | None = None
+    conn: Any,
+    as_of: datetime,
+    *,
+    code: str | None = None,
+    status: str | None = None,
+    include_documents: bool = False,
 ) -> list[RequestOut]:
-    where = ["a.payload->>'subkind' = 'patient_request'", "a.created_at <= %s"]
-    args: list[Any] = [as_of]
+    """Patient questions; with include_documents (doctor routes only) also document_review items.
+    The portal never passes include_documents, so extraction data cannot reach /portal/*."""
+    kinds = list(_REQUEST_SUBKINDS) if include_documents else ["patient_request"]
+    where = ["a.payload->>'subkind' = ANY(%s)", "a.created_at <= %s"]
+    args: list[Any] = [kinds, as_of]
     if code:
         where.append("per.token = %s")
         args.append(token_from_code(code))
@@ -231,8 +242,11 @@ def request_rows(
                 origin=data.get("origin"),
                 research=data.get("research"),
                 answered_at=r["decided_at"] if st == "approved" else None,
+                document=data.get("document") if isinstance(data.get("document"), dict) else None,
             )
         )
+    if include_documents:
+        out.sort(key=lambda x: (x.priority != "urgent" and x.tier != "red", x.when))
     return out
 
 

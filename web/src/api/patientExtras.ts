@@ -7,6 +7,7 @@ export interface Consents { telegram: boolean; gmail: boolean; calendar: boolean
 export interface Extras {
   onboarded: boolean;
   consents: Consents;
+  shareSupporter: boolean; // mock mode: "Share with my Supporter" (live: the server decides)
   reminder: string; // current approved reminder time, e.g. "8:00 am"
   remReqs: { id: string; time: string }[]; // reminder-time requests sent to the doctor
   largeText: boolean;
@@ -14,12 +15,14 @@ export interface Extras {
   supporterMarked: boolean; // today's dose was marked by the Supporter
   empty: boolean; // demo: show empty states
   offline: boolean; // demo: pretend there is no internet
+  docs: { id: string; title: string; kind: string; date: string; summary: string; status: string; size: number }[]; // mock mode: files "uploaded" in the demo
 }
 
 const KEY = "cm_patient_extras_v1";
 export const DEFAULTS: Extras = {
   onboarded: false,
   consents: { telegram: true, gmail: false, calendar: false },
+  shareSupporter: true,
   reminder: "8:00 am",
   remReqs: [],
   largeText: false,
@@ -27,6 +30,7 @@ export const DEFAULTS: Extras = {
   supporterMarked: false,
   empty: false,
   offline: false,
+  docs: [],
 };
 
 function load(): Extras {
@@ -43,6 +47,7 @@ function emit() {
   try { localStorage.setItem(KEY, JSON.stringify(cur)); } catch { /* ignore */ }
   subs.forEach((f) => f());
 }
+export const getExtras = () => cur;
 export function setExtras(p: Partial<Extras>) { cur = { ...cur, ...p }; emit(); }
 export function resetExtras() { cur = { ...DEFAULTS, onboarded: true }; emit(); }
 const subscribe = (f: () => void) => { subs.add(f); return () => { subs.delete(f); }; };

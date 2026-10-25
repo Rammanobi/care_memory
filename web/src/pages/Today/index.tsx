@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useCare } from "../../api/CareProvider";
-import { counts, dueAtOf, waitingApprovals, waitingRequests } from "../../api/derive";
+import { counts, dueAtOf, quietDays, requestLabel, waitingApprovals, waitingRequests, weekdayName } from "../../api/derive";
 import { Sla } from "../../components/doctorKit";
 import { Skeleton } from "../../components/ui";
 
@@ -25,12 +25,12 @@ export default function TodayPage() {
   return (
     <main className="main wide" aria-labelledby="h-today">
       <h1 id="h-today">Today</h1>
-      <div className="sub">Tuesday · sim day {state.simDay} · what needs you now</div>
+      <div className="sub">{weekdayName()} · sim day {state.simDay} · what needs you now</div>
 
       <div className="tiles">
         <div className="tile r"><b>{redAps.length}</b><span>Red drafts waiting</span></div>
-        <div className="tile b"><b>{reqs.length}</b><span>Patient requests</span></div>
-        <div className="tile a"><b>{quiet.length}</b><span>Quiet 3+ days</span></div>
+        <div className="tile b"><b>{reqs.length}</b><span>Requests waiting</span></div>
+        <div className="tile a"><b>{quiet.length}</b><span>Patients quiet 3+ days</span></div>
         <div className="tile g"><b>{visits.length}</b><span>Visits today</span></div>
       </div>
 
@@ -53,7 +53,7 @@ export default function TodayPage() {
             <h3 id="t-dead">Review deadlines (soonest first)</h3>
             {deadlines.length === 0 ? <div className="empty">No deadlines</div> : deadlines.map((x) => (
               <Link key={x.id} to={x.id.startsWith("rq") ? "/doctor/requests" : "/doctor/approvals"} className="li">
-                <div><b>{x.patientCode}</b><div className="sm">{"title" in x ? x.title : `Request: ${x.kind}`}</div></div>
+                <div><b>{x.patientCode}</b><div className="sm">{"title" in x ? x.title : requestLabel(x.kind)}</div></div>
                 <Sla due={dueAtOf(state, x)} />
               </Link>
             ))}
@@ -84,7 +84,7 @@ export default function TodayPage() {
             {quiet.length === 0 ? <div className="empty">Nobody is quiet</div> : quiet.map((p) => (
               <Link key={p.code} to={`/doctor/patients/${p.code}`} className="li">
                 <div><b>{p.code}</b> <span className="tag t-amb">QUIET</span><div className="sm">{p.why}</div></div>
-                <span className="sm">{p.noData} days</span>
+                <span className="sm">{quietDays(p)}</span>
               </Link>
             ))}
           </section>

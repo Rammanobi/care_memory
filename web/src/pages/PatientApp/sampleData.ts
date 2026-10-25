@@ -1,7 +1,8 @@
 // Fictional sample data for patient Ravi (PT-0142, day 60). Consistent with the shared mock store.
-// No medical content. Telugu wording for these sample texts is not provided: the clinic writes them.
+// No medical content. Every sample text has English and Telugu (sampleFor). Telugu wording NEEDS native-speaker review.
 import { patientProfile } from "../../mocks/data";
 import type { Appt, Msg, PastReq } from "./portalTypes";
+import type { Lang } from "../../components/i18n";
 
 export { TOTAL_DAYS, dayDate, idxDate } from "./portalTypes";
 export type { Appt, Msg, PastReq, ReqState } from "./portalTypes";
@@ -43,3 +44,54 @@ export const PAST_REQUESTS: PastReq[] = [
 export const SUPPORTER = { name: "Lakshmi", relation: "sister" };
 export const lastDays = (n: number, today: "none" | "taken" | "missed") =>
   HISTORY60.slice(-n).split("").map((c, i, a) => (i === a.length - 1 ? (today === "taken" ? "o" : today === "missed" ? "m" : "f") : c));
+
+export const MEDICINES = [
+  { id: "med1", label: "Morning tablets", when: "Every day, with water", note: null },
+  { id: "med2", label: "Vitamin tablet", when: "Every day, evening", note: null },
+];
+
+// ---- Telugu sample set (needs native-speaker review) ----
+const TE_MSG: Record<string, { title: string; text: string }> = {
+  m1: { title: "మీ మందు స్ట్రిప్ తీసుకురండి", text: "బుధవారం సాయంత్రం 6 గంటలకు సందర్శనకు మీ మందు స్ట్రిప్ తీసుకురండి." },
+  m2: { title: "మీ కోసం ల్యాబ్ స్లాట్ ఉంచాము", text: "శుక్రవారం ఉదయం 10 గంటలకు మీ ల్యాబ్ స్లాట్ ఉంచాము. దయచేసి ముందుగా క్లినిక్ రిసెప్షన్‌కు రండి." },
+  m3: { title: "ఈ వారం బాగా చేశారు", text: "ధన్యవాదాలు. ఈ వారం ఒక్క రోజు కూడా మిస్ కాలేదు. ఇలాగే కొనసాగించండి." },
+  m4: { title: "గుర్తుచేసే సమయం సేవ్ అయింది", text: "మీ గుర్తుచేసే సమయం సేవ్ అయింది. మళ్లీ మార్చాలంటే మాకు చెప్పండి." },
+  m5: { title: "ఆదివారం క్లినిక్ మూసివేత", text: "ఈ ఆదివారం క్లినిక్ మూసి ఉంటుంది. సోమవారం ఉదయం 9 గంటలకు మళ్లీ తెరుస్తారు." },
+  m6: { title: "కేర్‌మెమరీకి స్వాగతం", text: "స్వాగతం. మీ సంరక్షణ బృందం ఆమోదించిన సందేశాలను ఇక్కడ పంపుతుంది." },
+};
+const TE_CLINIC = "అనంతపురం క్లినిక్";
+const TE_APPT: Record<string, { when: string; place: string; note?: string }> = {
+  u1: { when: "బుధవారం సాయంత్రం 6", place: TE_CLINIC },
+  u2: { when: "శుక్రవారం ఉదయం 10", place: `${TE_CLINIC} ల్యాబ్` },
+  u3: { when: "వచ్చే నెల", place: TE_CLINIC },
+  p1: { when: "2 వారాల క్రితం", place: TE_CLINIC, note: "అయింది" },
+  p2: { when: "4 వారాల క్రితం", place: `${TE_CLINIC} ల్యాబ్`, note: "మీ డాక్టర్ వద్ద ఫలితం ఉంది" },
+  p3: { when: "6 వారాల క్రితం", place: TE_CLINIC, note: "అయింది" },
+  p4: { when: "8 వారాల క్రితం", place: `${TE_CLINIC} ల్యాబ్`, note: "మీ డాక్టర్ వద్ద ఫలితం ఉంది" },
+};
+const TE_REQ: Record<string, { text: string; when: string; reply?: string }> = {
+  "sx-1": { text: "రాత్రి 7 గంటలకు గుర్తు చేయగలరా?", when: "గత వారం", reply: "ఇప్పుడు గుర్తుచేత రాత్రి 7 గంటలకు" },
+  "sx-2": { text: "నా రీఫిల్ పొందడానికి సహాయం కావాలి.", when: "3 వారాల క్రితం", reply: "ఒక నర్సు మీకు కాల్ చేశారు, మీ రీఫిల్ సిద్ధంగా ఉంది." },
+  "sx-3": { text: "నా సందర్శనను సోమవారానికి మార్చవచ్చా?", when: "4 వారాల క్రితం" },
+  "sx-4": { text: "ల్యాబ్ పరీక్షకు ఎక్కడికి వెళ్లాలి?", when: "6 వారాల క్రితం", reply: "దయచేసి ముందుగా క్లినిక్ రిసెప్షన్‌కు వెళ్లండి." },
+  "sx-5": { text: "నా చెల్లి నాతో రావచ్చా?", when: "7 వారాల క్రితం" },
+};
+const TE_MED: Record<string, { label: string; when: string }> = {
+  med1: { label: "ఉదయం మాత్రలు", when: "ప్రతిరోజూ, నీటితో" },
+  med2: { label: "విటమిన్ మాత్ర", when: "ప్రతిరోజూ, సాయంత్రం" },
+};
+
+/** The sample set in the patient's language. Same ids and structure in both languages. */
+export function sampleFor(lang: Lang) {
+  const te = lang === "te";
+  return {
+    patientName: te ? "రవి" : patientProfile.name,
+    clinic: te ? TE_CLINIC : patientProfile.clinic,
+    supporter: te ? { name: "లక్ష్మి", relation: "సోదరి" } : SUPPORTER,
+    messages: MESSAGES.map((m) => (te ? { ...m, ...TE_MSG[m.id] } : m)),
+    upcoming: UPCOMING.map((a) => (te ? { ...a, ...TE_APPT[a.id] } : a)),
+    past: PAST.map((a) => (te ? { ...a, ...TE_APPT[a.id] } : a)),
+    pastRequests: PAST_REQUESTS.map((r) => (te ? { ...r, ...TE_REQ[r.id] } : r)),
+    medicines: MEDICINES.map((m) => (te ? { ...m, ...TE_MED[m.id] } : m)),
+  };
+}

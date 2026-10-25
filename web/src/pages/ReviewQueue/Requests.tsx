@@ -7,6 +7,7 @@ import { setSoundOn, soundOn, useQuestionNotify } from "../../components/Questio
 import { Skeleton } from "../../components/ui";
 import { isQuestion, sortQuestions } from "../../api/questions";
 import { QuestionCard } from "./QuestionCard";
+import { DocumentCard } from "./DocumentCard";
 
 type F = "waiting" | "done" | "all";
 
@@ -37,12 +38,12 @@ export default function RequestsPage() {
   return (
     <main className="main wide" aria-labelledby="h-req">
       <h1 id="h-req">Patient requests</h1>
-      <div className="sub">Questions from Telegram and the patient app. Your reply goes to the patient once you send it. Press ? for keyboard shortcuts.</div>
+      <div className="sub">Questions and documents from Telegram and the patient app. Your reply goes to the patient once you send it. Press ? for keyboard shortcuts.</div>
       {!state ? (
         <div style={{ marginTop: 14 }}><Skeleton h={160} n={2} /></div>
       ) : (
         <>
-          <div className="pills" role="group" aria-label="Filter requests" style={{ marginTop: 12 }}>
+          <div className="pills wrap" role="group" aria-label="Filter requests" style={{ marginTop: 12 }}>
             {([["waiting", `Waiting ${waiting}`], ["done", `Answered ${list.length - waiting}`], ["all", `All ${list.length}`]] as [F, string][]).map(([k, label]) => (
               <button key={k} type="button" className={`pill${f === k ? " on" : ""}`} aria-pressed={f === k} onClick={() => setF(k)}>{label}</button>
             ))}
@@ -57,7 +58,9 @@ export default function RequestsPage() {
           ) : (
             <div className="req-list">
               {shown.map((r) =>
-                isQuestion(r) ? (
+                r.document ? (
+                  <DocumentCard key={r.id} r={r} focused={r.id === focus} />
+                ) : isQuestion(r) ? (
                   <QuestionCard key={r.id} r={r} focused={r.id === focus} />
                 ) : (
                   <DraftCard

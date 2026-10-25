@@ -1,0 +1,4 @@
+- [x] api/documents.ts, uploadDocument.ts, mapping.ts, types.ts, notify.ts (tests: api/documents.test.ts)
+- [x] PatientApp/UploadCard.tsx, Record.tsx, mockView.ts, i18nExtra.ts
+- [x] ReviewQueue/DocumentCard.tsx, Requests.tsx, QuestionNotify.tsx, doctor2.css
+- [x] typecheck, test, build green

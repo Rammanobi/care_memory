@@ -173,3 +173,33 @@
 .qtoast .qt-open{background:#1f2937;color:#fff}
 .qtoast .qt-x{border-color:transparent;font-size:16px}
 @media (max-width:760px){.qtoasts{top:56px;right:8px;left:8px;width:auto}}
+
+/* ---- patient documents (add-document-upload-ui) ---- */
+.doc .dname{margin:4px 0 0;overflow-wrap:anywhere}
+.doc .dnote{background:var(--safbg);border-radius:8px;padding:8px 10px;margin:8px 0}
+.doc .dstatus{text-transform:capitalize}
+.doc .dfields{width:100%;border-collapse:collapse;font-size:14px}
+.doc .dfields th,.doc .dfields td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
+.doc .dfields thead th{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em}
+.doc .dfields tbody th{font-weight:600}
+.doc .dfields tr.dlow{background:var(--safbg)}
+.doc .dconf{display:inline-flex;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--mute);white-space:nowrap}
+.doc .dconf.c-high{background:var(--grnbg);color:var(--green)}
+.doc .dconf.c-medium{background:#fff;color:#92580A}
+.doc .dconf.c-low,.doc .dconf.c-unknown{background:var(--redbg);color:var(--red);border-color:#efc2c2}
+.doc .dexcerpt{margin-top:8px;font-size:13px}.doc .dexcerpt pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0 0;font:inherit;max-height:200px;overflow:auto}
+
+/* fix-doctor-shell-audit: tap targets, help button, Requests wrap, badge dot */
+.doc .helpbtn{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--ink);font:700 15px "Segoe UI",Arial,sans-serif;cursor:pointer;margin-right:8px;flex:none}
+.doc .badge .bdot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:#f5a524;border:2px solid #fff;box-sizing:content-box}
+.doc .pills.wrap{flex-wrap:wrap;overflow:visible}
+.doc button.ev,.doc .qcode,.doc .who a,.doc td a,.doc .toast button,.doc .qtoast button{min-height:32px}
+.doc .qcode,.doc .who a{display:inline-flex;align-items:center}
+.doc .toast button,.doc .qtoast button,.doc .qtoast a{min-width:32px}
+.doc .nav a .badge,.doc .nav a{min-height:32px}
+@media (max-width:720px){
+  .doc button.ev,.doc .qcode,.doc .who a,.doc td a,.doc .toast button,.doc .qtoast button,.doc .qtoast a,.doc .helpbtn{min-height:44px;min-width:44px}
+  .doc .qcode,.doc .who a{padding:0 6px}
+  .doc .qsound{margin-left:0;flex:1 1 100%}
+  .doc .helpbtn{width:44px;height:44px}
+}

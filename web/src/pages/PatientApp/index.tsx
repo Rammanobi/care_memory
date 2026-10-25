@@ -5,6 +5,8 @@ import { Skeleton } from "../../components/ui";
 import { DoseCard, Emergency, History, Medicines, NewRequest, RequestList } from "./parts";
 import { useMessages, fmtMsgDay } from "./Messages";
 import { usePortal } from "./usePortal";
+import { doseLine } from "./portalTypes";
+import { AboutMyRecord } from "./AboutMyRecord";
 import RecordPage from "./Record";
 import MePage from "./Me";
 
@@ -16,11 +18,11 @@ function Next3() {
   const { state } = useCare();
   const { t } = useLang();
   const v = usePortal();
-  const done = state?.dose.today !== "none";
+  const today = state?.dose.today ?? "none";
   const visit = v.upcoming.find((a) => a.kind === "visit");
   const lab = v.upcoming.find((a) => a.kind === "lab");
   const items = [
-    { k: "m", icon: "1", title: t("itemMed"), sub: done ? `✓ ${t("done")}${v.supporterMarked ? " · " + t("marked") : ""}` : t("notTaken") },
+    { k: "m", icon: "1", title: t("itemMed"), sub: doseLine(today, v.supporterMarked, t) },
     ...(v.empty ? [] : [
       ...(visit ? [{ k: "v", icon: "2", title: t("visit"), sub: `${visit.when} · ${visit.place}` }] : []),
       ...(lab ? [{ k: "l", icon: "3", title: t("lab"), sub: `${lab.when} · ${lab.place}` }] : []),
@@ -68,6 +70,7 @@ export function Home() {
               <div className="card"><div className="k">{t("nextVisit")}</div><div className="n">{v.nextVisitText ?? t("nothingSched")}</div>{v.clinic && <div className="s">{v.clinic}</div>}</div>
               <div className="card"><div className="k">{t("streak")}</div><div className="n">{t("daysRow", { n: streak })}</div><div className="s">{t("inARow")}</div></div>
             </div>
+            {!v.empty && <AboutMyRecord />}
             <LatestMessage />
             <History />
             {v.showMedicines && <Medicines />}

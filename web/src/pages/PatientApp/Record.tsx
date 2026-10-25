@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { dayFromIso } from "../../api/mapping";
 import { useCare } from "../../api/CareProvider";
 import { useLang, type Key } from "../../components/i18n";
 import { Skeleton } from "../../components/ui";
-import { TOTAL_DAYS, type Appt } from "./portalTypes";
+import { TOTAL_DAYS, reasonText, type Appt } from "./portalTypes";
 import { usePortal } from "./usePortal";
 import { Empty } from "./Common";
 import { Emergency } from "./parts";
+import { UploadCard } from "./UploadCard";
+import { docPill, PILL_CLASS, PILL_KEY } from "../../api/documents";
 
 function MedCalendar() {
   const { t, lang } = useLang();
@@ -68,7 +70,7 @@ function MedCalendar() {
           <>
             <b>{idxDate(sel!).toLocaleDateString(loc, { weekday: "long", day: "numeric", month: "long" })}</b>
             <div>{sym(sc)} {t(word(sc))}{sel === TOTAL_DAYS - 1 && sc === "f" ? ` (${t("legToday")})` : ""}</div>
-            {sc === "m" && reason && <div className="s">{t("toldUs", { r: reason })}</div>}
+            {sc === "m" && reason && <div className="s">{t("toldUs", { r: reasonText(reason, t) })}</div>}
           </>
         )}
       </div>
@@ -98,26 +100,38 @@ function VisitsLabs() {
   );
 }
 
-const KIND: Record<string, string> = { visit_summary: "Visit summary", lab_slip: "Lab slip", letter: "Letter", other: "Document" };
+const KIND: Record<string, Key> = { visit_summary: "kVisit", lab_slip: "kLab", letter: "kLetter", other: "kOther" };
 
 function Documents() {
   const { t, lang } = useLang();
   const v = usePortal();
   const [open, setOpen] = useState<string | null>(null);
-  const docs = v.documents;
-  if (docs === null || docs.length === 0) return <Empty title={t("noDoc")} body={t("noDocS")} />;
+  const docs = v.documents ?? [];
   return (
-    <section className="card">
-      {docs.map((d, i) => (
-        <div key={d.id} className={`med${i === 0 ? " first" : ""}`} style={{ display: "block" }}>
-          <div className="row">
-            <div style={{ minWidth: 0 }}><b>{d.title}</b><span style={{ display: "block" }}>{KIND[d.kind] ?? KIND.other} · {dayFromIso(d.date).toLocaleDateString(lang === "te" ? "te-IN" : "en-IN", { day: "numeric", month: "short", year: "numeric" })}</span></div>
-            <button type="button" className="link" aria-expanded={open === d.id} onClick={() => setOpen(open === d.id ? null : d.id)}>{open === d.id ? t("docClose") : t("docOpen")}</button>
-          </div>
-          {open === d.id && <div className="wait" style={{ marginTop: 8 }} role="region" aria-label={d.title}>{d.summary}</div>}
-        </div>
-      ))}
-    </section>
+    <>
+      <UploadCard />
+      {docs.length === 0 ? <Empty title={t("noDoc")} body={t("noDocS")} /> : (
+        <section className="card" aria-label={t("tabDoc")}>
+          {docs.map((d, i) => {
+            const pill = d.status ? docPill(d.status) : null;
+            return (
+              <div key={d.id} className={`med${i === 0 ? " first" : ""}`} style={{ display: "block" }}>
+                <div className="row">
+                  <div style={{ minWidth: 0 }}>
+                    <b style={{ overflowWrap: "anywhere" }}>{d.title}</b>
+                    <span style={{ display: "block" }}>{t(KIND[d.kind] ?? KIND.other)} · {dayFromIso(d.date).toLocaleDateString(lang === "te" ? "te-IN" : "en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+                    {pill && <span className={`badge ${PILL_CLASS[pill]}`} style={{ marginTop: 4 }}>{t(PILL_KEY[pill])}</span>}
+                  </div>
+                  {d.summary && <button type="button" className="link" aria-expanded={open === d.id} onClick={() => setOpen(open === d.id ? null : d.id)}>{open === d.id ? t("docClose") : t("docOpen")}</button>}
+                </div>
+                {pill === "failed" && <div className="s" style={{ marginTop: 4 }}>{t("dpFailedS")}</div>}
+                {open === d.id && <div className="wait" style={{ marginTop: 8 }} role="region" aria-label={d.title}>{d.summary}</div>}
+              </div>
+            );
+          })}
+        </section>
+      )}
+    </>
   );
 }
 
@@ -129,18 +143,29 @@ export default function RecordPage() {
   const [sp, setSp] = useSearchParams();
   const tab = sp.get("tab") ?? "med";
   const tabs: [string, Key][] = [["med", "tabMed"], ["vis", "tabVis"], ["doc", "tabDoc"]];
+  const cur = tabs.some(([k]) => k === tab) ? tab : "med";
+  const refs = useRef<Record<string, HTMLButtonElement | null>>({});
+  // WAI-ARIA tabs: one tab stop (roving tabindex), arrows/Home/End move and select
+  const onKey = (e: React.KeyboardEvent) => {
+    const i = tabs.findIndex(([k]) => k === cur);
+    const to = e.key === "ArrowRight" ? (i + 1) % tabs.length : e.key === "ArrowLeft" ? (i + tabs.length - 1) % tabs.length : e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : -1;
+    if (to < 0) return;
+    e.preventDefault();
+    setSp({ tab: tabs[to][0] }, { replace: true });
+    refs.current[tabs[to][0]]?.focus();
+  };
   return (
     <>
       <div className="row"><h1>{t("recTitle")}</h1><button type="button" className="link noprint" onClick={() => window.print()}>{t("printPg")}</button></div>
       {day > 0 && <div className="sub">{t("dayOf", { n: day })}</div>}
-      <div className="tabbar" role="tablist" aria-label={t("recTitle")}>
-        {tabs.map(([k, l]) => <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setSp({ tab: k }, { replace: true })}>{t(l)}</button>)}
+      <div className="tabbar" role="tablist" aria-label={t("recTitle")} onKeyDown={onKey}>
+        {tabs.map(([k, l]) => <button key={k} ref={(el) => { refs.current[k] = el; }} type="button" role="tab" id={`rtab-${k}`} aria-controls={`rpanel-${k}`} aria-selected={cur === k} tabIndex={cur === k ? 0 : -1} onClick={() => setSp({ tab: k }, { replace: true })}>{t(l)}</button>)}
       </div>
       {!state ? <div className="col"><Skeleton h={300} /><Skeleton h={80} /></div> : (
-        <div className="col" role="tabpanel">
-          {tab === "med" && (pv.recordReady ? <MedCalendar /> : <Empty title={t("recNA")} />)}
-          {tab === "vis" && <VisitsLabs />}
-          {tab === "doc" && <Documents />}
+        <div className="col" role="tabpanel" id={`rpanel-${cur}`} aria-labelledby={`rtab-${cur}`}>
+          {cur === "med" && (pv.recordReady ? <MedCalendar /> : <Empty title={t("recNA")} />)}
+          {cur === "vis" && <VisitsLabs />}
+          {cur === "doc" && <Documents />}
           <Emergency />
         </div>
       )}

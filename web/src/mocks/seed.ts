@@ -7,7 +7,7 @@ const PTS: PT[] = [
   ["PT-0142", "M", 34, 60, "red", "RED", "Refill gap suspected", [3, 5, 6, 9, 10, 11, 18, 19], 0, "Approve visit Wed 6 pm", true, false, "Wed 6 pm", "Linked", "Active", "anantapur", [["Missed 3 doses in 4 days", "E-0412"], ["no chemist refill since day 33", "E-0388"], ["Supporter says he is travelling", "E-0420"]]],
   ["PT-0087", "F", 41, 44, "red", "RED", "3 missed, lab slot open", [13, 14, 17], 0, "Approve call today", true, false, "Fri 10 am", "Linked", "Active", "anantapur", [["3 missed doses in 7 days", "E-0377"], ["lab slot still open", "E-0391"]]],
   ["PT-0213", "F", 29, 18, "grn", "ASKED", "Wants reminder at 7 pm", [17], 0, "Approve change", false, false, "Mon 11 am", "Not linked", "Active", "anantapur", [["Asked to change her reminder time", "E-0431"]]],
-  ["PT-0198", "F", 37, 52, "amb", "QUIET", "No reply for 4 days", [], 6, "Ask Supporter to check", true, true, "Today 4 pm", "Linked", "Active", "anantapur", [["No data since Monday", "E-0405"], ["Last reply was 6 days ago", "E-0361"]]],
+  ["PT-0198", "F", 37, 52, "amb", "QUIET", "No reply for 6 days", [], 6, "Ask Supporter to check", true, true, "Today 4 pm", "Linked", "Active", "anantapur", [["No data since Monday", "E-0405"], ["Last reply was 6 days ago", "E-0361"]]],
   ["PT-0301", "M", 45, 40, "grn", "ON TRACK", "Adherence steady", [], 0, "Nothing needed", false, false, "Next month", "Linked", "Active", "anantapur", [["No missed doses in 20 days", "E-0399"]]],
   ["PT-0254", "M", 52, 27, "amb", "WATCH", "Felt tired after tablets", [8, 12, 15], 0, "Approve check-in message", false, false, "Today 11 am", "Linked", "Active", "anantapur", [["Reported feeling tired in the mornings", "E-0425"], ["2 doses logged late", "E-0366"]]],
   ["PT-0416", "F", 61, 95, "grn", "ON TRACK", "Adherence steady", [], 0, "Nothing needed", false, false, "Next month", "Linked", "Active", "anantapur", [["No missed doses in 20 days", "E-0433"]]],
@@ -91,6 +91,8 @@ const EVS: EV[] = [
   ["E-0442", "PT-0142", "Day 56 · 08:10", "dose", "Patient app", "Dose logged", "Part of the good run before the gap"],
   ["E-0443", "PT-0087", "Day 41 · 08:00", "dose", "Patient app", "Dose logged", "Before the misses started"],
   ["E-0444", "PT-0176", "Day 68 · 08:00", "dose", "Patient app", "Missed dose", "One of 5 misses this week"],
+  ["E-0446", "PT-0142", "Day 60 · 09:12", "message", "Patient app", "Asked to move the visit to Thursday", "The request is waiting for approval"],
+  ["E-0447", "PT-0213", "Day 18 · 09:30", "message", "Patient app", "Asked about taking paracetamol for a headache", "A medicine question; needs a clinical answer"],
   ["E-0445", "PT-0371", "Day 64 · 08:00", "dose", "Patient app", "Missed dose", "One of 4 misses"],
 ];
 const BCR: Evidence[] = [
@@ -139,7 +141,7 @@ export function makeSeed(): CareState {
     id, patientCode, kind, text, when, draft, status, dueMin, refs, createdAt: t0 - 3600000, ...(status === "approved" ? { reply: draft } : {}), ...extra,
   });
   const requests: PatientRequest[] = [
-    rq("rq-1", "PT-0142", "Change visit", "Can I move my visit to Thursday?", "today 09:12", "Your visit is moved to Thursday 5 pm. Please bring your medicine strip.", "waiting", 102, ["E-0420"]),
+    rq("rq-1", "PT-0142", "Change visit", "Can I move my visit to Thursday?", "today 09:12", "Your visit is moved to Thursday 5 pm. Please bring your medicine strip.", "waiting", 102, ["E-0446", "E-0420"]),
     rq("rq-2", "PT-0213", "Reminder time", "Please remind me at 7 pm, not in the morning.", "today 08:40", "Your reminder is now 7 pm. Tell us if you want to change it again.", "waiting", 190, ["E-0431", "B-0104"]),
     rq("rq-3", "PT-0087", "Other", "Can I do my lab test on Friday?", "yesterday 18:05", "Your lab slot is held for Friday 10 am. Please come after breakfast.", "waiting", 45, ["E-0391"]),
     rq("rq-4", "PT-0176", "Other", "Can someone call me? My phone was off.", "today 07:50", "A nurse will call you today before noon. Please keep your phone on.", "waiting", 75, ["E-0416"]),
@@ -152,7 +154,7 @@ export function makeSeed(): CareState {
     rq("rq-q1", "PT-0213", "Question", "Can I take my tablets together with paracetamol for my headache?", "today 09:30", "Thank you for asking. Please do not add anything new on your own. A nurse will call you today and tell you what is safe.", "waiting", 90, [], {
       origin: { channel: "telegram", excerpt: "Can I take my tablets together with paracetamol for my headache?" },
       research: { status: "ready", category: "medicine", priority: "high", confidence: "medium", model: "sample", costUsd: 0.0021, suggestedReply: "Thank you for asking. Please do not add anything new on your own. A nurse will call you today and tell you what is safe.",
-        brief: [{ text: "The patient reported a headache twice this week.", refs: ["E-0431"] }, { text: "No missed doses in the last 7 days.", refs: ["B-0104"] }, { text: "No medicine change is on record since the last visit.", refs: [] }] },
+        brief: [{ text: "The patient asked today about taking paracetamol for a headache.", refs: ["E-0447"] }, { text: "One morning dose was missed in the last 7 days.", refs: ["E-0364"] }, { text: "No medicine change is on record since the last visit.", refs: [] }] },
     }),
     rq("rq-q2", "PT-0142", "Question", "Which foods should I eat to get stronger?", "today 09:41", "", "waiting", 200, [], {
       origin: { channel: "portal", excerpt: "Which foods should I eat to get stronger?" },
@@ -161,6 +163,17 @@ export function makeSeed(): CareState {
     rq("rq-q3", "PT-0254", "Question", "I have a bad cough with blood since last night and I feel very weak.", "today 09:48", "Please go to the nearest clinic or call the emergency number now. A nurse will also call you.", "waiting", 20, [], {
       origin: { channel: "telegram", excerpt: "I have a bad cough with blood since last night and I feel very weak." },
       research: { status: "failed", category: "symptom", priority: "urgent", brief: [], suggestedReply: "Please go to the nearest clinic or call the emergency number now. A nurse will also call you.", reason: "the record search timed out" },
+    }),
+    // Uploaded documents to check (add-document-upload): one with fields at all three confidence levels, one where nothing could be read.
+    rq("rq-d1", "PT-0087", "Document", "Uploaded a file: lab_report.pdf", "today 08:55", "Thank you. We have added your lab report to your record.", "waiting", 150, ["E-0391"], {
+      origin: { channel: "portal", excerpt: "Uploaded a file: lab_report.pdf" },
+      document: { id: "doc-1", filename: "lab_report.pdf", mime: "application/pdf", size: 184320, pages: 2, status: "with your care team", docType: "lab_report",
+        fields: [{ name: "Test", value: "Sputum smear", confidence: "high" }, { name: "Collected on", value: "12 March", confidence: "medium" }, { name: "Result", value: "Negative (hand-written, hard to read)", confidence: "low" }],
+        textExcerpt: "Anantapur Urban Clinic laboratory. Patient PT-0087. Sputum smear collected 12 March. Result: negative." },
+    }),
+    rq("rq-d2", "PT-0371", "Document", "Uploaded a file: photo_0042.jpg", "today 09:05", "Thank you. Please bring the original paper to your next visit.", "waiting", 210, [], {
+      origin: { channel: "telegram", excerpt: "Uploaded a file: photo_0042.jpg" },
+      document: { id: "doc-2", filename: "photo_0042.jpg", mime: "image/jpeg", size: 903168, pages: null, status: "with your care team", docType: "other", fields: [], textExcerpt: "" },
     }),
     rq("rq-0", "PT-0142", "Reminder time", "Can you remind me at 7 pm?", "last week", "Reminder now 7 pm", "approved", 0, [], { archived: true }),
   ];

@@ -6,7 +6,7 @@ import { usePortal } from "./usePortal";
 import { useLang, type Key } from "../../components/i18n";
 import { Icon } from "../../components/ui";
 import { USE_MOCK } from "../../api";
-import { type ReqState } from "./portalTypes";
+import { JUST_NOW, REASONS, whenText, type ReqState } from "./portalTypes";
 import { excerpt } from "../../api/questions";
 
 export const ME = patientProfile.code;
@@ -25,7 +25,6 @@ export function DoseCard() {
   const [reason, setReason] = useState<Key | null>(null);
   const v = usePortal();
   const today = state?.dose.today ?? "none";
-  const reasons: Key[] = ["rForgot", "rUnwell", "rRanOut", "rTravel"];
 
   return (
     <section className={`card big${today === "taken" ? " done" : ""}`} aria-labelledby="dose-t">
@@ -46,11 +45,11 @@ export function DoseCard() {
         <div className="tellus">
           <div className="k" id="why">{t("whyMissed")}</div>
           <div className="chips" role="group" aria-labelledby="why">
-            {reasons.map((r) => (
-              <button key={r} type="button" className="chip" aria-pressed={reason === r} onClick={() => setReason(r)}>{t(r)}</button>
+            {REASONS.map((r) => (
+              <button key={r.chip} type="button" className="chip" aria-pressed={reason === r.chip} onClick={() => setReason(r.chip)}>{t(r.chip)}</button>
             ))}
           </div>
-          <button type="button" className="btn" disabled={!reason} onClick={() => { dispatch({ t: "dose", value: { today: "missed", reason: reason ? T_EN[reason] : undefined } }); setAsking(false); }}>{t("sendMiss")}</button>
+          <button type="button" className="btn" disabled={!reason} onClick={() => { dispatch({ t: "dose", value: { today: "missed", reason: REASONS.find((r) => r.chip === reason)?.en } }); setAsking(false); }}>{t("sendMiss")}</button>
           <button type="button" className="btn ghost" onClick={() => setAsking(false)}>{t("cancel")}</button>
         </div>
       )}
@@ -62,9 +61,6 @@ export function DoseCard() {
     </section>
   );
 }
-
-// English reason text sent to the doctor, whatever language the patient uses.
-const T_EN: Partial<Record<Key, string>> = { rForgot: "Forgot to take it", rUnwell: "Felt unwell", rRanOut: "Ran out of tablets", rTravel: "Travelling" };
 
 export function History({ big }: { big?: boolean }) {
   const { state } = useCare();
@@ -131,6 +127,9 @@ export function StatusChip({ s }: { s: ReqState }) {
   return s === "waiting" ? <span className="badge w">◔ {t("waiting")}</span> : s === "approved" ? <span className="badge a">✓ {t("docReplied")}</span> : <span className="badge c">☎ {t("stCall")}</span>;
 }
 
+/** A chip-only request is stored with the English chip label for the doctor; the patient sees it in their language. */
+const shownText = (text: string, t: (k: Key) => string) => { const c = CHIPS.find((x) => x.en === text); return c ? t(c.k) : text; };
+
 export function RequestList({ limit }: { limit?: number }) {
   const { t } = useLang();
   const { state } = useCare();
@@ -152,9 +151,9 @@ export function RequestList({ limit }: { limit?: number }) {
     <div aria-live="polite">
       {shown.map((r) => (
         <div key={r.id} className={r.status === "waiting" ? "wait" : r.status === "approved" ? "ok" : "no"} style={{ overflowWrap: "anywhere" }}>
-          <div className="row"><StatusChip s={r.status} /><span className="s">{r.when}</span></div>
-          <div style={{ marginTop: 4 }}>"{r.text}"</div>
-          {r.status === "approved" && r.reply && <div style={{ marginTop: 4 }}><b>{t("reply")}:</b> {r.reply}<div className="s inrep">{t("inReplyTo")} "{excerpt(r.text)}"</div></div>}
+          <div className="row"><StatusChip s={r.status} /><span className="s">{whenText(r.when, t)}</span></div>
+          <div style={{ marginTop: 4 }}>"{shownText(r.text, t)}"</div>
+          {r.status === "approved" && r.reply && <div style={{ marginTop: 4 }}><b>{t("reply")}:</b> {r.reply}<div className="s inrep">{t("inReplyTo")} "{excerpt(shownText(r.text, t))}"</div></div>}
           {r.status === "declined" && <div style={{ marginTop: 4 }}>{t("stCallS")}</div>}
           {r.status === "waiting" && <div className="s" style={{ marginTop: 4 }}>{t("waitingS")}</div>}
           {r.status === "waiting" && <Steps status={r.status} />}
@@ -175,28 +174,31 @@ export function NewRequest() {
   const { dispatch } = useCare();
   const { t } = useLang();
   const v = usePortal();
-  const [chip, setChip] = useState(0);
+  // No chip is chosen at first: sending needs a chosen chip or some typed words, so an empty tap cannot send "Change visit".
+  const [chip, setChip] = useState<number | null>(null);
   const [text, setText] = useState("");
   const [ok, setOk] = useState(false);
 
   const send = () => {
-    const c = CHIPS[chip];
+    const c = CHIPS[chip ?? CHIPS.length - 1];
+    if (chip === null && !text.trim()) return;
     const msg = text.trim() || c.en;
     dispatch({
       t: "newRequest",
-      req: { id: `rq-${Date.now()}`, patientCode: v.code || (USE_MOCK ? ME : ""), kind: c.en, text: msg, when: "today, just now", draft: c.draft, status: "waiting" },
+      req: { id: `rq-${Date.now()}`, patientCode: v.code || (USE_MOCK ? ME : ""), kind: c.en, text: msg, when: JUST_NOW, draft: c.draft, status: "waiting" },
     });
     setText("");
+    setChip(null);
     setOk(true);
     setTimeout(() => setOk(false), 4000);
   };
 
   return (
-    <section className="card" aria-labelledby="nr">
+    <section className="card" id="ask-box" aria-labelledby="nr">
       <div className="k" id="nr">{t("newReq")}</div>
       <div className="chips" role="group" aria-label={t("newReq")}>
         {CHIPS.map((c, i) => (
-          <button key={c.k} type="button" className="chip" aria-pressed={chip === i} onClick={() => setChip(i)}>{t(c.k)}</button>
+          <button key={c.k} type="button" className="chip" aria-pressed={chip === i} onClick={() => setChip(chip === i ? null : i)}>{t(c.k)}</button>
         ))}
       </div>
       <div style={{ position: "relative" }}>
@@ -205,7 +207,7 @@ export function NewRequest() {
       </div>
       <div style={{ display: "flex", gap: 10 }}>
         <button type="button" className="btn ghost" style={{ width: 54, flex: "none" }} disabled aria-label={t("mic")} title={t("mic")}><Icon name="mic" /></button>
-        <button type="button" className="btn" onClick={send}>{t("sendDoc")}</button>
+        <button type="button" className="btn" disabled={chip === null && !text.trim()} onClick={send}>{t("sendDoc")}</button>
       </div>
       <div className="s" role="status" style={{ marginTop: 8, minHeight: 20 }}>{ok ? `✓ ${t("sentOk")}` : ""}</div>
     </section>

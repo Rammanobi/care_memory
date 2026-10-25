@@ -42,11 +42,12 @@ export default function PatientsPage() {
         ) : (
           <>
             <div className="tiles">
-              <div className="tile r"><b>{c.red}</b><span>Need you now</span></div>
-              <div className="tile b"><b>{c.pendingRequests}</b><span>Patient requests</span></div>
-              <div className="tile a"><b>{c.quiet}</b><span>Quiet 3+ days</span></div>
-              <div className="tile g"><b>{c.track}</b><span>On track</span></div>
+              <div className="tile r"><b>{c.red}</b><span>Patients to act on now</span></div>
+              <div className="tile b"><b>{c.requests}</b><span>Patients with a request</span></div>
+              <div className="tile a"><b>{c.quiet}</b><span>Patients quiet 3+ days</span></div>
+              <div className="tile g"><b>{c.track}</b><span>Patients on track</span></div>
             </div>
+            <div className="sm" data-testid="tile-note">Each tile counts patients out of {c.all}. Tiles overlap and do not add up to {c.all}.</div>
             <div className="pills" role="group" aria-label="Filter patients">
               {pills.map((p) => (
                 <button key={p.k} type="button" className={`pill${filter === p.k ? " on" : ""}`} aria-pressed={filter === p.k} onClick={() => setFilter(p.k)}>

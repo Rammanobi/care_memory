@@ -2,34 +2,40 @@ import { LogoutLink } from "../../auth/session";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCare } from "../../api/CareProvider";
-import { resetExtras, setExtras, useExtras, type Consents } from "../../api/patientExtras";
+import { resetExtras, setExtras, useExtras } from "../../api/patientExtras";
 import { useLang, type Key } from "../../components/i18n";
 import { Confirm, Toggle } from "./Common";
 import { usePortal } from "./usePortal";
 import { USE_MOCK } from "../../api";
 import { LangToggle } from "./Shell";
-import { CHANNELS, ChannelSwitches } from "./Welcome";
+import { CHANNELS, ChannelSwitches, type ConsentKey } from "./Welcome";
+import { fmtTime } from "./portalTypes";
 
 const TIMES = ["6:00 am", "7:00 am", "8:00 am", "9:00 am", "12:00 pm", "6:00 pm", "7:00 pm", "8:00 pm"];
 
 function ReminderCard() {
-  const { t } = useLang();
-  const { reminder } = usePortal();
-  const [pick, setPick] = useState("7:00 pm");
+  const { t, lang } = useLang();
+  const { reminder, consents } = usePortal();
+  const current = reminder.current;
+  // the time that is already current cannot be picked again: start on the first other time
+  const firstOther = TIMES.find((x) => x !== current) ?? TIMES[0];
+  const [chosen, setPick] = useState("7:00 pm");
+  const pick = chosen === current ? firstOther : chosen;
   const [sent, setSent] = useState(false);
   const pending = reminder.pending ? { time: reminder.pending } : null;
-  const current = reminder.current;
-  const ask = () => { reminder.ask(pick); setSent(true); };
+  const ask = () => { if (pick === current) return; reminder.ask(pick); setSent(true); };
+  const f = (x: string) => fmtTime(x, lang);
   return (
     <section className="card" aria-labelledby="rem-t">
       <div className="k" id="rem-t">{t("remT")}</div>
-      <div className="n">{current ? t("remNow", { t: current }) : t("remNone")}</div>
+      <div className="n">{current ? t("remNow", { t: f(current) }) : t("remNone")}</div>
+      {!consents.telegram && <div className="s" style={{ marginTop: 6 }}>{t("remTgOff")}</div>}
       {pending ? (
-        <div className="wait" style={{ marginTop: 10 }} role="status"><span className="badge w">◔ {t("stWait")}</span><br />{current ? t("remPend", { t: pending.time, c: current }) : t("remPend0", { t: pending.time })}</div>
+        <div className="wait" style={{ marginTop: 10 }} role="status"><span className="badge w">◔ {t("stWait")}</span><br />{current ? t("remPend", { t: f(pending.time), c: f(current) }) : t("remPend0", { t: f(pending.time) })}</div>
       ) : (
         <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
           <label htmlFor="rem-sel" className="s">{t("remPick")}</label>
-          <select id="rem-sel" value={pick} onChange={(e) => setPick(e.target.value)}>{TIMES.map((x) => <option key={x}>{x}</option>)}</select>
+          <select id="rem-sel" value={pick} onChange={(e) => setPick(e.target.value)}>{TIMES.map((x) => <option key={x} value={x} disabled={x === current}>{f(x)}</option>)}</select>
           <button type="button" className="btn" onClick={ask}>{t("remAsk")}</button>
         </div>
       )}
@@ -44,7 +50,7 @@ export default function Me() {
   const nav = useNavigate();
   const [ex] = useExtras();
   const v = usePortal();
-  const [revoke, setRevoke] = useState<keyof Consents | null>(null);
+  const [revoke, setRevoke] = useState<ConsentKey | null>(null);
   const ch = CHANNELS.find((c) => c.k === revoke);
   return (
     <>
@@ -79,13 +85,17 @@ export default function Me() {
             <LogoutLink className="nl">{t("switchRole")} ›</LogoutLink>
           </section>
           {USE_MOCK && <section className="card">
-            <div className="k">Demo</div>
+            <div className="k">{t("demoT")}</div>
             <div className="sw first"><div className="tx"><b>{t("demoEmpty")}</b></div><Toggle on={ex.empty} label={t("demoEmpty")} onChange={(v) => setExtras({ empty: v })} /></div>
             <div className="sw"><div className="tx"><b>{t("demoOff")}</b></div><Toggle on={ex.offline} label={t("demoOff")} onChange={(v) => setExtras({ offline: v })} /></div>
-            <button type="button" className="btn ghost" onClick={() => { resetExtras(); reset(); }}>Reset demo data</button>
+            <button type="button" className="btn ghost" onClick={() => { resetExtras(); reset(); }}>{t("demoReset")}</button>
           </section>}
         </div>
       </div>
+      {revoke === "supporter" && (
+        <Confirm danger title={t("revTSup")} body={t("revSSup")} yes={t("revYes")} no={t("keepOn")}
+          onNo={() => setRevoke(null)} onYes={() => { v.shareSupporter?.set(false); setRevoke(null); }} />
+      )}
       {ch && (
         <Confirm danger title={t("revT", { c: t(ch.name as Key) })} body={t("revS")} yes={t("revYes")} no={t("keepOn")}
           onNo={() => setRevoke(null)} onYes={() => { v.setConsent(ch.k, false); setRevoke(null); }} />

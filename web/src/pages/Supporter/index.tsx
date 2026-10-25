@@ -1,5 +1,5 @@
 import { LogoutLink } from "../../auth/session";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCare } from "../../api/CareProvider";
 import { useExtras } from "../../api/patientExtras";
@@ -9,6 +9,7 @@ import { Empty } from "../PatientApp/Common";
 import { fmtMsgDay } from "../PatientApp/Messages";
 import { LangToggle, OfflineBanner } from "../PatientApp/Shell";
 import { ME } from "../PatientApp/parts";
+import { JUST_NOW } from "../PatientApp/portalTypes";
 import { USE_MOCK } from "../../api";
 import { usePortal } from "../PatientApp/usePortal";
 import "../../styles/patient.css";
@@ -31,11 +32,20 @@ export default function SupporterApp() {
   const allowed = v.sup.allowed;
   const loc = lang === "te" ? "te-IN" : "en-IN";
   const dayName = (i: number) => { const d = new Date(); d.setDate(d.getDate() - (6 - i)); return d.toLocaleDateString(loc, { weekday: "short" }); };
-  const mark = () => { v.markBySupporter(); dispatch({ t: "dose", value: { today: "taken" } }); };
+  // Marking a dose is a statement about someone else's medicine: ask once first. Focus follows each step.
+  const [confirming, setConfirming] = useState(false);
+  const confRef = useRef<HTMLDivElement>(null);
+  const doneRef = useRef<HTMLSpanElement>(null);
+  const askBtn = useRef<HTMLButtonElement>(null);
+  const wasConfirming = useRef(false);
+  useEffect(() => { if (confirming) confRef.current?.focus(); }, [confirming]);
+  useEffect(() => { if (today === "taken" && v.supporterMarked && wasConfirming.current) { wasConfirming.current = false; doneRef.current?.focus(); } }, [today, v.supporterMarked]);
+  const mark = () => { wasConfirming.current = true; setConfirming(false); v.markBySupporter(); dispatch({ t: "dose", value: { today: "taken" } }); };
+  const cancelMark = () => { setConfirming(false); window.setTimeout(() => askBtn.current?.focus(), 0); };
   const ask = () => {
     const text = q.trim();
     if (!text) return;
-    dispatch({ t: "newRequest", req: { id: `sup-${Date.now()}`, patientCode: v.code || (USE_MOCK ? ME : ""), kind: "Supporter question", text: USE_MOCK ? `(From Supporter ${SUPPORTER.name}) ${text}` : text, /* live: the server adds the "From Supporter" label itself */ when: "today, just now", draft: "Thank you for your message. Your care team will reply soon.", status: "waiting" } });
+    dispatch({ t: "newRequest", req: { id: `sup-${Date.now()}`, patientCode: v.code || (USE_MOCK ? ME : ""), kind: "Supporter question", text: USE_MOCK ? `(From Supporter ${SUPPORTER.name}) ${text}` : text, /* live: the server adds the "From Supporter" label itself */ when: JUST_NOW, draft: "Thank you for your message. Your care team will reply soon.", status: "waiting" } });
     setQ(""); setSent(true);
   };
   return (
@@ -44,15 +54,30 @@ export default function SupporterApp() {
       <main style={{ margin: "0 auto" }}>
         <OfflineBanner />
         <h1>{t("spFor", { n: P.name })}</h1>
-        <div className="sub">{[P.code, who].filter(Boolean).join(" · ")}</div>
-        {!state ? <div className="col"><Skeleton h={150} /><Skeleton h={90} /></div> : (
+        <div className="sub">{[allowed ? P.code : "", who].filter(Boolean).join(" · ")}</div>
+        {!state ? <div className="col"><Skeleton h={150} /><Skeleton h={90} /></div> : !allowed ? (
+          // Sharing is off: nothing about the patient is shown, only this note.
+          <div className="col">
+            <section className="card" aria-labelledby="sp-off"><div className="k" id="sp-off">{t("spTitle")}</div><div className="s" role="status">{t("spNotAllowed", { n: P.name })}</div></section>
+            <LogoutLink className="nl">{t("switchRole")} ›</LogoutLink>
+          </div>
+        ) : (
           <div className="grid">
             <div className="col">
               <section className={`card big${today === "taken" ? " done" : ""}`} aria-labelledby="sp-t">
                 <div className="t" id="sp-t">{t("spToday", { n: P.name })}</div>
                 {allowed ? <div className="v" aria-live="polite">{today === "none" ? t("notTaken") : today === "taken" ? `✓ ${t("taken")}` : t("missedToday")}</div> : <div className="s" role="status">{t("spNotAllowed", { n: P.name })}</div>}
-                {today === "none" && allowed && <button type="button" className="btn" onClick={mark}>{t("spTaken", { n: P.name })}</button>}
-                {today === "taken" && v.supporterMarked && <span className="badge a">{t("spDone")}</span>}
+                {today === "none" && allowed && !confirming && <button type="button" ref={askBtn} className="btn" onClick={() => setConfirming(true)}>{t("spTaken", { n: P.name })}</button>}
+                {today === "none" && allowed && confirming && (
+                  <div ref={confRef} tabIndex={-1} role="alertdialog" aria-labelledby="sp-conf" className="wait" style={{ marginBottom: 0 }}>
+                    <b id="sp-conf">{t("spConfT", { n: P.name })}</b>
+                    <div className="actions" style={{ marginTop: 10 }}>
+                      <button type="button" className="btn ghost" onClick={cancelMark}>{t("spConfNo")}</button>
+                      <button type="button" className="btn" onClick={mark}>{t("spConfYes")}</button>
+                    </div>
+                  </div>
+                )}
+                {today === "taken" && v.supporterMarked && <span className="badge a" ref={doneRef} tabIndex={-1}>{t("spDone")}</span>}
               </section>
               <section className="card" aria-labelledby="wk">
                 <div className="k" id="wk">{t("spWeek")}</div>

@@ -30,6 +30,7 @@ export function buildLiveView(p: PortalSlice | undefined, dispatch: (a: Action) 
     upcoming, past: p?.record?.past ?? [], nextVisitText,
     pastRequests: [],
     consents: p?.consents ?? { telegram: false, gmail: false, calendar: false },
+    shareSupporter: null,
     setConsent: (k, v) => dispatch({ t: "consent", key: k, value: v }),
     reminder: { current: me?.reminder || null, pending: me?.pendingReminder ?? null, ask: (time) => dispatch({ t: "reminder", time }) },
     supporterMarked: p?.markedBy === "supporter",

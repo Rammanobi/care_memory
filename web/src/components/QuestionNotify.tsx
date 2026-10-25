@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useReducer,
 import { useNavigate } from "react-router-dom";
 import { useCare } from "../api/CareProvider";
 import { USE_MOCK } from "../api";
-import { emptyNotify, notifyReducer, parseQuestionEvent, titleWithCount, unreadCount, type Notice } from "../api/notify";
+import { emptyNotify, notifyReducer, parseNoticeEvent, titleWithCount, unreadCount, type Notice } from "../api/notify";
 import { CATEGORY_LABEL, PRIORITY_LABEL } from "../api/questions";
 import { emitLiveEvent, onLiveEvent } from "../realtime/sse";
 
@@ -36,7 +36,7 @@ function Toast({ n, onOpen, onClose }: { n: Notice; onOpen: () => void; onClose:
   return (
     <div className={`qtoast ${urgent ? "urgent" : n.priority === "high" ? "high" : ""}`} role={urgent ? "alert" : "status"}>
       <div className="qt-main">
-        <b>New patient question{n.patientCode ? ` · ${n.patientCode}` : ""}</b>
+        <b>{n.kind === "document" ? "New document to check" : "New patient question"}{n.patientCode ? ` · ${n.patientCode}` : ""}</b>
         <span className="qt-chips">
           <span className="qchip">{CATEGORY_LABEL[n.category]}</span>
           <span className={`qchip pr-${n.priority}`}>{urgent ? "⚠ " : ""}{PRIORITY_LABEL[n.priority]}</span>
@@ -56,7 +56,7 @@ export function QuestionNotify({ children }: { children: ReactNode }) {
   const base = useRef(typeof document !== "undefined" ? document.title : "");
 
   useEffect(() => onLiveEvent((ev) => {
-    const q = parseQuestionEvent(ev);
+    const q = parseNoticeEvent(ev);
     if (q && !seen.current.has(q.id)) { seen.current.add(q.id); if (soundOn()) beep(); }
     dispatch({ t: "event", ev, at: Date.now() });
   }), []);

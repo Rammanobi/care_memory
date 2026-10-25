@@ -4,6 +4,7 @@ import { USE_MOCK, type Approval } from "../../api";
 import { DraftCard } from "../../components/DraftCard";
 import { useDecide } from "../../components/doctorKit";
 import { dueAtOf } from "../../api/derive";
+import { friendlyDecisionError } from "../../api/questions";
 import { Skeleton } from "../../components/ui";
 
 const LANES: { key: Approval["lane"]; label: string; cls: string; help: string }[] = [
@@ -18,11 +19,13 @@ export default function ApprovalsPage() {
   const [sort, setSort] = useState<"time" | "patient">("time");
   const [picked, setPicked] = useState<string[]>([]);
 
-  const greens = state?.approvals.filter((a) => a.lane === "green" && a.status === "waiting") ?? [];
+  const greens = (state?.approvals.filter((a) => a.lane === "green" && a.status === "waiting") ?? []).filter((a) => !!a.draft?.trim()); // a draft that is empty (or not loaded yet) is never bulk approved
+  const [bulkErr, setBulkErr] = useState("");
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
   const chosen = picked.filter((id) => greens.some((g) => g.id === id));
   const bulk = () => {
-    decide.approvals(chosen, "approved");
+    setBulkErr("");
+    decide.approvals(chosen, "approved").catch((e: unknown) => setBulkErr(friendlyDecisionError(e)));
     setPicked([]);
   };
 
@@ -54,11 +57,12 @@ export default function ApprovalsPage() {
                 {l.key === "green" && waiting > 0 && (
                   <div className="bulk">
                     <button type="button" className="btn ed" onClick={() => setPicked(chosen.length === greens.length ? [] : greens.map((g) => g.id))}>
-                      {chosen.length === greens.length ? "Clear selection" : "Select all green"}
+                      {chosen.length === greens.length && greens.length > 0 ? "Clear selection" : "Select all ready green"}
                     </button>
                     <button type="button" className="btn ap" disabled={chosen.length === 0} onClick={bulk}>✓ Approve selected ({chosen.length})</button>
                   </div>
                 )}
+                {l.key === "green" && bulkErr && <p className="qerr" role="alert">{bulkErr}</p>}
                 {items.length === 0 && <div className="empty">Nothing here</div>}
                 {items.map((a) => (
                   <DraftCard
@@ -75,8 +79,8 @@ export default function ApprovalsPage() {
                     lead={
                       l.key === "green" && a.status === "waiting" ? (
                         <label className="chk">
-                          <input type="checkbox" checked={picked.includes(a.id)} onChange={() => toggle(a.id)} />
-                          Select {a.patientCode}
+                          <input type="checkbox" checked={picked.includes(a.id)} disabled={!a.draft?.trim()} onChange={() => toggle(a.id)} />
+                          Select {a.patientCode}{!a.draft?.trim() ? " (draft not ready)" : ""}
                         </label>
                       ) : undefined
                     }

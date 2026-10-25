@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useCare } from "../../api/CareProvider";
 import { isLive, timelineServer } from "../../api/serverCalls";
 import { splitCitations, type TimelineRow } from "../../api/mapping";
-import { buildRow, clinicName, missedLabel, stripCells } from "../../api/derive";
+import { atStamp, buildRow, clinicName, fmtAt, missedLabel, newestFirst, stripCells, treatmentDay } from "../../api/derive";
 import type { EvKind } from "../../api";
 import { EvChip, EvChips } from "../../components/doctorKit";
 import { Icon, Skeleton } from "../../components/ui";
@@ -42,13 +42,14 @@ export default function PatientPage() {
     );
   }
   const row = buildRow(p, state);
+  const today = treatmentDay(state, p);
   const events = isLive
-    ? (tl ?? []).filter((e) => kind === "all" || e.kind === kind)
-    : state.evidence.filter((e) => e.code === id && e.id.startsWith("E-") && (kind === "all" || e.kind === kind)).map((e) => ({ id: e.id, chip: true, day: 0, at: e.at, kind: e.kind, reporter: e.reporter, text: e.text }));
+    ? [...(tl ?? []).filter((e) => kind === "all" || e.kind === kind)].sort((a, b) => b.day - a.day)
+    : newestFirst(state.evidence.filter((e) => e.code === id && e.id.startsWith("E-") && (kind === "all" || e.kind === kind)).map((e) => ({ id: e.id, chip: true, day: atStamp(e.at, today).day, at: fmtAt(e.at, today), kind: e.kind, reporter: e.reporter, text: e.text })), (e) => e.at, today);
   const insights = state.evidence.filter((e) => e.code === id && !e.id.startsWith("E-"));
   const msgs = state.messages.filter((m) => m.code === id);
   const notes = state.notes.filter((n) => n.code === id);
-  const audit = state.audit.filter((a) => a.code === id);
+  const audit = newestFirst(state.audit.filter((a) => a.code === id), (a) => a.at, today);
 
   const addNote = () => {
     if (!note.trim()) return;
@@ -139,7 +140,7 @@ export default function PatientPage() {
             <div className="tbl-wrap"><table className="tbl">
               <thead><tr><th>When</th><th>Who</th><th>What</th><th>Draft version</th></tr></thead>
               <tbody>{audit.map((a) => (
-                <tr key={a.id}><td>{a.at}</td><td>{a.actor}</td><td>{a.action}{a.note && <div className="sm">{a.note}</div>}</td><td>{a.version ? `v${a.version}` : "-"}</td></tr>
+                <tr key={a.id}><td>{fmtAt(a.at, today)}</td><td>{a.actor}</td><td>{a.action}{a.note && <div className="sm">{a.note}</div>}</td><td>{a.version ? `v${a.version}` : "-"}</td></tr>
               ))}</tbody>
             </table></div>
           )}

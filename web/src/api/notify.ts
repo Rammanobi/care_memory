@@ -2,7 +2,7 @@
 import { asCategory, asPriority } from "./questions";
 import type { QCategory, QPriority } from "./types";
 
-export interface Notice { id: string; patientCode: string; category: QCategory; priority: QPriority; at: number; read: boolean; toast: boolean }
+export interface Notice { kind: "question" | "document"; id: string; patientCode: string; category: QCategory; priority: QPriority; at: number; read: boolean; toast: boolean }
 export interface NotifyState { notices: Notice[] }
 export const emptyNotify: NotifyState = { notices: [] };
 const MAX = 50;
@@ -12,6 +12,21 @@ export function parseQuestionEvent(ev: unknown): { id: string; patientCode: stri
   const e = ev as Record<string, unknown> | null;
   if (!e || e.kind !== "patient_question" || typeof e.approval_id !== "string" || !e.approval_id) return null;
   return { id: e.approval_id, patientCode: typeof e.patient_code === "string" ? e.patient_code : "", category: asCategory(e.category), priority: asPriority(e.priority) };
+}
+
+/** The SSE 'review' event {kind:'patient_document', approval_id, patient_code, category:'document', priority}. */
+export function parseDocumentEvent(ev: unknown): { id: string; patientCode: string; category: QCategory; priority: QPriority } | null {
+  const e = ev as Record<string, unknown> | null;
+  if (!e || e.kind !== "patient_document" || typeof e.approval_id !== "string" || !e.approval_id) return null;
+  return { id: e.approval_id, patientCode: typeof e.patient_code === "string" ? e.patient_code : "", category: "document", priority: asPriority(e.priority) };
+}
+
+/** Either kind of doctor notice. */
+export function parseNoticeEvent(ev: unknown): (Omit<Notice, "at" | "read" | "toast">) | null {
+  const q = parseQuestionEvent(ev);
+  if (q) return { kind: "question", ...q };
+  const d = parseDocumentEvent(ev);
+  return d ? { kind: "document", ...d } : null;
 }
 
 export type NotifyAction =
@@ -25,7 +40,7 @@ export type NotifyAction =
 export function notifyReducer(s: NotifyState, a: NotifyAction): NotifyState {
   switch (a.t) {
     case "event": {
-      const q = parseQuestionEvent(a.ev);
+      const q = parseNoticeEvent(a.ev);
       if (!q) return s;
       const old = s.notices.find((n) => n.id === q.id);
       if (old) {

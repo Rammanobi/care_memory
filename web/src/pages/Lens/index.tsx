@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useCare } from "../../api/CareProvider";
+import { confText } from "../../api/derive";
 import { EvChip } from "../../components/doctorKit";
 import { Skeleton } from "../../components/ui";
 
@@ -30,7 +31,7 @@ export default function LensPage() {
                 <h3>Day {snap.day} · {snap.code}</h3>
                 <div className="q">{snap.known}</div>
                 <h4>Beliefs</h4>
-                {snap.beliefs.map((b) => <div key={b.id} className="li static"><div><EvChip id={b.id} /> {b.text}</div><span className={`conf ${b.conf === "High" ? "hi" : "lo"}`}>{b.conf === "High" ? "● " : "○ "}{b.conf} confidence</span></div>)}
+                {snap.beliefs.map((b) => <div key={b.id} className="li static"><div><EvChip id={b.id} /> {b.text}</div><span className={`conf ${b.conf === "High" ? "hi" : "lo"}`}>{b.conf === "High" ? "● " : "○ "}{confText(b.conf)}</span></div>)}
                 <h4>Conflicts</h4>
                 {snap.conflicts.length === 0 ? <div className="q">None found. Too little data to compare sources.</div> : snap.conflicts.map((c) => <div key={c.id} className="li static"><div><EvChip id={c.id} /> {c.text}</div></div>)}
               </section>

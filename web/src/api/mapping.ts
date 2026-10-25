@@ -1,6 +1,7 @@
 // Pure functions: backend wire shapes (cm/api/portal_models.py, cm/contracts) -> the UI shapes in types.ts.
-import type { District, Approval, AuditEntry, Decision, Evidence, EvKind, LensSnap, Message, Patient, PatientRequest, PortalAppt, PortalMsg, PortalSlice, ServerSettings, Template, Usage } from "./types";
+import type { OwnAnswer, OwnAnswers, OwnTopic, District, Approval, AuditEntry, Decision, Evidence, EvKind, LensSnap, Message, Patient, PatientRequest, PortalAppt, PortalMsg, PortalSlice, ServerSettings, Template, Usage } from "./types";
 import { mapOrigin, mapQuestionStatus, mapResearch, type WireQuestionData } from "./questions";
+import { mapDocReview, mapPortalDoc } from "./documents";
 import { isAbstain, snippetsFrom, type CiteSnippet } from "./citations";
 
 export interface WireReviewItem {
@@ -71,6 +72,7 @@ export function mapApproval(it: WireReviewItem, detail: WireReviewDetail | undef
     why: it.drivers?.[0]?.label,
     ...(it.data?.research ? { research: mapResearch(it.data.research) } : {}),
     ...(it.data?.origin ? { origin: mapOrigin(it.data.origin) } : {}),
+    ...(mapDocReview(it.data?.document) ? { document: mapDocReview(it.data?.document) } : {}),
     ...(status === "approved" ? { reply: draft } : {}),
   };
 }
@@ -84,9 +86,10 @@ export const mapPatient = (p: WireUiPatient): Patient => ({
 export function mapRequest(r: WireRequest, nowMs: number): PatientRequest {
   const research = mapResearch(r.data?.research);
   const origin = mapOrigin(r.data?.origin);
+  const document = mapDocReview(r.data?.document);
   return {
     id: r.id, patientCode: r.patient_code, kind: r.kind, text: r.text || r.data?.text || "", when: fmtWhen(r.when), draft: r.draft || research?.suggestedReply || "",
-    ...(research ? { research } : {}), ...(origin ? { origin } : {}),
+    ...(research ? { research } : {}), ...(origin ? { origin } : {}), ...(document ? { document } : {}),
     status: r.status, reply: r.reply ?? undefined, archived: r.archived, createdAt: Date.parse(r.when),
     dueMin: Math.round((Date.parse(r.due_at) - nowMs) / 60000), refs: r.refs,
   };
@@ -282,11 +285,41 @@ export const mapDistrict = (d: WireDistrict): District => ({
   quiet: d.quiet_patients.map((q) => ({ code: q.code, clinic: q.clinic, why: q.why, adherence: q.adherence, noData: q.no_data })),
   totalPatients: d.total_patients, totalPending: d.total_pending_approvals,
 });
-export const mapDocument = (d: { id: string; title: string; kind: string; date: string; summary: string }) => ({ id: d.id, title: d.title, kind: d.kind, date: d.date, summary: d.summary });
+export const mapDocument = mapPortalDoc;
 export const mapMedicine = (m: { id: string; label: string; when: string; note?: string | null }) => ({ id: m.id, label: m.label, when: m.when, note: m.note ?? null });
 
 /** GET /consents/{person_id} -> one word for the overview table. Granted anywhere wins, then withdrawn, otherwise pending. */
 export function mapConsentState(c: { by_source_purpose?: Record<string, Record<string, string>> }): "Active" | "Pending" | "Withdrawn" {
   const all = Object.values(c.by_source_purpose ?? {}).flatMap((p) => Object.values(p));
   return all.includes("granted") ? "Active" : all.includes("withdrawn") ? "Withdrawn" : "Pending";
+}
+
+// ---- patient own-data answers ----
+export interface WireOwnAnswer { topic?: string; question?: string; answer_text?: string; numbers?: unknown; as_of?: string | null; lang?: string }
+const OWN_ORDER: OwnTopic[] = ["taken_week", "missed_week", "streak", "history", "next_visit", "last_refill"];
+
+/** Server cards -> ordered question cards (fixed topic order) + the advice footer. Unknown topics and cards without text are dropped; numbers are ignored. */
+export function mapOwnAnswers(rows: WireOwnAnswer[] | null | undefined): OwnAnswers {
+  const cards: OwnAnswer[] = [];
+  let advice: OwnAnswer | null = null;
+  for (const r of Array.isArray(rows) ? rows : []) {
+    if (!r || typeof r.answer_text !== "string" || !r.answer_text.trim()) continue;
+    const topic = r.topic as OwnTopic;
+    const c: OwnAnswer = { topic, question: (r.question ?? "").trim(), answerText: r.answer_text, asOf: r.as_of || null, lang: r.lang ?? "en" };
+    if (topic === "advice") advice = c;
+    else if (OWN_ORDER.includes(topic) && c.question) cards.push(c);
+  }
+  cards.sort((a, b) => OWN_ORDER.indexOf(a.topic) - OWN_ORDER.indexOf(b.topic));
+  return { cards, advice };
+}
+
+/** "today" | "yesterday" | a short date, from the server's as_of (date or timestamp). null when absent or unreadable. */
+export function asOfWhen(asOf: string | null, now: Date = new Date()): { kind: "today" } | { kind: "yesterday" } | { kind: "date"; date: Date } | null {
+  if (!asOf) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(asOf);
+  if (!m) return null;
+  const d = new Date(+m[1], +m[2] - 1, +m[3], 12);
+  const t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12);
+  const diff = Math.round((t0.getTime() - d.getTime()) / 864e5);
+  return diff <= 0 ? { kind: "today" } : diff === 1 ? { kind: "yesterday" } : { kind: "date", date: d };
 }

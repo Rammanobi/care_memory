@@ -76,9 +76,61 @@ export function counts(s: CareState) {
   };
 }
 
+/** One source for "quiet for N days": Patient.noData. */
+export const quietDays = (p: Pick<Patient, "noData">) => `${p.noData} ${p.noData === 1 ? "day" : "days"}`;
+
 export function missedLabel(p: Patient) {
-  return p.noData > 0 ? "no data since Mon" : `${p.missed.length} missed of last 20`;
+  return p.noData > 0 ? `no data for ${quietDays(p)}` : `${p.missed.length} missed of last 20`;
 }
+
+/** The real weekday name, for the Today subtitle. */
+export const weekdayName = (d: Date = new Date()) => d.toLocaleDateString("en-GB", { weekday: "long" });
+
+/** Display label for a request kind (raw values: "Question", "dose", "Reminder time" ...). */
+const KIND_LABELS: Record<string, string> = {
+  question: "Patient question", dose: "Dose question", document: "Document to check", "reminder time": "Reminder time change",
+  "change visit": "Visit change", visit: "Visit question", other: "Patient request",
+};
+export function requestLabel(kind: string) {
+  const k = kind.trim().toLowerCase();
+  return KIND_LABELS[k] ?? (kind ? kind.charAt(0).toUpperCase() + kind.slice(1) : "Patient request");
+}
+
+/** A belief confidence as plain words: "High confidence", "Seen once", "Not known yet". */
+export function confText(conf: string) {
+  const k = conf.trim().toLowerCase();
+  if (k === "high" || k === "medium" || k === "low") return `${k.charAt(0).toUpperCase()}${k.slice(1)} confidence`;
+  if (k === "seen once") return "Seen once";
+  if (k === "unknown" || k === "") return "Not known yet";
+  return conf.charAt(0).toUpperCase() + conf.slice(1);
+}
+
+/** Position of a time label on the simulated day line. Accepts "Day 59 · 18:30", "today 07:58", "yesterday 12:20", "2 days ago 10:30", "last week 09:00". `today` is the day that "today" means. */
+export function atStamp(at: string, today = 60): { day: number; min: number } {
+  const t = at.match(/(\d{1,2}):(\d{2})/);
+  const min = t ? Number(t[1]) * 60 + Number(t[2]) : 0;
+  const d = at.match(/(?:^|[^a-z])day\s+(\d+)/i);
+  let day = today;
+  if (d) day = Number(d[1]);
+  else if (/yesterday/i.test(at)) day = today - 1;
+  else if (/(\d+)\s+days?\s+ago/i.test(at)) day = today - Number(at.match(/(\d+)\s+days?\s+ago/i)![1]);
+  else if (/last week/i.test(at)) day = today - 7;
+  return { day, min };
+}
+/** One display format for every time: "Day 59 · 18:30". */
+export function fmtAt(at: string, today = 60) {
+  const { day, min } = atStamp(at, today);
+  return /\d{1,2}:\d{2}/.test(at) ? `Day ${day} · ${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}` : `Day ${day}`;
+}
+/** Newest first by day, then time. Stable for equal stamps. */
+export function newestFirst<T>(rows: T[], at: (r: T) => string, today = 60): T[] {
+  return rows.map((r, i) => ({ r, i, k: atStamp(at(r), today) }))
+    .sort((a, b) => b.k.day - a.k.day || b.k.min - a.k.min || a.i - b.i)
+    .map((x) => x.r);
+}
+
+/** Privacy suppression: a count of 1 to threshold-1 is hidden (null). Zero stays zero. */
+export const suppress = (n: number, threshold = 5): number | null => (n > 0 && n < threshold ? null : n);
 
 export function stripCells(p: Patient): string[] {
   return Array.from({ length: 20 }, (_, i) => (i >= 20 - p.noData ? "l" : p.missed.includes(i) ? "m" : ""));

@@ -130,16 +130,17 @@ export function QuestionCard({ r, focused }: { r: PatientRequest; focused?: bool
       <textarea
         id={`qr-${r.id}`} ref={box} className="draft qbox" value={text} rows={4} aria-describedby={`qh-${r.id}`}
         onChange={(e) => { touched.current = true; setText(e.target.value); setErr(""); }}
-        onKeyDown={(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && text.trim() && !busy) { e.preventDefault(); void decide("approved"); } }}
+        onKeyDown={(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && text.trim() && !busy && text.length <= MAX_CHARS) { e.preventDefault(); void decide("approved"); } }}
       />
       <div id={`qh-${r.id}`} className="qhelp">
         <span className={over ? "qwarn" : ""}>{text.length} / {MAX_CHARS} characters</span>
         <span>Write in the patient's language if you can. Keep it short and plain.</span>
       </div>
+      {over && <p className="qwarn" role="alert">This reply is {text.length - MAX_CHARS} characters over the {MAX_CHARS} character limit. Shorten it to {MAX_CHARS} characters or fewer to send.</p>}
       {flagged.length > 0 && <p className="qwarn" role="alert">This reply has words that cannot be sent to patients ({flagged.join(", ")}). The server will block it. Please remove them.</p>}
       {err && <p className="qerr" role="alert">{err}</p>}
       <div className="btns">
-        <button type="button" className="btn ap" disabled={busy || !text.trim()} onClick={() => void decide("approved")}>{busy ? "Sending..." : "✓ Send reply"}</button>
+        <button type="button" className="btn ap" disabled={busy || !text.trim() || over} onClick={() => void decide("approved")}>{busy ? "Sending..." : "✓ Send reply"}</button>
         <button type="button" className="btn ed" disabled={busy} onClick={() => box.current?.focus()}>Edit reply</button>
         <button type="button" className="btn rj" disabled={busy} onClick={() => void decide("declined")}>Decline / ask me later</button>
       </div>

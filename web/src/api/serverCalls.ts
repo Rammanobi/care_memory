@@ -1,7 +1,8 @@
 // Doctor-side reads that are fetched on demand (not part of the polled state): Ask and the patient Timeline.
+import type { OwnAnswers } from "./types";
 import { USE_MOCK } from "./index";
 import { http } from "./http";
-import { mapConsentState, mapQueryAnswer, mapTimeline, toApiToken, type MappedAnswer, type TimelineRow, type WireQueryAnswer, type WireTimeline } from "./mapping";
+import { mapConsentState, mapOwnAnswers, mapQueryAnswer, mapTimeline, toApiToken, type MappedAnswer, type WireOwnAnswer, type TimelineRow, type WireQueryAnswer, type WireTimeline } from "./mapping";
 
 export const isLive = !USE_MOCK; // not a hook; true when talking to the real API
 
@@ -23,4 +24,9 @@ export async function consentStatesServer(ids: string[]): Promise<Record<string,
     try { out[id] = mapConsentState(await http(`/consents/${id}`)); } catch { /* leave the patient's own consent word */ }
   }));
   return out;
+}
+
+/** Patient app: the "About my record" cards. Text is server-rendered in the patient's language; shown as is. */
+export async function ownAnswersServer(): Promise<OwnAnswers> {
+  return mapOwnAnswers(await http<WireOwnAnswer[]>("/portal/answers"));
 }

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useCare } from "../../api/CareProvider";
-import { adherencePct, clinicStats } from "../../api/derive";
+import { adherencePct, clinicStats, quietDays, suppress } from "../../api/derive";
 import { Skeleton } from "../../components/ui";
 
 export default function DistrictPage() {
@@ -13,13 +13,18 @@ export default function DistrictPage() {
   type Row = { id: string; name: string; area: string; patients: number | null; adherence: number | null; quiet: number | null; pending: number | null; hidden: string[] };
   const stats: Row[] = d
     ? d.clinics.map((c) => ({ ...c, hidden: c.suppressed }))
-    : clinicStats(state).map((c) => ({ id: c.id, name: c.name, area: c.area, patients: c.patients, adherence: c.adherence, quiet: c.quiet, pending: c.pending, hidden: [] as string[] }));
+    : clinicStats(state).map((c) => {
+      // Same rule as the server: a count of 1 to 4 is hidden, and so is the adherence of a clinic that small.
+      const patients = suppress(c.patients), quiet = suppress(c.quiet), pending = suppress(c.pending);
+      const hidden = [patients === null && "patients", quiet === null && "quiet", pending === null && "pending"].filter((x): x is string => !!x);
+      return { id: c.id, name: c.name, area: c.area, patients, adherence: patients === null ? null : c.adherence, quiet, pending, hidden: patients === null ? [...hidden, "adherence"] : hidden };
+    });
   const shown = f === "all" ? stats : stats.filter((c) => c.id === f);
   const clinicOf = (name: string) => state.clinics.find((c) => c.name === name || c.id === name)?.id;
   const quietList = d
     ? d.quiet.filter((q) => f === "all" || clinicOf(q.clinic) === f).map((q) => ({ code: q.code, why: q.why, adherence: q.adherence, noData: q.noData }))
     : state.patients.filter((p) => p.quiet && (f === "all" || p.clinic === f)).map((p) => ({ code: p.code, why: p.why, adherence: adherencePct(p), noData: p.noData }));
-  const total = f === "all" && d ? d.totalPatients : shown.reduce((a, c) => a + (c.patients ?? 0), 0);
+  const total = f === "all" && d ? d.totalPatients : shown.some((c) => c.patients === null) ? null : shown.reduce((a, c) => a + (c.patients ?? 0), 0);
   const anyHidden = shown.some((c) => c.hidden.length > 0) || (d ? d.totalPatients === null : false);
   const empty = d ? d.clinics.length === 0 : state.patients.length === 0;
   const cell = (v: number | null, s = "") => (v === null ? <span className="tag t-amb" title={`Counts below ${d?.threshold ?? 5} are hidden to protect privacy`}>under {d?.threshold ?? 5}, hidden</span> : `${v}${s}`);
@@ -69,7 +74,7 @@ export default function DistrictPage() {
             {quietList.length === 0 ? <div className="empty">Nobody is quiet</div> : quietList.map((p) => (
               <Link key={p.code} to={`/doctor/patients/${p.code}`} className="li">
                 <div><b>{p.code}</b> <span className="tag t-amb">QUIET</span><div className="sm">{p.why} · adherence {p.adherence}%</div></div>
-                <span className="sm">{p.noData} days</span>
+                <span className="sm">{quietDays(p)}</span>
               </Link>
             ))}
           </section>

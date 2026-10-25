@@ -27,7 +27,7 @@ export interface Patient {
 export type Decision = "waiting" | "approved" | "declined";
 
 /** A patient question (Telegram or app): what the research step prepared for the doctor. Doctor side only, never shown to patients. */
-export type QCategory = "medicine" | "food" | "symptom" | "visit" | "admin" | "other";
+export type QCategory = "medicine" | "food" | "symptom" | "visit" | "admin" | "document" | "other";
 export type QPriority = "normal" | "high" | "urgent";
 export interface ResearchItem { text: string; refs: string[] }
 export interface Research {
@@ -40,6 +40,12 @@ export interface Research {
   model?: string;
   costUsd?: number;
   reason?: string;
+}
+/** A patient's uploaded file waiting for the doctor (data.document of a request or review item). Everything is auto-extracted: the doctor checks it against the original. */
+export interface DocField { name: string; value: string; confidence: number | string | null }
+export interface DocReview {
+  id: string; filename: string; mime: string; size: number; pages: number | null; status: string;
+  docType: string; fields: DocField[]; textExcerpt: string;
 }
 export interface Origin { channel: "telegram" | "portal"; excerpt: string }
 
@@ -58,6 +64,7 @@ export interface PatientRequest {
   refs?: string[]; // evidence ids behind the draft
   research?: Research; // doctor side: patient questions only
   origin?: Origin;
+  document?: DocReview; // doctor side: a patient-uploaded file to check (subkind document_review)
 }
 
 export interface Approval {
@@ -73,6 +80,7 @@ export interface Approval {
   why?: string; // one plain line: why the assistant wrote this
   research?: Research;
   origin?: Origin;
+  document?: DocReview;
 }
 
 export interface Dose {
@@ -144,7 +152,7 @@ export interface Settings { notifyRed: boolean; notifyRequests: boolean; digest:
 /** Patient or Supporter data read from /portal/*. Absent in mock mode (the screens then use the mock data, see pages/PatientApp/mockView.ts). */
 export interface PortalAppt { id: string; kind: "visit" | "lab"; title: string; when: string; place: string; note?: string }
 export interface PortalMsg { id: string; title: string; text: string; at: string; read: boolean; forSupporter: boolean; inReplyTo?: { approvalId: string; excerpt: string } }
-export interface PortalDoc { id: string; title: string; kind: string; date: string; summary: string }
+export interface PortalDoc { id: string; title: string; kind: string; date: string; summary: string; status?: string }
 export interface PortalMed { id: string; label: string; when: string; note: string | null }
 export interface PortalSlice {
   me?: { code: string; name: string; clinic: string; day: number; supporter: { name: string; relation: string | null } | null; reminder: string | null; pendingReminder: string | null };
@@ -225,3 +233,9 @@ export interface CareApi {
   /** Live mode: fetch one approval's draft text when its card is opened. */
   loadDetail?(id: string): Promise<CareState>;
 }
+
+// ---- patient "About my record" answers (GET /portal/answers) ----
+export type OwnTopic = "taken_week" | "missed_week" | "streak" | "history" | "next_visit" | "last_refill" | "advice";
+/** One card exactly as the server renders it. answer_text is shown as is; numbers are never shown on their own. */
+export interface OwnAnswer { topic: OwnTopic; question: string; answerText: string; asOf: string | null; lang: string }
+export interface OwnAnswers { cards: OwnAnswer[]; advice: OwnAnswer | null }

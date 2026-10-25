@@ -4,6 +4,8 @@ import { useCare } from "../../api/CareProvider";
 import type { UsageMode } from "../../api";
 import { Skeleton } from "../../components/ui";
 import { USE_MOCK } from "../../api";
+import { fmtAt, newestFirst } from "../../api/derive";
+import { nextChange, spendDomainMax } from "./logic";
 
 const MODES: { m: UsageMode; cls: string; title: string; text: string }[] = [
   { m: "GREEN", cls: "g", title: "GREEN under 70%", text: "Full AI: planning, drafting, Ask box." },
@@ -30,6 +32,7 @@ export default function AdminPage() {
   const bpct = u.budget ? Math.round((u.budgetUsed / u.budget) * 100) : 0;
   const usageFailed = !USE_MOCK && !!state.loadErrors?.includes("usage");
   const prov = Math.min(99, u.providerPct + (jitter % 4) - 1);
+  const audit = newestFirst(state.audit, (a) => a.at, state.simDay).slice(0, 10);
   const cls = u.mode === "GREEN" ? "g" : u.mode === "AMBER" ? "a" : "r";
   return (
     <main className="main wide" aria-labelledby="h-admin">
@@ -38,7 +41,7 @@ export default function AdminPage() {
 
       <div className="capstate">
         <span className={`state ${cls}`}>{u.mode}</span>
-        <div><b>{SAY[u.mode][0]}</b> {SAY[u.mode][1]}<br /><span className="sub">Next change at 70% of today's cap. Demo reserve is locked.</span></div>
+        <div><b>{SAY[u.mode][0]}</b> {SAY[u.mode][1]}<br /><span className="sub" data-testid="next-change">{nextChange(u.mode, u.todayCap)}</span></div>
         <div className="seg" role="group" aria-label="Set the state for the demo">
           {MODES.map((x) => <button key={x.m} type="button" className={u.mode === x.m ? "on" : ""} aria-pressed={u.mode === x.m} onClick={() => dispatch({ t: "usageMode", mode: x.m })}>{x.m}</button>)}
         </div>
@@ -78,7 +81,7 @@ export default function AdminPage() {
             <BarChart data={u.days} margin={{ top: 10, right: 8, left: -18, bottom: 0 }}>
               <CartesianGrid stroke="#E6DFD3" vertical={false} />
               <XAxis dataKey="d" tick={{ fontSize: 11 }} />
-              <YAxis domain={[0, 10]} tick={{ fontSize: 11 }} />
+              <YAxis domain={[0, spendDomainMax(u.days.map((x) => x.spend), u.todayCap)]} tick={{ fontSize: 11 }} />
               <Tooltip />
               <ReferenceLine y={u.todayCap * 0.7} stroke="#F59E0B" strokeDasharray="4 3" />
               <ReferenceLine y={u.todayCap * 0.9} stroke="#B91C1C" strokeDasharray="4 3" />
@@ -86,6 +89,16 @@ export default function AdminPage() {
             </BarChart>
           </ResponsiveContainer>
         </div>
+      </section>
+
+      <section className="card" aria-label="Audit log" style={{ marginTop: 14 }}>
+        <div className="k">Audit log (latest decisions)</div>
+        {audit.length === 0 ? <div className="empty" data-testid="audit-empty"><b>No entries yet</b>Decisions and drafts are logged here.</div> : (
+          <div className="tbl-wrap"><table className="tbl">
+            <thead><tr><th>When</th><th>Patient</th><th>Who</th><th>What</th></tr></thead>
+            <tbody>{audit.map((a) => <tr key={a.id}><td>{fmtAt(a.at, state.simDay)}</td><td>{a.code}</td><td>{a.actor}</td><td>{a.action}</td></tr>)}</tbody>
+          </table></div>
+        )}
       </section>
 
       <div className="legend">

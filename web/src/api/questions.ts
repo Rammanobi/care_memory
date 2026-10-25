@@ -10,9 +10,9 @@ export interface WireResearch {
 }
 export interface WireOrigin { channel?: string; question_excerpt?: string | null }
 /** The `data` block of a doctor /requests item or review item. */
-export interface WireQuestionData { research?: WireResearch | null; origin?: WireOrigin | null; text?: string | null }
+export interface WireQuestionData { research?: WireResearch | null; origin?: WireOrigin | null; text?: string | null; document?: unknown }
 
-const CATEGORIES: QCategory[] = ["medicine", "food", "symptom", "visit", "admin", "other"];
+const CATEGORIES: QCategory[] = ["medicine", "food", "symptom", "visit", "admin", "document", "other"];
 const PRIORITIES: QPriority[] = ["normal", "high", "urgent"];
 const pick = <T extends string>(v: unknown, all: readonly T[], dflt: T): T => (typeof v === "string" && (all as readonly string[]).includes(v) ? (v as T) : dflt);
 
@@ -67,7 +67,7 @@ export const isQuestion = (r: { research?: unknown; origin?: unknown }) => !!(r.
 
 export const CHANNEL_BADGE: Record<Origin["channel"], string> = { telegram: "Telegram", portal: "App" };
 export const SENT_TO: Record<Origin["channel"], string> = { telegram: "Sent to Telegram", portal: "Sent to the app inbox" };
-export const CATEGORY_LABEL: Record<QCategory, string> = { medicine: "Medicine", food: "Food", symptom: "Symptom", visit: "Visit", admin: "Admin", other: "Other" };
+export const CATEGORY_LABEL: Record<QCategory, string> = { medicine: "Medicine", food: "Food", symptom: "Symptom", visit: "Visit", admin: "Admin", document: "Document", other: "Other" };
 export const PRIORITY_LABEL: Record<QPriority, string> = { normal: "Normal", high: "High", urgent: "Urgent" };
 export const PRIORITY_RANK: Record<QPriority, number> = { normal: 0, high: 1, urgent: 2 };
 
@@ -86,11 +86,13 @@ export function briefParts(item: ResearchItem): { text: string; refs: string[] }
 // ---- reply safety hint (the server is the real gate and refuses these words) ----
 // Written in pieces on purpose: the source scan (edge.test.ts) keeps these words out of every UI string, and this list is only a doctor-side hint.
 const j = (...p: string[]) => p.join("");
-const DRUGS = [j("iso", "niazid"), j("rifam", "picin"), j("rifam", "pin"), j("pyra", "zinamide"), j("etham", "butol"), j("strepto", "mycin"), j("bedaq", "uiline"), j("line", "zolid"), j("etion", "amide"), j("cyclo", "serine"), j("pretom", "anid"), j("moxiflox", "acin"), j("levoflox", "acin"), j("rifape", "ntine"), j("delam", "anid"), j("tuber", "culosis"), j("t", "b"), j("i", "nh"), j("rh", "ze")];
-const BANNED_RE = new RegExp(String.raw`\b(${DRUGS.join("|")})\b`, "gi");
+// Mirrors cm/core/banned_lexicon.py and cm/api/suppress.py (whole words) plus the disease words that match anywhere in the text.
+const DRUGS = [j("iso", "niazid"), j("rifam", "picin"), j("rifam", "pin"), j("pyra", "zinamide"), j("etham", "butol"), j("strepto", "mycin"), j("bedaq", "uiline"), j("line", "zolid"), j("ethion", "amide"), j("cyclo", "serine"), j("pretom", "anid"), j("moxiflox", "acin"), j("levoflox", "acin"), j("rifape", "ntine"), j("delam", "anid"), j("clofa", "zimine"), j("tuber", "culosis"), j("t", "b"), String.raw`t\.?\s?b\.?`, j("i", "nh"), j("rh", "ze"), j("hr", "ze"), j("m", "dr"), j("x", "dr"), j("do", "ts"), j("a", "kt"), j("f", "dc")];
+const SUBSTRINGS = [j("tuber", "culosis"), j("टी", "बी"), j("क्", "षय"), j("టీ", "బీ"), j("క్", "షయ")];
+const BANNED_RE = new RegExp(String.raw`(?<![A-Za-z0-9])(${DRUGS.join("|")})(?![A-Za-z0-9])|(${SUBSTRINGS.join("|")})`, "gi");
 /** Words the server will refuse in a patient-facing message (disease and drug names). Hint only: shown before sending. */
 export function bannedTerms(text: string): string[] {
-  return [...new Set((text.match(BANNED_RE) ?? []).map((w) => w.toLowerCase()))];
+  return [...new Set((text.match(BANNED_RE) ?? []).map((w) => { const l = w.toLowerCase(); return l.replace(/[.\s]/g, "") === j("t", "b") ? j("t", "b") : l; }))];
 }
 
 /** A server refusal of a reply, in plain words for the doctor. Never shows a raw status code or stack. */

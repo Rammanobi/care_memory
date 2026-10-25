@@ -1,9 +1,10 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import type { Decision } from "../api";
 import { useCare } from "../api/CareProvider";
 import { EvChips, SlaOf } from "./doctorKit";
 import { splitCitations } from "../api/mapping";
+import { bannedTerms, friendlyDecisionError } from "../api/questions";
 
 interface Props {
   heading: string;
@@ -13,7 +14,7 @@ interface Props {
   draft: string;
   status: Decision;
   reply?: string;
-  onDecide: (d: "approved" | "declined", text: string) => void;
+  onDecide: (d: "approved" | "declined", text: string) => void | Promise<void>; // a rejected promise is the server refusing the reply
   lead?: ReactNode; // e.g. checkbox
   tone?: "req" | "plain";
   srcId?: string; // request or approval id, to show Sent / Seen
@@ -56,7 +57,25 @@ function Delivery({ srcId }: { srcId: string }) {
 export function DraftCard({ heading, who, asked, meta, draft, status, reply, onDecide, lead, tone = "plain", srcId, refs, why, due, channel, onLoadDraft }: Props) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(draft);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const area = useRef<HTMLTextAreaElement>(null);
+  const tid = useId();
   useEffect(() => { if (draft && !text) setText(draft); }, [draft]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (editing) area.current?.focus(); }, [editing]);
+  const ready = !!text.trim();
+  const flagged = bannedTerms(text);
+  const decide = async (d: "approved" | "declined") => {
+    setBusy(true);
+    setErr("");
+    try {
+      await onDecide(d, d === "approved" ? text.trim() : text);
+    } catch (e) {
+      setErr(friendlyDecisionError(e));
+    } finally {
+      setBusy(false);
+    }
+  };
   const shown = splitCitations(text);
   const allRefs = [...new Set([...(refs ?? []), ...shown.refs])];
 
@@ -96,20 +115,24 @@ export function DraftCard({ heading, who, asked, meta, draft, status, reply, onD
       ) : editing ? (
         <>
           <span className="ai">EDITING DRAFT</span>
-          <label className="sr-only" htmlFor={`d-${heading}-${who}`}>Edit the reply</label>
-          <textarea id={`d-${heading}-${who}`} className="draft" value={text} onChange={(e) => setText(e.target.value)} />
+          <label className="sr-only" htmlFor={`d-${tid}`}>Edit the reply</label>
+          <textarea id={`d-${tid}`} ref={area} className="draft" value={text} onChange={(e) => { setText(e.target.value); setErr(""); }} />
         </>
       ) : (
-        <div className="draft"><span className="ai">AI DRAFT</span><br />{shown.clean}</div>
+        <div className="draft"><span className="ai">AI DRAFT</span><br />{ready ? shown.clean : <span className="qwarn" role="status">Draft not ready</span>}</div>
       )}
-      <details className="prev" open>
-        <summary>What the patient will see</summary>
-        <PhonePreview text={shown.clean} channel={channel ?? (tone === "req" ? "Patient app" : "Telegram")} />
-      </details>
+      {flagged.length > 0 && <p className="qwarn" role="alert">This reply has words that cannot be sent to patients ({flagged.join(", ")}). The server will block it. Please remove them.</p>}
+      {err && <p className="qerr" role="alert">{err}</p>}
+      {ready && (
+        <details className="prev" open>
+          <summary>What the patient will see</summary>
+          <PhonePreview text={shown.clean} channel={channel ?? (tone === "req" ? "Patient app" : "Telegram")} />
+        </details>
+      )}
       <div className="btns">
-        <button type="button" className="btn ap" disabled={!text.trim()} onClick={() => onDecide("approved", text.trim())}>✓ Approve and send</button>
-        <button type="button" className="btn ed" onClick={() => setEditing((e) => !e)}>{editing ? "Done editing" : "Edit"}</button>
-        <button type="button" className="btn rj" onClick={() => onDecide("declined", text)}>Decline</button>
+        <button type="button" className="btn ap" disabled={!ready || busy} onClick={() => void decide("approved")}>{!ready ? "Draft not ready" : busy ? "Sending..." : "✓ Approve and send"}</button>
+        <button type="button" className="btn ed" disabled={busy} onClick={() => setEditing((e) => !e)}>{editing ? "Done editing" : "Edit"}</button>
+        <button type="button" className="btn rj" disabled={busy} onClick={() => void decide("declined")}>Decline</button>
       </div>
     </section>
   );

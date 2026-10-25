@@ -34,7 +34,11 @@ from typing import Any, Protocol
 
 from cm.core import tokenize as _tok
 from cm.core.clock import IST
-from cm.core.clock import now as _clock_now
+
+
+def _clock_now() -> datetime:
+    """Real wall time. The email throttle is about the real world, not the frozen demo clock."""
+    return datetime.now(UTC)
 
 MODES = ("off", "dry-run", "send")
 DEFAULT_CONSOLE_URL = "http://localhost:5173"

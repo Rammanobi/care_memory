@@ -186,10 +186,11 @@ def _tell_doctor(aid: UUID, code: str, res: dict[str, Any], tri: dict[str, str],
         import importlib
 
         mod = importlib.import_module("cm.channels.doctor_notify")
-        mod.notify_doctor_new_question(
+        out = mod.notify_doctor_new_question(
             str(aid), patient_code=code, category=cat, priority=prio, question_excerpt=excerpt(text)
         )
-    except ImportError:
-        pass
+        log.info("doctor email", status=(out or {}).get("status"), reason=(out or {}).get("reason"))
+    except ImportError as exc:
+        log.warning("doctor email module unavailable", error=str(exc)[:80])
     except Exception as exc:  # noqa: BLE001  (a failed email must not fail the task)
         log.warning("doctor notify failed", error=type(exc).__name__)

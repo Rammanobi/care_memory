@@ -197,15 +197,15 @@ def doctor_notify_claim(approval_id: str, patient_code: str, urgent: bool, now: 
         return "duplicate"
     if urgent:
         n = conn.execute(
-            f"SELECT count(*) AS n FROM cm.audit_log WHERE {_LIVE} AND at > %s "
+            f"SELECT count(*) AS n FROM cm.audit_log WHERE {_LIVE} AND at > %s AND at <= %s "
             "AND result_ids[2] = %s AND result_ids[3] = 'urgent'",
-            (*live, now - NOTIFY_URGENT_WINDOW, patient_code),
+            (*live, now - NOTIFY_URGENT_WINDOW, now, patient_code),
         ).fetchone()
         if int(n["n"]) >= NOTIFY_URGENT_MAX:
             return "throttled"
     elif conn.execute(
-        f"SELECT 1 FROM cm.audit_log WHERE {_LIVE} AND at > %s AND result_ids[2] = %s LIMIT 1",
-        (*live, now - NOTIFY_NORMAL_GAP, patient_code),
+        f"SELECT 1 FROM cm.audit_log WHERE {_LIVE} AND at > %s AND at <= %s AND result_ids[2] = %s LIMIT 1",
+        (*live, now - NOTIFY_NORMAL_GAP, now, patient_code),
     ).fetchone():
         return "throttled"
     conn.execute(

@@ -4,6 +4,8 @@ import { status } from "../api/status";
 export const SSE_TOPICS = ["review", "channels"];
 export const POLL_DOWN_MS = 5000; // polling while SSE is not connected
 export const POLL_UP_MS = 30000; // safety net while SSE is connected
+/** Cloud (Firebase) mode authenticates with a Bearer token, which EventSource cannot send: poll only, never open /stream. */
+export const pollOnly = (): boolean => import.meta.env.VITE_AUTH_MODE === "firebase";
 export const backoffMs = (attempt: number) => Math.min(30000, 1000 * 2 ** attempt);
 
 export interface LiveEvent {
@@ -60,7 +62,7 @@ export function startLive(onEvent: (e: LiveEvent | null) => void, enabled: () =>
     schedulePoll(); // re-arm with the interval that matches the new state
   };
   const open = () => {
-    if (stopped || typeof EventSource === "undefined" || !enabled()) return; // logged out: no /stream, no 401 storm
+    if (stopped || typeof EventSource === "undefined" || pollOnly() || !enabled()) return; // logged out: no /stream, no 401 storm
     const src = new EventSource(`${API_BASE}/stream?topics=${SSE_TOPICS.join(",")}`, { withCredentials: true });
     es = src;
     src.onopen = () => {
@@ -80,6 +82,10 @@ export function startLive(onEvent: (e: LiveEvent | null) => void, enabled: () =>
         }, backoffMs(attempt++));
     };
   };
+  const onVisible = () => {
+    // tab came back: catch up now instead of waiting up to 5 s
+    if (!stopped && enabled() && typeof document !== "undefined" && document.visibilityState === "visible") onEvent(null);
+  };
   const onSession = () => {
     // signed in or out: reconnect now instead of waiting for the backoff timer
     if (retry) clearTimeout(retry);
@@ -93,6 +99,7 @@ export function startLive(onEvent: (e: LiveEvent | null) => void, enabled: () =>
   if (typeof window !== "undefined") {
     window.addEventListener("cm-session", onSession);
     window.addEventListener("cm-session-up", onSession); // /auth/me just answered 200: start now
+    if (typeof document !== "undefined") document.addEventListener("visibilitychange", onVisible);
   }
   schedulePoll();
   open();
@@ -101,6 +108,7 @@ export function startLive(onEvent: (e: LiveEvent | null) => void, enabled: () =>
     if (typeof window !== "undefined") {
       window.removeEventListener("cm-session", onSession);
       window.removeEventListener("cm-session-up", onSession);
+      if (typeof document !== "undefined") document.removeEventListener("visibilitychange", onVisible);
     }
     es?.close();
     es = null;

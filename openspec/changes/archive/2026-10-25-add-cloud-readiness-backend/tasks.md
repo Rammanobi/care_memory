@@ -1,0 +1,3 @@
+- [x] 1 `cm/api/no_store.py` + wire in `cm/api/main.py`; test `tests/unit/api/test_no_store_cors.py`
+- [x] 2 `infra/env/api.env.yaml` cloud vars; test in same file
+- [x] 3 CORS check (Authorization allowed from Hosting origins); test in same file

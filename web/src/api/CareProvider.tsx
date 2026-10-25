@@ -56,6 +56,12 @@ function Banner({ onRetry, loadErrors }: { onRetry: () => void; loadErrors?: str
   );
 }
 
+export function sameState(a: CareState | null, b: CareState | null): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  try { return JSON.stringify(a) === JSON.stringify(b); } catch { return false; }
+}
+
 export function CareProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<CareState | null>(null);
 
@@ -63,7 +69,8 @@ export function CareProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let alive = true;
-    const pull = () => api.load().then((s) => alive && setState(s)).catch(() => undefined);
+    // Polling re-pulls every 5 s: keep the previous state object when nothing changed so React does not re-render (no flicker).
+    const pull = () => api.load().then((s) => alive && setState((prev) => (sameState(prev, s) ? prev : s))).catch(() => undefined);
     pull();
     const off = api.subscribe(pull);
     window.addEventListener("cm-session", pull);

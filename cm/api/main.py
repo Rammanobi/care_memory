@@ -16,6 +16,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from cm.api import firebase_auth
 from cm.api.body_limit import BodyLimitMiddleware
 from cm.api.deps import ApiError, problem_response
+from cm.api.no_store import NoStoreMiddleware
 from cm.api.routers import (
     admin,
     auth,
@@ -79,6 +80,8 @@ def create_app() -> FastAPI:
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type", "Authorization", "X-CM-Client"],
     )
+
+    app.add_middleware(NoStoreMiddleware)  # added last = outermost: covers CORS preflight-free auth'd replies
 
     @app.exception_handler(ApiError)
     async def _api_error(_: Request, exc: ApiError) -> JSONResponse:

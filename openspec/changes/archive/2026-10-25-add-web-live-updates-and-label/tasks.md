@@ -1,0 +1,3 @@
+- [x] web/src/realtime/sse.ts: pollOnly, visibility catch-up (sse.test.ts)
+- [x] web/src/api/CareProvider.tsx: sameState skip (no flicker)
+- [x] web/src/components/ui.tsx: hideDemoLabel (demoLabel.test.ts)

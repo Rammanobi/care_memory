@@ -27,14 +27,20 @@ export function Icon({ name }: { name: keyof typeof PATHS | string }) {
   );
 }
 
+/** Hide the word "demo" / MOCK badge in cloud builds (VITE_AUTH_MODE=firebase or VITE_HIDE_DEMO_LABEL=1); localhost always keeps it. */
+export function hideDemoLabel(env: Record<string, unknown> = import.meta.env, host: string = typeof location === "undefined" ? "localhost" : location.hostname): boolean {
+  if (host === "localhost" || host === "127.0.0.1" || host === "[::1]" || host.endsWith(".localhost")) return false;
+  return env.VITE_AUTH_MODE === "firebase" || env.VITE_HIDE_DEMO_LABEL === "1";
+}
+
 export function LiveDot() {
   const live = useSyncExternalStore(status.subscribe, () => status.get().live);
-  if (USE_MOCK) return <span className="livedot demo" title="Demo data, no server">demo</span>;
+  if (USE_MOCK) return hideDemoLabel() ? null : <span className="livedot demo" title="Demo data, no server">demo</span>;
   return <span className={`livedot${live ? " on" : ""}`} role="status" aria-label={live ? "Live updates connected" : "Live updates off, checking every few seconds"} title={live ? "Live" : "Offline, refreshing every 5 s"}><i aria-hidden="true" />{live ? "live" : "polling"}</span>;
 }
 
 export function MockBadge() {
-  return USE_MOCK ? <span className="mock">MOCK DATA</span> : null;
+  return USE_MOCK && !hideDemoLabel() ? <span className="mock">MOCK DATA</span> : null;
 }
 
 export function Skeleton({ h = 60, n = 1 }: { h?: number; n?: number }) {

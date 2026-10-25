@@ -88,3 +88,26 @@ describe("startLive", () => {
     stop();
   });
 });
+
+describe("cloud (firebase) mode", () => {
+  beforeEach(() => { vi.useFakeTimers(); FakeES.all = []; vi.stubGlobal("EventSource", FakeES); vi.stubEnv("VITE_AUTH_MODE", "firebase"); });
+  afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
+
+  it("never opens /stream and polls every 5 s", () => {
+    const cb = vi.fn();
+    const stop = startLive(cb, () => true);
+    expect(FakeES.all.length).toBe(0);
+    vi.advanceTimersByTime(10100);
+    expect(cb).toHaveBeenCalledTimes(2);
+    stop();
+  });
+
+  it("pauses while the tab is hidden", () => {
+    const cb = vi.fn();
+    vi.stubGlobal("document", { visibilityState: "hidden", addEventListener: vi.fn(), removeEventListener: vi.fn() });
+    const stop = startLive(cb, () => true);
+    vi.advanceTimersByTime(20000);
+    expect(cb).not.toHaveBeenCalled();
+    stop();
+  });
+});

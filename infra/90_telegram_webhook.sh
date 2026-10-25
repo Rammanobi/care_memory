@@ -8,6 +8,9 @@
 # STOP the laptop poller first (python -m cm.jobs.tg_poll): it calls deleteWebhook and would undo this.
 set -euo pipefail
 source "$(dirname "$0")/vars.sh"
+if [ "$TELEGRAM_ENABLED" != "1" ]; then
+  echo "90_telegram_webhook: Telegram cloud bot disabled (TELEGRAM_ENABLED=0); nothing to do" >&2; exit 0
+fi
 if [ -n "${1:-}" ]; then BASE="${1%/}"; else need_domain; BASE="https://$DOMAIN"; fi
 case "$BASE" in https://*) ;; *) echo "base URL must be https" >&2; exit 1 ;; esac
 TARGET="$BASE/webhooks/telegram"

@@ -1,0 +1,48 @@
+# Files NOT uploaded by `gcloud builds submit` (Cloud Build source tarball). Mirrors .dockerignore for secrets and
+# local state. Docker still applies .dockerignore inside the build. Never upload secrets or demo credentials.
+.gcloudignore
+.git
+.gitignore
+.gitattributes
+# secrets: .env and every variant (incl. web/.env.production with the Firebase web config)
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!web/.env.example
+*.pem
+*.key
+client_secret*.json
+*credentials*.json
+*service-account*.json
+*service_account*.json
+application_default_credentials.json
+token.json
+secrets/
+credentials/
+gmail_cred/
+# generated output (out/ holds demo credentials) and local uploads
+out/
+data/uploads/
+# dependencies, builds, caches
+node_modules/
+**/node_modules/
+web/dist/
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.hypothesis/
+.cache/
+# data dumps and snapshots
+*.dump
+*.sql.gz
+*.sqlite
+*.db
+*.log
+fixtures/snapshots/

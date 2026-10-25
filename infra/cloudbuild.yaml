@@ -4,6 +4,7 @@
 #     --branch-pattern='^main$' --build-config=infra/cloudbuild.yaml \
 #     --service-account=projects/$PROJECT/serviceAccounts/cm-deployer@$PROJECT.iam.gserviceaccount.com --region=$REGION
 # Manual: make deploy
+# _PROJECT / _AR / serviceAccount must match PROJECT in infra/vars.sh (this file cannot source it).
 steps:
 - id: test
   name: python:3.12-slim
@@ -35,9 +36,9 @@ steps:
   args: ["-c", "IMAGE=${_AR}/cm:$SHORT_SHA PROJECT=${_PROJECT} REGION=${_REGION} bash infra/60_deploy.sh"]
 substitutions:
   _REGION: asia-south1
-  _PROJECT: caremem-hack
-  _AR: asia-south1-docker.pkg.dev/caremem-hack/cm
+  _PROJECT: carememory-c1b3f
+  _AR: asia-south1-docker.pkg.dev/carememory-c1b3f/cm
 options:
   logging: CLOUD_LOGGING_ONLY
-serviceAccount: projects/caremem-hack/serviceAccounts/cm-deployer@caremem-hack.iam.gserviceaccount.com
+serviceAccount: projects/carememory-c1b3f/serviceAccounts/cm-deployer@carememory-c1b3f.iam.gserviceaccount.com
 timeout: 1800s

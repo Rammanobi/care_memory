@@ -23,3 +23,13 @@
 - [ ] 2.16 (I) Run the 10-step smoke test in DEPLOY_PLAN section 6; record results here
 
 - [x] 2.17 (I) infra/90_telegram_webhook.sh, infra/README.md, DRY_RUN in vars.sh (change fix-deploy-blockers-infra; nothing run against GCP)
+
+## 3. Runbook section 1.1-1.6 (2026-10-25; nothing run against GCP)
+- [x] 3.1 infra/vars.sh: PROJECT=carememory-c1b3f, DOCTOR_SITE/PATIENT_SITE, TELEGRAM_ENABLED=0 in one place; render_env fills <project>/<doctor-site>/<patient-site>, appends KEY=VALUE, refuses leftovers. Test: DRY_RUN render + yaml parse
+- [x] 3.2 infra/env/{api,worker,jobs}.env.yaml: placeholders instead of caremem-hack; CM_ALLOWED_HOSTS with *.run.app and firebaseapp.com; CORS; PUBLIC_BASE_URL patient site (no <domain>); TELEGRAM_BOT_USERNAME empty
+- [x] 3.3 infra/60_deploy.sh: one env file per deploy with WORKER_URL + CM_TASKS_BASE_URL on worker, api, jobs; worker bootstrap on first deploy; Telegram secrets only when enabled; no DOMAIN requirement. Test: DRY_RUN=1 run
+- [x] 3.4 infra/30_secrets.sh: Telegram secrets only when enabled; required = OPENAI/DEEPSEEK; grant JWT_SIGNING_KEY to cm-worker and JWT_SIGNING_KEY + DEMO_USER_PASSWORDS to cm-jobs (they were mounted but not granted). Test: DRY_RUN=1 run
+- [x] 3.5 infra/35_demo_passwords.sh (new): .env value -> stdin -> Secret Manager, JSON validated, never printed. Test: DRY_RUN with fake good/bad env files
+- [x] 3.6 infra/80_webhooks.sh, 90_telegram_webhook.sh: skip setWebhook unless TELEGRAM_ENABLED=1
+- [x] 3.7 .gcloudignore (new), .dockerignore + data/uploads, .firebaserc ids, infra/cloudbuild.yaml project, infra/README.md order; tests/unit/api/test_firebase_hosting_config.py checks .firebaserc == vars.sh. Test: pytest tests/unit (853 passed)
+- [ ] 3.8 Owner: real deploy (P1-P12, then the order in infra/README.md); smoke results recorded here

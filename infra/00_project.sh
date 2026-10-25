@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Project setup: APIs, Artifact Registry, docs bucket. Idempotent. Billing + budget are manual (console).
-# Usage: PROJECT=caremem-hack bash infra/00_project.sh
+# Usage: bash infra/00_project.sh   (PROJECT defaults to the id in infra/vars.sh)
 set -euo pipefail
 source "$(dirname "$0")/vars.sh"
 

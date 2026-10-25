@@ -8,6 +8,7 @@ node_modules
 **/node_modules
 web/dist
 out
+data/uploads
 .cache
 .hypothesis
 __pycache__

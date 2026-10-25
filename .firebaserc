@@ -1,15 +1,15 @@
 {
   "projects": {
-    "default": "REPLACE-firebase-project-id"
+    "default": "carememory-c1b3f"
   },
   "targets": {
-    "REPLACE-firebase-project-id": {
+    "carememory-c1b3f": {
       "hosting": {
         "doctor": [
-          "REPLACE-doctor-site-id"
+          "carememory-doctor"
         ],
         "patient": [
-          "REPLACE-patient-site-id"
+          "carememory-patient"
         ]
       }
     }

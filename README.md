@@ -12,7 +12,7 @@ Innovators Conclave 2026, JNTU Anantapur · Track IC26-03-10 Open Health Innovat
 </div>
 
 > **Progress (25 Oct 2026, about 02:30 IST):** 23 of 29 feature slices done, 6 partial, 0 in progress, 0 planned, plus the post-F29 slices listed below. Backend: 1967 passed, 2 skipped, 3 xfailed (expected failures, known gaps). Web: typecheck OK, 241 tests pass, build OK. The doctor gate is enforced by a database constraint.
-> **Deployment to Google Cloud (Cloud Run, asia-south1, one domain with several hostnames) is planned for 2026-10-25 and has NOT happened yet.** Everything runs locally today. Plan: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md).
+> **Deployed to Google Cloud on 2026-10-25 (project `carememory-c1b3f`, Cloud Run + Cloud SQL in asia-south1, Firebase Hosting and Authentication). Live demo, mock data only:** doctor <https://carememory-doctor.web.app> and patient / Supporter <https://carememory-patient.web.app>. Same usernames and passwords as the local copy (not published here). Telegram runs only on the local copy (the cloud copy has no Telegram bot). The local stack at `http://localhost:5173` keeps working unchanged. Runbook: [docs/deploy/RUNBOOK.md](docs/deploy/RUNBOOK.md); plan: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md).
 > Status words in this README are strict: **done** means code plus an automated test or a recorded check; **partial** means code exists but a piece is missing or only tested against fakes; **planned** means designed, not built.
 
 ---
@@ -585,7 +585,7 @@ Organisers' latest weighting: **Round 1 = 40%, Round 2 = 60%** (the older 15/35/
 ## 13. Roadmap
 
 **Next (planned, not done)**
-1. **Deploy to Google Cloud (Cloud Run, asia-south1, one domain with several hostnames): planned for 2026-10-25, NOT yet done.** Plan: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md). The local stack stays as the offline backup.
+1. **Google Cloud deployment is done (2026-10-25).** Still to do for the cloud copy: a second Telegram bot with a webhook, a custom domain, the Gmail and Calendar live paths, and a cost and rollback review. Runbook: [docs/deploy/RUNBOOK.md](docs/deploy/RUNBOOK.md). The local stack stays as the offline backup.
 2. Verify the real Gmail inbound and Pub/Sub push path and Calendar against real Google (simulated with fakes only; one real test email was sent and received).
 3. Exercise the live Telegram Telugu and `/stop` paths; record a backup video.
 4. Native-speaker review of Telugu templates and answers; Hindi.
@@ -621,7 +621,7 @@ Built with parallel AI coding agents, one lane each, coordinated through frozen 
 | Document intake channels | Telegram and Gmail attachment intake into the same safe upload path | **partial (Telegram done; the Gmail inbound loop is not wired)** |
 | Patient own-data answers | Instant answers about the patient's own recorded data (medicines taken, next visit, last result), website only; no medical advice, no drug or disease names in patient-facing text | **done** |
 | Demo accounts | Two demo accounts only: demo.pt0906 (6-day) and demo.pt0960 (60-day) | **done** |
-| Firebase deploy plan | Firebase Hosting for the doctor and patient UIs and Firebase Auth for login; plan in [docs/deploy/FIREBASE_PLAN.md](docs/deploy/FIREBASE_PLAN.md) | **planned (cloud not deployed yet)** |
+| Firebase deploy plan | Firebase Hosting for the doctor and patient UIs and Firebase Auth for login; plan in [docs/deploy/FIREBASE_PLAN.md](docs/deploy/FIREBASE_PLAN.md) | **done** (sites `carememory-doctor` and `carememory-patient` on Firebase Hosting; six logins created with the same passwords as local) |
 | UI audit and Fable review fixes | Fixes from the UI audit and from the Fable code review | **done** |
 | AI evals batch 2 | Second batch of AI eval cases; see [docs/design/AI_EVAL_REPORT.md](docs/design/AI_EVAL_REPORT.md) | **done** |
 | Upload edge tests | Edge-case tests for the upload path (bad types, oversize, empty, duplicate, hostile names) | **done** |
@@ -633,7 +633,7 @@ Built with parallel AI coding agents, one lane each, coordinated through frozen 
 - Risk calibration is poor: ECE 0.22 at day 60. The risk model uses fixed documented weights and is not trained.
 - Telugu answer text is mostly English, and the Telugu templates need a native-speaker review.
 - The simulator clock is one day ahead of the real date in the seeded data.
-- The Gmail live inbound and push path, Calendar and the Cloud deployment are not yet verified against real Google; Cloud deployment (planned for 2026-10-25) has not happened.
+- The Gmail live inbound and push path and Calendar are not yet verified against real Google. The cloud deployment itself was smoke-tested (sign-in, doctor queue, patient requests) but has no Telegram bot.
 - The live Telegram Telugu and `/stop` paths have not been exercised live (offline tests only).
 - The doctor email notifier is dry-run by default; send mode needs explicit owner confirmation.
 - The system never answers patient medical questions itself: they go to the doctor; the research brief is doctor-facing only.
@@ -641,7 +641,7 @@ Built with parallel AI coding agents, one lane each, coordinated through frozen 
 - Doctors can see all clinics' patients (district-wide by design).
 - Risk calibration is poor: ECE 0.22 at day 60.
 - The Gmail inbound loop is not wired.
-- Cloud is not deployed yet (Firebase plan only).
+- The cloud copy has no Telegram (no second bot yet) and no custom domain; it runs on `.web.app` addresses. Its data is separate from the local database.
 - DeepSeek and OpenAI are used on mock data only (`CM_DATA_CLASS=mock`; DeepSeek is refused for real data). There is no real patient data.
 
 ---

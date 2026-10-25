@@ -1,6 +1,6 @@
 # CareMemory: GitHub Repository Progress Tracker
 
-**Progress summary (25 Oct 2026, about 02:30 IST):** 23 of 29 feature slices done, 6 partial, 0 in progress, 0 planned. Backend 1516 tests passed, 0 failed, 2 expected failures (known gaps), 2 skipped; web 154 tests pass, typecheck and build pass; the doctor gate is enforced by a database constraint. Deployment to Google Cloud is planned for 2026-10-25 and has NOT happened. Plan: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md).
+**Progress summary (25 Oct 2026, about 02:30 IST):** 23 of 29 feature slices done, 6 partial, 0 in progress, 0 planned, plus the post-F29 slices below. Backend 1967 passed, 2 skipped, 3 xfailed (expected failures, known gaps); web typecheck OK, 241 tests pass, build OK; the doctor gate is enforced by a database constraint. Deployment to Google Cloud is planned for 2026-10-25 and has NOT happened. Plan: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md).
 
 Back to the [README](README.md) · Web version: [docs/index.html](docs/index.html) · Rubric: [docs/design/EVALUATION_PLAN.md](docs/design/EVALUATION_PLAN.md)
 
@@ -45,7 +45,22 @@ Points use the organisers' latest split: Round 1 = 40, Round 2 = 60 (rubric raw 
 | F29 | Doctor-question feature | Question triage (category medicine/food/symptom/visit/admin/other, priority normal/high/urgent; EN/TE/HI keywords); cited doctor-facing research brief and safe suggested reply (the system never answers medical questions itself); routing, background research task, live doctor notification (SSE), threaded reply on the same channel (replies exempt from the 3/day cap; bypass quiet hours only when urgent); patient status waiting/answered/closed (research never exposed to patients); doctor email notifier (dry-run by default; send needs explicit owner confirmation; throttle 1 per patient per 10 min, urgent up to 3/hour); doctor and patient UI (question cards, research panel with citation chips, editable reply, toast and badge) | `cm/`, `web/src/` | 88 unit and 7 integration tests; live DeepSeek flash verified on demo patients; full loop verified live on 25 Oct: Telegram question, research, doctor reply in the console, threaded delivery to Telegram (commits 29cdeef, fbafdde, 81d56eb, 8d516bb, b3ffa90) | done (bug found and fixed live: the dev sender used the real clock while the API schedules by the demo clock, a day ahead, so the reply waited in the outbox) | Functionality, UI/UX, Technical depth | n/a |
 | | **Total tied to slices F01-F16** | | | | | | **63** |
 
-Points for F17-F29 were not re-estimated (shown as n/a); the 63 covers F01-F16. Not done: Google Cloud deployment (planned for 2026-10-25, NOT happened; see [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md)), live Google verification of Gmail and Calendar, cassette replay (stubs), risk training (deferred). See (c) and (e).
+Slices since F29 are listed after this table. Points for F17-F29 were not re-estimated (shown as n/a); the 63 covers F01-F16. Not done: Google Cloud deployment (planned for 2026-10-25, NOT happened; see [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md)), live Google verification of Gmail and Calendar, cassette replay (stubs), risk training (deferred). See (c) and (e).
+
+### Slices since F29 (25 Oct 2026)
+
+| Slice | What | Status |
+|---|---|---|
+| P1 | **Document upload (core)**: Safe upload of patient documents: type, size and content checks, quarantine until reviewed, never shown to the patient as advice | done |
+| P2 | **Document extraction**: Text and field extraction from uploads into a draft for the doctor; nothing enters the record without approval | done |
+| P3 | **Document doctor review**: Doctor review queue: approve, edit or reject an extracted document before it becomes memory | done |
+| P4 | **Document intake channels**: Telegram and Gmail attachment intake into the same safe upload path | partial (Telegram done; the Gmail inbound loop is not wired) |
+| P5 | **Patient own-data answers**: Instant answers about the patient's own recorded data (medicines taken, next visit, last result), website only; no medical advice, no drug or disease names in patient-facing text | done |
+| P6 | **Demo accounts**: Two demo accounts only: demo.pt0906 (6-day) and demo.pt0960 (60-day) | done |
+| P7 | **Firebase deploy plan**: Firebase Hosting for the doctor and patient UIs and Firebase Auth for login; plan in [docs/deploy/FIREBASE_PLAN.md](docs/deploy/FIREBASE_PLAN.md) | planned (cloud not deployed yet) |
+| P8 | **UI audit and Fable review fixes**: Fixes from the UI audit and from the Fable code review | done |
+| P9 | **AI evals batch 2**: Second batch of AI eval cases; see [docs/design/AI_EVAL_REPORT.md](docs/design/AI_EVAL_REPORT.md) | done |
+| P10 | **Upload edge tests**: Edge-case tests for the upload path (bad types, oversize, empty, duplicate, hostile names) | done |
 
 ## (b) Git commit plan: one commit per slice
 
@@ -219,11 +234,11 @@ Done since the last tracker: F27 Telegram free text, F29 doctor-question feature
 
 ## (d) One-line progress
 
-23 of 29 feature slices done, 6 partial, 0 in progress, 0 planned (25 Oct 2026, about 02:30 IST). Backend 1516 tests passed, 0 failed, 2 expected failures (known gaps), 2 skipped; web 154 tests pass, typecheck and build pass; the doctor gate is enforced by a database constraint. Deployment to Google Cloud is planned for 2026-10-25 and has NOT happened.
+23 of 29 feature slices done, 6 partial, 0 in progress, 0 planned, plus the post-F29 slices below (25 Oct 2026). Backend 1967 passed, 2 skipped, 3 xfailed (expected failures, known gaps); web typecheck OK, 241 tests pass, build OK; the doctor gate is enforced by a database constraint. Deployment to Google Cloud is planned for 2026-10-25 and has NOT happened.
 
 ## (e) Verified results (as of 2026-10-25 about 02:30 IST)
 
-- Backend: 1516 passed, 0 failed, 2 expected failures (known gaps), 2 skipped. Web: 154 tests pass, typecheck and build pass. AI eval suite: 97 offline cases.
+- Backend: 1967 passed, 2 skipped, 3 xfailed (expected failures, known gaps). Web: typecheck OK, 241 tests pass, build OK. AI eval suite: 97 offline cases.
 - RAG live eval, 66 questions across day 3, 30 and 60 on PT-0142 (DeepSeek flash, mock data): abstain accuracy 98.5%, groundedness 96.4%, judge pass 95.5%, 0 temporal leakage, citation validity 1.0; retrieval recall@10 1.0 / 1.0 / 0.97 at days 3 / 30 / 60. Caveats: 3 model-side misses; the database-backend check disagrees with the in-memory harness within 0.106 on abstain accuracy because of rendering differences.
 - Simulator Day 3 to 30 to 60: AUROC 0.645, 0.703, 0.796; Brier 0.261, 0.249, 0.197. ECE at day 60 is poor (0.22). The risk model uses fixed documented weights (not trained; training deferred, no fine-tuning planned, RAG is the memory layer).
 
@@ -238,6 +253,11 @@ Done since the last tracker: F27 Telegram free text, F29 doctor-question feature
 - Live Telegram Telugu and `/stop` paths have not been exercised live (offline tests only).
 - Doctor email notifier is dry-run by default; send mode needs explicit owner confirmation.
 - The system never answers patient medical questions itself; the research brief is doctor-facing only.
+- DOC-IMG-TYPE: image type checking on uploads is a known gap (expected failure).
+- Doctors can see all clinics' patients (district-wide by design).
+- Risk calibration is poor: ECE 0.22 at day 60.
+- The Gmail inbound loop is not wired.
+- Cloud is not deployed yet (Firebase plan only).
 - DeepSeek and OpenAI are used on mock data only (`CM_DATA_CLASS=mock`; DeepSeek refused for real data). No real patient data.
 
 ## (g) Team

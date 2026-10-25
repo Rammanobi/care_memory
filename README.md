@@ -11,7 +11,7 @@ Innovators Conclave 2026, JNTU Anantapur · Track IC26-03-10 Open Health Innovat
 
 </div>
 
-> **Progress (25 Oct 2026, about 02:30 IST):** 23 of 29 feature slices done, 6 partial, 0 in progress, 0 planned. Backend: 1516 tests passed, 0 failed, 2 expected failures (known gaps), 2 skipped. Web: 154 tests pass, typecheck and build pass. The doctor gate is enforced by a database constraint.
+> **Progress (25 Oct 2026, about 02:30 IST):** 23 of 29 feature slices done, 6 partial, 0 in progress, 0 planned, plus the post-F29 slices listed below. Backend: 1967 passed, 2 skipped, 3 xfailed (expected failures, known gaps). Web: typecheck OK, 241 tests pass, build OK. The doctor gate is enforced by a database constraint.
 > **Deployment to Google Cloud (Cloud Run, asia-south1, one domain with several hostnames) is planned for 2026-10-25 and has NOT happened yet.** Everything runs locally today. Plan: [docs/deploy/DEPLOY_PLAN.md](docs/deploy/DEPLOY_PLAN.md).
 > Status words in this README are strict: **done** means code plus an automated test or a recorded check; **partial** means code exists but a piece is missing or only tested against fakes; **planned** means designed, not built.
 
@@ -533,8 +533,8 @@ Final verified numbers as of 2026-10-25 about 02:30 IST (earlier figures from 24
 
 | Suite | Result |
 |---|---|
-| Backend (pytest) | **1516 passed, 0 failed**, 2 expected failures (known gaps), 2 skipped |
-| Web (vitest) | **154 tests passed**; typecheck and build pass |
+| Backend (pytest) | **1967 passed**, 2 skipped, 3 xfailed (expected failures, known gaps) |
+| Web (vitest) | **241 tests passed**; typecheck OK, build OK |
 | AI eval suite (offline) | **97 cases** |
 | Content | `python scripts/banned_terms.py` prints "banned-terms: clean" (last recorded 24 Oct) |
 
@@ -561,7 +561,7 @@ Caveats: 3 misses were model-side. The database-backend check disagrees with the
 | 30 | 0.703 | 0.249 |
 | 60 | 0.796 | 0.197 |
 
-Calibration is poor: ECE at day 60 is 0.22. The risk model uses fixed documented weights; it is not trained (training is deferred, no fine-tuning is planned, RAG is the memory layer). The two expected failures in the backend suite are known gaps; see [AI_EVAL_REPORT.md](docs/design/AI_EVAL_REPORT.md).
+Calibration is poor: ECE at day 60 is 0.22. The risk model uses fixed documented weights; it is not trained (training is deferred, no fine-tuning is planned, RAG is the memory layer). The expected failures (xfailed) in the backend suite are known gaps; see [AI_EVAL_REPORT.md](docs/design/AI_EVAL_REPORT.md).
 
 The bug-finding work behind F20 used property, concurrency, contract and edge-case suites and found 19 real bugs, all fixed. Not covered: live Google (Gmail inbound and push, Calendar) calls and the Cloud deployment.
 
@@ -575,7 +575,7 @@ Organisers' latest weighting: **Round 1 = 40%, Round 2 = 60%** (the older 15/35/
 |---|---|---|---|
 | R1 | Idea and solution presentation, repo progress tracker | 40 | This README, diagrams, [TRACKER.md](TRACKER.md), one commit per feature slice |
 | 1 | Functionality and working demo (15) | 18 | Doctor approves a patient request and the patient app shows "doctor approved"; a Telegram tap becomes an event and a Red draft; Ask box answers with citations |
-| 2 | Technical depth and code quality (10) | 12 | DB-level doctor gate, single `decide()` transaction, budget governor, PII tokeniser, cite-or-cut, frozen contracts, 1516 backend and 154 web tests, OpenSpec log |
+| 2 | Technical depth and code quality (10) | 12 | DB-level doctor gate, single `decide()` transaction, budget governor, PII tokeniser, cite-or-cut, frozen contracts, 1967 backend and 241 web tests, OpenSpec log |
 | 3 | UI/UX and usability (5) | 6 | Responsive console and patient app (360 px to 1440 px), Telugu toggle, large text, empty states, keyboard shortcuts |
 | 4 | Completeness vs proposed scope (5) | 6 | Section 4 and TRACKER.md: honest done / partial / planned against the problem statement's expected outputs |
 | 5 | Viability and deployment readiness (5) | 6 | Spend caps with RED template-only mode, consent model, no PII to LLMs, Docker image, GCP scripts, cost per patient |
@@ -608,6 +608,24 @@ Organisers' latest weighting: **Round 1 = 40%, Round 2 = 60%** (the older 15/35/
 
 Built with parallel AI coding agents, one lane each, coordinated through frozen contracts and OpenSpec; every lane's changes are logged under [openspec/changes/archive/](openspec/changes/archive/).
 
+## Post-F29 slices
+
+
+**Slices since F29 (25 Oct 2026):**
+
+| Area | What | Status |
+|---|---|---|
+| Document upload (core) | Safe upload of patient documents: type, size and content checks, quarantine until reviewed, never shown to the patient as advice | **done** |
+| Document extraction | Text and field extraction from uploads into a draft for the doctor; nothing enters the record without approval | **done** |
+| Document doctor review | Doctor review queue: approve, edit or reject an extracted document before it becomes memory | **done** |
+| Document intake channels | Telegram and Gmail attachment intake into the same safe upload path | **partial (Telegram done; the Gmail inbound loop is not wired)** |
+| Patient own-data answers | Instant answers about the patient's own recorded data (medicines taken, next visit, last result), website only; no medical advice, no drug or disease names in patient-facing text | **done** |
+| Demo accounts | Two demo accounts only: demo.pt0906 (6-day) and demo.pt0960 (60-day) | **done** |
+| Firebase deploy plan | Firebase Hosting for the doctor and patient UIs and Firebase Auth for login; plan in [docs/deploy/FIREBASE_PLAN.md](docs/deploy/FIREBASE_PLAN.md) | **planned (cloud not deployed yet)** |
+| UI audit and Fable review fixes | Fixes from the UI audit and from the Fable code review | **done** |
+| AI evals batch 2 | Second batch of AI eval cases; see [docs/design/AI_EVAL_REPORT.md](docs/design/AI_EVAL_REPORT.md) | **done** |
+| Upload edge tests | Edge-case tests for the upload path (bad types, oversize, empty, duplicate, hostile names) | **done** |
+
 ## 15. Known limitations
 
 - Doctors can read all clinics' patients: access is district-wide by design; per-clinic scoping is not built.
@@ -619,6 +637,11 @@ Built with parallel AI coding agents, one lane each, coordinated through frozen 
 - The live Telegram Telugu and `/stop` paths have not been exercised live (offline tests only).
 - The doctor email notifier is dry-run by default; send mode needs explicit owner confirmation.
 - The system never answers patient medical questions itself: they go to the doctor; the research brief is doctor-facing only.
+- DOC-IMG-TYPE: image type checking on uploads is a known gap (expected failure).
+- Doctors can see all clinics' patients (district-wide by design).
+- Risk calibration is poor: ECE 0.22 at day 60.
+- The Gmail inbound loop is not wired.
+- Cloud is not deployed yet (Firebase plan only).
 - DeepSeek and OpenAI are used on mock data only (`CM_DATA_CLASS=mock`; DeepSeek is refused for real data). There is no real patient data.
 
 ---
